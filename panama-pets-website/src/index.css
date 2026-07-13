@@ -1,0 +1,55 @@
+@import 'tailwindcss';
+@import '@fontsource/baloo-2/latin-500.css';
+@import '@fontsource/baloo-2/latin-600.css';
+@import '@fontsource/baloo-2/latin-700.css';
+@import '@fontsource/inter/latin-400.css';
+@import '@fontsource/inter/latin-500.css';
+@import '@fontsource/inter/latin-600.css';
+
+@theme {
+  /* Sampled from the real Panama Pets storefront: hand-painted green facade
+     and rainbow lettering on the hand-painted sign. */
+  --color-clinic-green: #2f8f46;
+  --color-clinic-green-dark: #1f5c33;
+  --color-clinic-green-light: #e8f4ea;
+  --color-clinic-cream: #faf9f4;
+  --color-clinic-ink: #33342e;
+  --color-clinic-ink-soft: #5c5d54;
+
+  --color-paw-red: #e8543f;
+  --color-paw-orange: #f2914a;
+  --color-paw-yellow: #f3c13a;
+  --color-paw-teal: #2fb6a8;
+  --color-paw-blue: #3e8fd1;
+  --color-paw-purple: #8e5fbf;
+
+  --font-heading: 'Baloo 2', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: var(--color-clinic-cream);
+  color: var(--color-clinic-ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
