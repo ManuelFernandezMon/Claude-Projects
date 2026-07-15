@@ -1,8 +1,10 @@
-name: CI
+name: panama-pets-website CI
 on:
   pull_request:
+    paths: ['panama-pets-website/**']
   push:
     branches: [main]
+    paths: ['panama-pets-website/**']
 jobs:
   build:
     runs-on: ubuntu-latest
