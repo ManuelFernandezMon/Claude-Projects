@@ -6,6 +6,10 @@ A monorepo holding independent projects, one per top-level folder.
 
 - [`panama-pets-website/`](panama-pets-website/README.md) — marketing site for the Panama Pets veterinary clinic (React + Vite + TypeScript + Tailwind).
 
+## Plans
+
+[`plans/`](plans/) holds Claude Code planning documents written while working on this repo, kept for historical reference.
+
 ## Adding a new project
 
 1. Create a new top-level folder, kebab-case, named after the project.
