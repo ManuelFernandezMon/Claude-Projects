@@ -5,6 +5,7 @@ A monorepo holding independent projects, one per top-level folder.
 ## Projects
 
 - [`panama-pets-website/`](panama-pets-website/README.md) — marketing site for the Panama Pets veterinary clinic (React + Vite + TypeScript + Tailwind).
+- [`restaurant-ordering-frontend/`](restaurant-ordering-frontend/README.md) — customer ordering + staff status-update UI for a restaurant (React + Vite + TypeScript + Tailwind), consuming an external Express + Supabase API.
 
 ## Plans
 
