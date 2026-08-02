@@ -5,6 +5,7 @@ A monorepo holding independent projects, one per top-level folder.
 ## Projects
 
 - [`panama-pets-website/`](panama-pets-website/README.md) — marketing site for the Panama Pets veterinary clinic (React + Vite + TypeScript + Tailwind).
+- [`fragrance-content/`](fragrance-content/README.md) — content-creation workspace for a fragrance/perfume channel (scripts, post ideas, recommendations, trend research).
 
 ## Plans
 
