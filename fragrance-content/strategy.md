@@ -3,6 +3,9 @@
 Living reference doc — refine as you learn what works for your audience.
 The agent reads this before generating scripts/ideas so tone and format stay consistent.
 
+## Brand
+- Handle (TikTok/Instagram): **@tufrenperfumero** — use this in CTAs and cross-platform mentions instead of a placeholder.
+
 ## Content formats that consistently work in the fragrance niche
 - **Dupe/comparison**: "Smells like X for a fraction of the price" — side-by-side notes, price, longevity.
 - **First impressions vs. long-wear**: spray it, react live, then follow up hours later with a verdict.
