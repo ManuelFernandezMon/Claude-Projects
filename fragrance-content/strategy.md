@@ -40,3 +40,10 @@ The agent reads this before generating scripts/ideas so tone and format stay con
 ## Voice
 - Confident but not snobby — approachable for beginners, credible for enthusiasts.
 - Honest about scent-to-price value; avoid overhyping every release.
+
+## Preferred script style (default)
+The user's favorite so far, modeled on `content/2026-08-15-dream-sea-first-impressions.md` — default new scripts to this structure unless told otherwise:
+1. Hook (0-3s): what it is + why it's worth stopping for.
+2. Live reaction beat: spray/try it on camera, real unscripted-sounding reaction before explaining anything.
+3. Notes breakdown in conversational language, not a clinical note list — describe how it actually feels/smells.
+4. CTA that teases a natural follow-up (long-wear check-in, next comparison, etc.) rather than a generic "follow me."
