@@ -52,6 +52,7 @@ what you already own.
 | Momento | Riiffs | Top: sugar, saffron, mandarin; Middle: tonka bean, Damask rose, agarwood; Base: caramel, amberwood, cedar | 2025 | 5 | Date night, Special occasion, Winter |
 | Flamingo Fizz | Superz. | Top: champagne, wild berries, grapefruit, lemon; Middle: rose, orange blossom, jasmine; Base: vetiver, musk, amber, benzoin, olibanum | 2026 | 5 | Everyday, Office, Evening, Date night, Special occasion, Summer, Winter |
 | Dream Sea | Lorenzo Pazzaglia | Top: watery notes, ozonic notes, green notes, black pepper, pink pepper; Middle: ylang-ylang, white flowers, spices, Bulgarian rose; Base: vanilla, salt, ambergris, sandalwood, cedar | 2026-08 | | |
+| Memories Gold | Superz. | Caramel, vanilla, amber, honey, milk, tonka bean, labdanum, cedarwood, musk, iris | 2026-08 | | |
 
 ## Notes / preferences (optional)
 - Scent families you gravitate toward: Gourmand and vanillas
