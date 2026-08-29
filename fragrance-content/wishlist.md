@@ -6,11 +6,11 @@ interested.
 
 | Perfume | Brand | Notes/Accords | Why it's on the list | Priority |
 |---|---|---|---|---|
-| Tenerife | Superz. | not researched yet | | |
-| Unique Blue | Superz. | not researched yet | | |
-| Van Py Rum | Lorenzo Pazzaglia | not researched yet | | |
-| Ebène | Maison Alhambra | not researched yet | | |
-| Prometheus | Ahmed Al Maghribi | not researched yet | | |
+| Tenerife | Superz. | Sweet notes, citruses, white flowers, aromatic notes, vanilla, aromatic spices, amber | | Medium |
+| Unique Blue | Superz. | Marine notes, salt, ginger, yuzu, lemon, pineapple, passionfruit, eucalyptus, peppermint, cedarwood, musk, amber | | Low |
+| Van Py Rum | Lorenzo Pazzaglia | Top: bourbon/Madagascar/Tahitian vanilla, rum, tonka bean; Middle: vanilla, caramel, patchouli, white flowers; Base: black vanilla husk, rum, patchouli, agarwood (oud) | | High |
+| Ebène | Maison Alhambra | Top: elemi, cloves, artemisia; Middle: olibanum, guaiac wood; Base: vanilla, benzoin, amber, musk | | High |
+| Prometheus | Ahmed Al Maghribi | Top: bergamot, mint, pink pepper, juniper, artemisia; Middle: cedarwood, lavender, patchouli, benzoin, dark chocolate; Base: white musk, musk, vetiver, guaiac wood, vanilla, tonka bean | | Medium |
 
 ## Notes
 - When you buy one of these, tell me and I'll move it over to `collection.md` instead of leaving it here.
