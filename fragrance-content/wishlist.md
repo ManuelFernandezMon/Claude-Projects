@@ -6,6 +6,11 @@ interested.
 
 | Perfume | Brand | Notes/Accords | Why it's on the list | Priority |
 |---|---|---|---|---|
+| Tenerife | Superz. | not researched yet | | |
+| Unique Blue | Superz. | not researched yet | | |
+| Van Py Rum | Lorenzo Pazzaglia | not researched yet | | |
+| Ebène | Maison Alhambra | not researched yet | | |
+| Prometheus | Ahmed Al Maghribi | not researched yet | | |
 
 ## Notes
 - When you buy one of these, tell me and I'll move it over to `collection.md` instead of leaving it here.
