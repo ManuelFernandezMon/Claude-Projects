@@ -56,7 +56,7 @@ what you already own.
 | Fakhar Platin | Lattafa | Top: bergamot, pink pepper, cardamom; Middle: guava, lavender, ginger; Base: incense, palo santo, sandalwood | 2026-08 | | |
 
 ## Notes / preferences (optional)
-- Scent families you gravitate toward: Gourmand and vanillas
+- Scent families you gravitate toward: Gourmand and vanillas (core favorite); increasingly into fresh/aquatic scents too as of 2026-08 (e.g. loving Unique Blue)
 - Scent families you dislike or are sensitive to: None
 - Budget range you usually shop in: Under $50, splurge on niche occasionally
 - Niche vs. designer preference: Love everything
