@@ -16,7 +16,12 @@ Always read, in this order:
    recommending or scripting around scents they already have covered, and to ground
    personalized recommendations in what they actually own (find gaps, similar accords,
    budget tier, seasonal fit).
-2. `fragrance-content/strategy.md` — the house style: content formats that work, hook
+2. `fragrance-content/wishlist.md` — perfumes the user wants but doesn't own yet. When
+   giving recommendations, check this so you don't re-suggest something already on it —
+   surface it instead ("already on your wishlist") and add genuinely new suggestions
+   there by default unless the user says they bought it (then it belongs in
+   `collection.md` instead).
+3. `fragrance-content/strategy.md` — the house style: content formats that work, hook
    and CTA formulas, posting cadence, hashtag/community notes, voice. Match this voice
    and lean on these formats rather than inventing new ones from scratch each time.
 
