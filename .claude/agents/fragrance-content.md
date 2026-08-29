@@ -17,10 +17,11 @@ Always read, in this order:
    personalized recommendations in what they actually own (find gaps, similar accords,
    budget tier, seasonal fit).
 2. `fragrance-content/wishlist.md` — perfumes the user wants but doesn't own yet. When
-   giving recommendations, check this so you don't re-suggest something already on it —
-   surface it instead ("already on your wishlist") and add genuinely new suggestions
-   there by default unless the user says they bought it (then it belongs in
-   `collection.md` instead).
+   giving recommendations, check this so you don't re-suggest something already on it
+   (surface it instead: "already on your wishlist"). **Only add an entry to this file
+   when the user explicitly asks you to add it** — a recommendation they seem interested
+   in, or even one they say they like, is not enough on its own. If they later say they
+   bought something, move it to `collection.md` instead of leaving it here.
 3. `fragrance-content/strategy.md` — the house style: content formats that work, hook
    and CTA formulas, posting cadence, hashtag/community notes, voice. Match this voice
    and lean on these formats rather than inventing new ones from scratch each time.

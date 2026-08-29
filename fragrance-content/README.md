@@ -18,8 +18,9 @@ before generating anything.
 
 - `collection.md` — your owned perfumes (brand, notes, rating, occasion). **Keep this updated** —
   it's what personalizes recommendations and keeps scripts from repeating scents you've already covered.
-- `wishlist.md` — perfumes you don't own yet but want. Recommendations land here by default; move an
-  entry to `collection.md` once you actually buy it.
+- `wishlist.md` — perfumes you don't own yet but want. Only added when you explicitly say to add
+  something — recommendations aren't added automatically. Move an entry to `collection.md` once
+  you actually buy it.
 - `strategy.md` — content format/hook/CTA/cadence notes for the niche. Refine over time as you see
   what performs.
 - `content/` — generated scripts, captions, and post-idea batches, saved dated (e.g.
