@@ -54,6 +54,9 @@ what you already own.
 | Dream Sea | Lorenzo Pazzaglia | Top: watery notes, ozonic notes, green notes, black pepper, pink pepper; Middle: ylang-ylang, white flowers, spices, Bulgarian rose; Base: vanilla, salt, ambergris, sandalwood, cedar | 2026-08 | | |
 | Memories Gold | Superz. | Caramel, vanilla, amber, honey, milk, tonka bean, labdanum, cedarwood, musk, iris | 2026-08 | | |
 | Fakhar Platin | Lattafa | Top: bergamot, pink pepper, cardamom; Middle: guava, lavender, ginger; Base: incense, palo santo, sandalwood | 2026-08 | | |
+| Ebène | Maison Alhambra | Top: elemi, cloves, artemisia; Middle: olibanum, guaiac wood; Base: vanilla, benzoin, amber, musk | 2026-09 | | |
+| Aquatica | Rayhaan | Top: lime, coconut milk, bergamot, mandarin; Middle: sugar cane, jasmine, hibiscus, gardenia; Base: rum, musk, tonka bean, patchouli | 2026-09 | | |
+| Griffin | MAD Parfumeur | Top: rhubarb, grapefruit, mandarin; Middle: patchouli, ambrette, ginger; Base: ambroxan, vetiver, musk | 2026-09 | | |
 
 ## Notes / preferences (optional)
 - Scent families you gravitate toward: Gourmand and vanillas (core favorite); increasingly into fresh/aquatic scents too as of 2026-08 (e.g. loving Unique Blue)
