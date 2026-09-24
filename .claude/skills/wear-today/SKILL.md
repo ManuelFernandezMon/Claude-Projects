@@ -20,7 +20,7 @@ Quick lookup, not a content-generation task — keep the answer short.
    - night out, club, bar → Evening
    If the request doesn't map cleanly to any tag (or combines several, e.g. "winter wedding"), ask one quick clarifying question rather than guessing.
 3. Filter rows whose `Occasion` column contains the matching tag(s).
-4. Rank matches by `My Rating (1-5)` descending. Rows with no rating yet sort last (they're new/unrated, not necessarily bad — mention that if one comes up).
+4. Rank matches by `My Rating (1-10)` descending. Rows with no rating yet sort last (they're new/unrated, not necessarily bad — mention that if one comes up).
 5. If nothing matches the specific tag, fall back to the highest-rated perfume tagged for the most occasions (a versatile all-rounder) and say plainly that it's a fallback, not an exact match.
 6. Respond with:
    - **Top pick** — name, brand, one line tying it to the occasion and why (rating + a note or two that fits the vibe).
