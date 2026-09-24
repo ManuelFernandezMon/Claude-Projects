@@ -7,6 +7,7 @@ The agent reads this before generating scripts/ideas so tone and format stay con
 - Handle (TikTok/Instagram): **@tufrenperfumero** — use this in CTAs and cross-platform mentions instead of a placeholder.
 
 ## Content formats that consistently work in the fragrance niche
+- **Ingredient reveal (notes, done differently)**: instead of a Fragrantica note-pyramid screenshot (the default everyone does), cut to a quick shot of the real thing as you name each note — a vanilla pod, a cut lime, a coffee bean, a cinnamon stick. Describe notes in flavor/sensory language instead of perfumer jargon ("burnt crème brûlée with a splash of rum," not "vanilla, caramel accord"). Needs light prop-gathering before filming, but it's tactile, visually distinctive, and much harder for other accounts to rip off than a screenshot.
 - **Dupe/comparison**: "Smells like X for a fraction of the price" — side-by-side notes, price, longevity.
 - **First impressions vs. long-wear**: spray it, react live, then follow up hours later with a verdict.
 - **Blind-buy risk takes**: "Is [hyped perfume] worth buying without smelling it first?"
