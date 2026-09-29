@@ -10,6 +10,7 @@ interested.
 | Unique Blue | Superz. | Marine notes, salt, ginger, yuzu, lemon, pineapple, passionfruit, eucalyptus, peppermint, cedarwood, musk, amber | You named this yourself as an example of the fresh/aquatic direction you're loving right now — trust your own signal over the notes alone | High |
 | Van Py Rum | Lorenzo Pazzaglia | Top: bourbon/Madagascar/Tahitian vanilla, rum, tonka bean; Middle: vanilla, caramel, patchouli, white flowers; Base: black vanilla husk, rum, patchouli, agarwood (oud) | Vanilla, rum, caramel, and oud — about as close to a direct hit on your top preference (gourmand/vanilla) as this list gets | High |
 | Prometheus | Ahmed Al Maghribi | Top: bergamot, mint, pink pepper, juniper, artemisia; Middle: cedarwood, lavender, patchouli, benzoin, dark chocolate; Base: white musk, musk, vetiver, guaiac wood, vanilla, tonka bean | Fresh, herbal top (bergamot, mint, juniper) fits your growing interest in fresher scents, with dark chocolate and tonka keeping a gourmand thread underneath | Medium |
+| X Xandal | Aromatix (French Avenue) | Top: Madagascar/Bourbon vanilla, vanilla caviar; Middle: chocolate truffle, vanilla, rum, patchouli, jasmine; Base: vanilla absolute, caramel, tonka bean, agarwood | Combines the profiles of your two best-rated bottles — Xplicit Vanille (10/10: vanilla, chocolate, oud) and Yvan (8.5: rum, vanilla, amber) — about as close to a guaranteed hit as this list gets | High |
 
 ## Notes
 - When you buy one of these, tell me and I'll move it over to `collection.md` instead of leaving it here.
