@@ -42,6 +42,14 @@ The agent reads this before generating scripts/ideas so tone and format stay con
 - Confident but not snobby — approachable for beginners, credible for enthusiasts.
 - Honest about scent-to-price value; avoid overhyping every release.
 
+## Positioning
+The collection is mostly budget/dupe houses (Lattafa, Aromas Artesanales, French Avenue, etc.) plus a few niche bottles (Mancera, Lorenzo Pazzaglia, Superz). Own that instead of hiding it — the audience is largely budget-conscious, and dupe culture is a top-performing format in the niche.
+- **Identity:** the honest, budget-smart friend ("tu fren perfumero") who tells you what's actually worth buying — not a niche-collector persona.
+- **Honesty about originals:** the user doesn't own the originals behind the clones. Never claim a clone smells identical to an original they haven't smelled — say "I haven't smelled the original, this is how it smells on its own."
+- **Use the rating system on camera:** the 1-10 scale across the whole collection is a differentiator. Low scores on clones (e.g. Sisante 5.5) build trust; don't praise everything.
+- **Local angle:** where/how to actually get these in Panama (local shops, casillero) is content most accounts won't have.
+- **Don't apologize for the shelf.** Purist gatekeepers are a minority and not the target audience.
+
 ## Preferred script style (default)
 The user's favorite so far, modeled on `content/2026-08-15-dream-sea-first-impressions.md` — default new scripts to this structure unless told otherwise:
 1. Hook (0-3s): what it is + why it's worth stopping for.
