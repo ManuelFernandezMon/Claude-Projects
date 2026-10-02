@@ -56,3 +56,24 @@ The user's favorite so far, modeled on `content/2026-08-15-dream-sea-first-impre
 2. Live reaction beat: spray/try it on camera, real unscripted-sounding reaction before explaining anything.
 3. Notes breakdown in conversational language, not a clinical note list — describe how it actually feels/smells.
 4. CTA that teases a natural follow-up (long-wear check-in, next comparison, etc.) rather than a generic "follow me."
+
+## Filming setup
+Gear on hand: Samsung S22 Ultra and S23 FE. Phones are enough — audio, light, and stability matter more than the camera.
+
+**Roles**
+- **S22 Ultra = main camera.** Use the back camera (sharper than the front). 3x lens for bottle close-ups; the ultra-wide focuses very close, good for ingredient-reveal shots.
+- **S23 FE = second angle.** Overhead for flatlay ingredient shots, or side B-roll while the S22 records the talking parts.
+
+**Settings**
+- Vertical 9:16, 1080p or 4K at 30fps (TikTok compresses; 4K leaves room to crop).
+- Tap and hold to lock focus/exposure on the face or bottle.
+- Switch lenses instead of pinch-zooming (digital zoom looks soft).
+- Beauty filters off; wipe the lens before every take.
+
+**Upgrades, in order**
+1. Tripod with phone mount (~$15-25) — shaky footage is the most obvious amateur tell.
+2. Clip-on or wireless USB-C lav mic (~$20-40) — clear voice matters more than sharp video when describing notes.
+3. Light — face a window (free) or a small LED panel/ring light (~$25-40). Same light for every ingredient shot so they read as a series.
+4. Background — a shelf of bottles behind you doubles as the set and shows off the collection.
+
+**Start minimal:** S22 Ultra + tripod + window light. Add the mic and second phone once posting regularly.
