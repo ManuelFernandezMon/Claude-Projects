@@ -57,7 +57,7 @@ what you already own.
 | Ebène | Maison Alhambra | Top: elemi, cloves, artemisia; Middle: olibanum, guaiac wood; Base: vanilla, benzoin, amber, musk | 2026-09 | 9.5 | Date night, Winter, Evening, Special occasion |
 | Aquatica | Rayhaan | Top: lime, coconut milk, bergamot, mandarin; Middle: sugar cane, jasmine, hibiscus, gardenia; Base: rum, musk, tonka bean, patchouli | 2026-09 | 10 | Everyday, Summer, Beach, Evening, Date night |
 | Griffin | MAD Parfumeur | Top: rhubarb, grapefruit, mandarin; Middle: patchouli, ambrette, ginger; Base: ambroxan, vetiver, musk | 2026-09 | 8.5 | Everyday, Office, Summer, Beach |
-| Essence of Casablanca (Extrait) | Swiss Arabian | Top: grapes, apple; Middle: orris, patchouli; Base: vanilla, musk, amber, balsamic notes | 2026-10 | | |
+| Essence of Casablanca (Extrait) | Swiss Arabian | Top: grapes, apple; Middle: orris, patchouli; Base: vanilla, musk, amber, balsamic notes | 2026-10 | 9.7 | Evening, Date night, Winter |
 
 ## Notes / preferences (optional)
 - Scent families you gravitate toward: Gourmand and vanillas (core favorite); increasingly into fresh/aquatic scents too as of 2026-08 (e.g. loving Unique Blue)
