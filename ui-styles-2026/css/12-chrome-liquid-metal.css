@@ -1,1 +1,506 @@
-/* 12 Chrome / Liquid Metal: everything scoped under #s-12. Owned by the style 12 agent. */
+/* 12 Chrome / Liquid Metal: everything scoped under #s-12. Owned by the style 12 agent.
+
+   Contrast (computed, WCAG 2.x). Chrome gradients are used on shapes and the large heading only;
+   all body text sits on solid dark plates.
+   - Heading (large text, needs 3:1), darkest gradient stop #6f7a8c on page #07080b:   4.6:1
+     (on the brightest part of the blue corner glow, about #162238: 3.7:1)
+   - Heading solid fallback #dfe5ef on #0a0c10:                                       15.5:1
+   - Body #eef1f6 on plate #0f1218:                                                   16.6:1
+   - Muted #aeb7c4 on plate #0f1218:                                                   9.3:1
+   - Switch / input outline #8a94a6 on plate #0f1218 (non-text, needs 3:1):           6.1:1
+   - Switch on-state track #1d4ed8 behind chrome knob #f4f7fc:                         6.2:1
+   - Focus ring #6db3ff on #07080b or plate:                                           9:1 or better */
+
+#s-12 {
+  --bg: #07080b;
+  --plate: #0f1218;
+  --plate-hi: #181c24;
+  --ink: #eef1f6;
+  --ink-2: #aeb7c4;
+  --edge: #8a94a6;
+  --focus: #6db3ff;
+  --chrome-ring: conic-gradient(
+    from 30deg,
+    #f4f7fc 0 8%,
+    #8a94a6 8% 20%,
+    #fff 20% 26%,
+    #6d7686 26% 36%,
+    #c9d3e3 36% 52%,
+    #f4f7fc 52% 58%,
+    #6a7486 58% 72%,
+    #d9e1ee 72% 86%,
+    #f4f7fc 86%
+  );
+
+  position: relative;
+  padding: clamp(3rem, 8vw, 6rem) 1rem;
+  color: var(--ink);
+  font-family:
+    Manrope,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  line-height: 1.6;
+  background:
+    radial-gradient(60% 45% at 92% 0%, rgb(60 110 220 / 0.14), transparent 70%),
+    linear-gradient(180deg, #0a0c10, var(--bg) 40%, #050608);
+}
+
+#s-12 .s-wrap {
+  display: grid;
+  gap: 1.75rem;
+  max-width: 70rem;
+  margin: 0 auto;
+}
+#s-12 p {
+  margin: 0;
+}
+
+/* ---- Head: chrome headline plus one oversized chrome orb ---- */
+#s-12 .s-head {
+  display: grid;
+  grid-template-areas: 'orb' 'copy';
+  gap: 1.5rem;
+  align-items: center;
+}
+#s-12 .chrome-orb {
+  grid-area: orb;
+  position: relative;
+  width: clamp(8rem, 26vw, 16rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  isolation: isolate;
+  background: #8a94a6;
+  box-shadow:
+    inset 0 0 0 2px rgb(255 255 255 / 0.55),
+    0 2rem 3rem -1rem rgb(0 0 0 / 0.8),
+    0 0 4rem rgb(70 120 255 / 0.2);
+}
+/* turning reflection layer */
+#s-12 .chrome-orb::before {
+  content: '';
+  position: absolute;
+  inset: -30%;
+  background:
+    conic-gradient(
+      from 20deg at 40% 45%,
+      #fff,
+      #6d7686 14%,
+      #fff 28%,
+      #222833 42%,
+      #fff 56%,
+      #8a94a6 70%,
+      #fff 84%,
+      #fff
+    ),
+    linear-gradient(
+      172deg,
+      #f7faff 0 30%,
+      #9fb1d6 30.8% 41.2%,
+      #0d1016 42% 46.2%,
+      #c7ced9 47% 57.2%,
+      #596375 58% 77.2%,
+      #e9eef7 78%
+    );
+  background-blend-mode: overlay, normal;
+  transform: rotate(18deg);
+}
+/* sphere shading and specular highlight over the reflections */
+#s-12 .chrome-orb::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 30% 24%, #fff 0 5%, rgb(255 255 255 / 0.55) 9%, transparent 24%),
+    radial-gradient(circle at 50% 46%, transparent 42%, rgb(10 14 24 / 0.75) 100%),
+    linear-gradient(180deg, transparent 55%, rgb(70 120 255 / 0.4));
+}
+#s-12 .head-copy {
+  grid-area: copy;
+  min-width: 0;
+}
+
+#s-12 h2 {
+  margin: 0;
+  font-family: Michroma, 'Arial Black', system-ui, sans-serif;
+  font-weight: 400;
+  font-size: clamp(1.7rem, 1rem + 3.8vw, 4.1rem);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+  color: #dfe5ef;
+}
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  #s-12 h2 {
+    background: linear-gradient(
+      180deg,
+      #ffffff 0%,
+      #dfe6f2 38%,
+      #7e899b 50%,
+      #6f7a8c 52%,
+      #c8d1e0 62%,
+      #f4f7fc 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+}
+#s-12 .s-def {
+  max-width: 44rem;
+  margin-top: 1.1rem;
+  font-size: 1.1rem;
+  color: var(--ink-2);
+}
+#s-12 .head-copy::after {
+  content: '';
+  display: block;
+  width: min(100%, 14rem);
+  height: 0.5rem;
+  margin-top: 1.4rem;
+  border-radius: 1rem;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.9), transparent 55%),
+    linear-gradient(90deg, #5a6474, #f4f7fc 30%, #8a94a6 55%, #f4f7fc 80%, #5a6474);
+  background-blend-mode: overlay, normal;
+}
+
+/* ---- Plates ---- */
+#s-12 .s-info p,
+#s-12 .demo-card,
+#s-12 .demo-controls,
+#s-12 .s-a11y,
+#s-12 .css-recipe {
+  background: var(--plate);
+  border: 1px solid #2b313b;
+  border-radius: 1.25rem;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    0 1.2rem 2rem rgb(0 0 0 / 0.45);
+}
+#s-12 .s-info {
+  display: grid;
+  gap: 1rem;
+}
+#s-12 .s-info p {
+  padding: 1rem 1.25rem;
+  border-top: 3px solid #aab4c6;
+}
+#s-12 strong {
+  color: #fff;
+}
+
+/* ---- Demo ---- */
+#s-12 .s-demo {
+  display: grid;
+  gap: 1.25rem;
+  align-items: stretch;
+}
+#s-12 .demo-card {
+  position: relative;
+  display: grid;
+  gap: 0.9rem;
+  justify-items: start;
+  align-content: start;
+  padding: 2rem 1.75rem 1.75rem;
+  border: 2px solid transparent;
+  border-radius: 1.75rem;
+  background:
+    linear-gradient(var(--plate), var(--plate)) padding-box,
+    var(--chrome-ring) border-box;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.25),
+    0 1.5rem 3rem rgb(0 0 0 / 0.6);
+}
+#s-12 h3 {
+  margin: 0;
+  font-size: 1.6rem;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  font-weight: 600;
+}
+#s-12 .demo-card p {
+  max-width: 34rem;
+  color: var(--ink-2);
+}
+/* liquid capsule: a pill with a glossy chrome body */
+#s-12 .capsule {
+  width: 5.5rem;
+  height: 1.1rem;
+  border-radius: 1rem;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.95) 0 30%, transparent 55%),
+    linear-gradient(90deg, #4b5565, #f4f7fc 25%, #7d889b 50%, #f4f7fc 75%, #4b5565);
+  background-blend-mode: overlay, normal;
+  box-shadow:
+    inset 0 -2px 3px rgb(0 0 0 / 0.5),
+    0 0.4rem 0.8rem rgb(0 0 0 / 0.5);
+}
+
+#s-12 .demo-controls {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-content: start;
+  align-items: center;
+  gap: 1rem 0.9rem;
+  padding: 1.5rem;
+}
+#s-12 .demo-controls label {
+  grid-column: 1 / -1;
+  margin-bottom: -0.5rem;
+  color: var(--ink-2);
+}
+#s-12 .demo-controls input {
+  grid-column: 1 / -1;
+}
+
+/* ---- Controls: dark plates with chrome rings, text never on chrome ---- */
+#s-12 :is(button, input):focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+#s-12 .demo-btn,
+#s-12 .show-css,
+#s-12 .copy-css {
+  min-height: 2.75rem;
+  padding: 0.55rem 1.5rem;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background:
+    linear-gradient(var(--plate), var(--plate)) padding-box,
+    var(--chrome-ring) border-box;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 0.5rem 1rem rgb(0 0 0 / 0.5);
+  transition:
+    box-shadow 0.2s,
+    transform 0.15s;
+}
+#s-12 .demo-btn:hover,
+#s-12 .show-css:hover,
+#s-12 .copy-css:hover {
+  background:
+    linear-gradient(var(--plate-hi), var(--plate-hi)) padding-box,
+    var(--chrome-ring) border-box;
+  box-shadow:
+    0 0 0 3px rgb(109 179 255 / 0.28),
+    0 0 1.6rem rgb(109 179 255 / 0.5);
+}
+#s-12 .demo-btn:active,
+#s-12 .show-css:active,
+#s-12 .copy-css:active {
+  transform: translateY(1px);
+  box-shadow: 0 0.15rem 0.4rem rgb(0 0 0 / 0.6);
+}
+
+#s-12 .demo-switch {
+  position: relative;
+  width: 3.6rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  background: #0b0d11;
+  box-shadow: inset 0 2px 4px rgb(0 0 0 / 0.8);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+#s-12 .demo-switch::after {
+  content: '';
+  position: absolute;
+  inset: -0.45rem -0.3rem;
+}
+#s-12 .demo-switch .knob {
+  position: absolute;
+  top: 50%;
+  left: 0.2rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-top: -0.75rem;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 28%, #fff 0 12%, transparent 40%),
+    conic-gradient(from 30deg, #f4f7fc, #6d7686 20%, #f4f7fc 40%, #3a414d 60%, #c9d3e3 80%, #f4f7fc);
+  box-shadow: 0 2px 5px rgb(0 0 0 / 0.7);
+  transition: transform 0.2s;
+}
+#s-12 .demo-switch:hover {
+  border-color: #fff;
+  background: #151a22;
+}
+#s-12 .demo-switch[aria-checked='true'] {
+  background: #1d4ed8;
+  border-color: #c9d3e3;
+}
+#s-12 .demo-switch[aria-checked='true'] .knob {
+  transform: translateX(1.6rem);
+}
+
+#s-12 input[type='text'] {
+  min-height: 2.75rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--edge);
+  border-radius: 0.8rem;
+  background: #0b0d11;
+  box-shadow: inset 0 2px 4px rgb(0 0 0 / 0.7);
+  color: var(--ink);
+  font: inherit;
+}
+#s-12 input[type='text']::placeholder {
+  color: #98a2b3;
+  opacity: 1;
+}
+#s-12 input[type='text']:hover {
+  border-color: #fff;
+}
+
+/* ---- Lower blocks ---- */
+#s-12 .s-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+#s-12 .s-tags li {
+  padding: 0.3rem 0.95rem;
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  background: var(--plate);
+  font-size: 0.9rem;
+  color: var(--ink-2);
+}
+#s-12 .s-recipe {
+  display: grid;
+  gap: 0.9rem;
+  justify-items: start;
+}
+#s-12 .css-recipe {
+  display: grid;
+  gap: 0.8rem;
+  justify-items: start;
+  width: 100%;
+  padding: 1.1rem 1.25rem;
+}
+#s-12 .css-recipe[hidden] {
+  display: none;
+}
+#s-12 .css-recipe pre {
+  width: 100%;
+  margin: 0;
+  overflow-x: auto;
+}
+#s-12 .css-recipe code {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: #dbe3f0;
+}
+#s-12 .s-a11y {
+  padding: 1.25rem 1.5rem;
+  border-left: 3px solid #aab4c6;
+}
+#s-12 .s-a11y h3 {
+  margin-bottom: 0.4rem;
+  font-size: 1.1rem;
+}
+#s-12 .s-a11y p {
+  max-width: 62rem;
+  color: var(--ink-2);
+}
+
+@media (min-width: 48rem) {
+  #s-12 .s-info {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (min-width: 60rem) {
+  #s-12 .s-head {
+    grid-template-areas: 'copy orb';
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 3rem;
+  }
+  #s-12 .s-demo {
+    grid-template-columns: 1.35fr 1fr;
+  }
+}
+
+/* ---- Active only: slow sheen (transform only) ---- */
+@media (prefers-reduced-motion: no-preference) {
+  #s-12.is-active .chrome-orb::before {
+    animation: s12-turn 28s linear infinite;
+  }
+}
+@keyframes s12-turn {
+  to {
+    transform: rotate(378deg);
+  }
+}
+
+/* ---- Matte switch, higher contrast, forced colours ---- */
+#s-12.is-matte .chrome-orb::before {
+  animation: none;
+  background: linear-gradient(160deg, #6d7686, #2a303b);
+}
+#s-12.is-matte .chrome-orb::after,
+#s-12.is-matte .capsule,
+#s-12.is-matte .head-copy::after {
+  display: none;
+}
+#s-12.is-matte .demo-card,
+#s-12.is-matte .demo-btn,
+#s-12.is-matte .show-css,
+#s-12.is-matte .copy-css {
+  background: var(--plate);
+  border-color: var(--edge);
+}
+#s-12.is-matte h2 {
+  background: none;
+  -webkit-text-fill-color: currentcolor;
+  color: #dfe5ef;
+}
+@media (prefers-contrast: more) {
+  #s-12 h2 {
+    background: none;
+    -webkit-text-fill-color: currentcolor;
+    color: #fff;
+  }
+  #s-12 .demo-card,
+  #s-12 .demo-btn,
+  #s-12 .show-css,
+  #s-12 .copy-css {
+    background: var(--plate);
+    border-color: #fff;
+  }
+  #s-12 .s-def,
+  #s-12 .demo-card p,
+  #s-12 .s-a11y p,
+  #s-12 .s-tags li,
+  #s-12 .demo-controls label {
+    color: #fff;
+  }
+}
+@media (forced-colors: active) {
+  #s-12 h2 {
+    background: none;
+    -webkit-text-fill-color: currentcolor;
+    color: CanvasText;
+  }
+  #s-12 .demo-card,
+  #s-12 .demo-controls,
+  #s-12 .s-info p,
+  #s-12 .s-a11y,
+  #s-12 .css-recipe {
+    border: 1px solid CanvasText;
+  }
+  #s-12 .demo-switch[aria-checked='true'] {
+    background: Highlight;
+  }
+}

@@ -13,7 +13,12 @@
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Crect width=%2716%27 height=%2716%27 rx=%273%27 fill=%27%232f5bd8%27/%3E%3C/svg%3E"
     />
-    <!-- FONTS: merged at integration (single Google Fonts link) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Bitter:wght@400;700&family=Bodoni+Moda:ital,wght@0,500;0,800;1,500&family=Bricolage+Grotesque:wght@600;700&family=Caveat:wght@700&family=DM+Sans:wght@400;500;700&family=Figtree:wght@400;600;700&family=Fraunces:wght@500;700&family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+Condensed:wght@400;600&family=Inter:wght@400;600&family=Libre+Franklin:wght@400;600&family=Manrope:wght@400;500;600;700;800&family=Michroma&family=Nunito:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Press+Start+2P&family=Righteous&family=Space+Grotesk:wght@500;700&family=Space+Mono:wght@400;700&family=VT323&display=swap"
+    />
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/01-liquid-glass.css" />
     <link rel="stylesheet" href="css/02-glassmorphism.css" />
@@ -1153,36 +1158,489 @@
 
       <!-- SECTION 11 START -->
       <section id="s-11" class="style-sec" data-style="11" aria-labelledby="h-11">
-        <h2 id="h-11">Spatial UI</h2>
-        <p>Placeholder for style 11.</p>
+        <div class="s-wrap">
+          <header class="s-head">
+            <h2 id="h-11">Spatial UI</h2>
+            <p class="s-def">
+              A web approximation of visionOS-style depth, with translucent glass windows floating
+              in layered space, gaze-like hover feedback and detached ornaments; "spatial UI on the
+              web" is not a formally defined category.
+            </p>
+          </header>
+          <div class="s-info">
+            <p class="s-best">
+              <strong>Best for:</strong> Product showcases and media-style dashboards over a rich,
+              controlled background.
+            </p>
+            <p class="s-avoid">
+              <strong>Avoid when:</strong> Text sits on busy or variable backgrounds, the UI is
+              critical, or devices are low-power.
+            </p>
+          </div>
+          <div class="s-demo" role="group" aria-label="Live demo" data-pointer>
+            <div class="stage">
+              <span class="orb orb-a" aria-hidden="true"></span>
+              <span class="orb orb-b" aria-hidden="true"></span>
+              <span class="pane" aria-hidden="true"></span>
+              <article class="demo-card">
+                <h3>Lakeside Session</h3>
+                <p>
+                  A 42 minute ambient mix (sample content). The window floats in the room, while its
+                  controls live on a separate ornament in front of it.
+                </p>
+                <button type="button" class="demo-btn">Play in the room</button>
+              </article>
+              <span class="grabber" aria-hidden="true"></span>
+              <div class="demo-controls">
+                <div class="ctl-row">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked="false"
+                    class="demo-switch"
+                    aria-labelledby="sw-11-l"
+                    data-section-class="is-flat"
+                  >
+                    <span aria-hidden="true" class="knob"></span>
+                  </button>
+                  <span id="sw-11-l">Flatten depth</span>
+                </div>
+                <div class="ctl-row">
+                  <label for="in-11">Room name</label>
+                  <input id="in-11" type="text" placeholder="Living room" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <ul class="s-tags" aria-label="Key ingredients">
+            <li>translateZ layers</li>
+            <li>perspective tilt</li>
+            <li>glass with rim light</li>
+            <li>ornament toolbar</li>
+            <li>gaze glow</li>
+          </ul>
+          <div class="s-recipe">
+            <button type="button" class="show-css" aria-expanded="false" aria-controls="css-11">
+              Show CSS
+            </button>
+            <div class="css-recipe" id="css-11" hidden>
+              <pre><code>.s-demo { perspective: 1100px; }
+      .stage {
+        transform-style: preserve-3d;
+        transform: rotateX(calc(var(--my, 0) * -5deg)) rotateY(calc(var(--mx, 0) * 7deg));
+      }
+      .demo-card {
+        background: rgb(18 22 46 / 0.86);
+        -webkit-backdrop-filter: blur(18px) saturate(150%);
+        backdrop-filter: blur(18px) saturate(150%);
+        border: 1px solid rgb(255 255 255 / 0.34);
+        box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.5), 0 30px 60px rgb(0 0 0 / 0.45);
+        transform: translateZ(30px);
+      }
+      .demo-controls { transform: translateZ(90px); }</code></pre>
+              <button type="button" class="copy-css">Copy CSS</button>
+              <span class="copy-status" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+          <aside class="s-a11y" aria-labelledby="a11y-11-h">
+            <h3 id="a11y-11-h">Accessibility note</h3>
+            <p>
+              <strong>Main risk:</strong> Text contrast on translucent layers shifts with whatever
+              sits behind them. <strong>Mitigation:</strong> Every panel keeps a mostly opaque dark
+              fill under its text, the tilt stops under reduced motion, and the Flatten depth switch
+              (also applied for reduced transparency) swaps glass for solid fills.
+            </p>
+          </aside>
+        </div>
       </section>
       <!-- SECTION 11 END -->
 
       <!-- SECTION 12 START -->
       <section id="s-12" class="style-sec" data-style="12" aria-labelledby="h-12">
-        <h2 id="h-12">Chrome / Liquid Metal</h2>
-        <p>Placeholder for style 12.</p>
+        <div class="s-wrap">
+          <header class="s-head">
+            <span class="chrome-orb" aria-hidden="true"></span>
+            <div class="head-copy">
+              <h2 id="h-12">Chrome / Liquid Metal</h2>
+              <p class="s-def">
+                Mirror-like metallic surfaces with sharp reflections and high-contrast specular
+                lighting, usually on dark backgrounds and used as an accent rather than a full-page
+                treatment.
+              </p>
+            </div>
+          </header>
+          <div class="s-info">
+            <p class="s-best">
+              <strong>Best for:</strong> Automotive, fashion, music and luxury-tech campaigns that
+              can feature one oversized metallic object or wordmark.
+            </p>
+            <p class="s-avoid">
+              <strong>Avoid when:</strong> Copy is dense or functional, such as explainers, prices,
+              deadlines, legal text and instructions.
+            </p>
+          </div>
+          <div class="s-demo" role="group" aria-label="Live demo">
+            <article class="demo-card">
+              <span class="capsule" aria-hidden="true"></span>
+              <h3>One object, one finish</h3>
+              <p>
+                Sample campaign card: a single polished form carries the page, while every word of
+                copy rests on a flat dark plate.
+              </p>
+              <button type="button" class="demo-btn">Request the lookbook</button>
+            </article>
+            <div class="demo-controls">
+              <button
+                type="button"
+                role="switch"
+                aria-checked="false"
+                class="demo-switch"
+                aria-labelledby="sw-12-l"
+                data-section-class="is-matte"
+              >
+                <span aria-hidden="true" class="knob"></span>
+              </button>
+              <span id="sw-12-l">Matte finish</span>
+              <label for="in-12">Engraving text</label>
+              <input id="in-12" type="text" placeholder="Initials, e.g. M.R." />
+            </div>
+          </div>
+          <ul class="s-tags" aria-label="Key ingredients">
+            <li>conic-gradient</li>
+            <li>hard colour stops</li>
+            <li>background-clip: text</li>
+            <li>inset highlights</li>
+            <li>solid text plates</li>
+          </ul>
+          <div class="s-recipe">
+            <button type="button" class="show-css" aria-expanded="false" aria-controls="css-12">
+              Show CSS
+            </button>
+            <div class="css-recipe" id="css-12" hidden>
+              <pre><code>.demo-card {
+        border: 2px solid transparent;
+        background:
+          linear-gradient(#0f1218, #0f1218) padding-box,
+          conic-gradient(from 30deg, #f4f7fc 0 8%, #8a94a6 8% 20%, #fff 20% 26%, #6d7686 26% 36%,
+            #c9d3e3 36% 52%, #f4f7fc 52% 58%, #6a7486 58% 72%, #d9e1ee 72% 86%, #f4f7fc 86%) border-box;
+        box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25), 0 1.5rem 3rem rgb(0 0 0 / 0.6);
+      }
+      h2 {
+        color: #dfe5ef; /* solid fallback */
+        background: linear-gradient(#fff, #dfe6f2 38%, #7e899b 50%, #6f7a8c 52%, #c8d1e0 62%, #f4f7fc);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }</code></pre>
+              <button type="button" class="copy-css">Copy CSS</button>
+              <span class="copy-status" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+          <aside class="s-a11y" aria-labelledby="a11y-12-h">
+            <h3 id="a11y-12-h">Accessibility note</h3>
+            <p>
+              <strong>Main risk:</strong> Reflective gradient lettering has uneven contrast and can
+              vanish in bright light. <strong>Mitigation:</strong> Chrome is limited to shapes and
+              the large heading, whose darkest stop measures 4.6:1 on the background, all body copy
+              sits on solid dark plates, and the sheen stays still under reduced motion.
+            </p>
+          </aside>
+        </div>
       </section>
       <!-- SECTION 12 END -->
 
       <!-- SECTION 13 START -->
       <section id="s-13" class="style-sec" data-style="13" aria-labelledby="h-13">
-        <h2 id="h-13">Y2K</h2>
-        <p>Placeholder for style 13.</p>
+        <div class="s-wrap">
+          <header class="s-head">
+            <span class="star star-a" aria-hidden="true"></span>
+            <span class="star star-b" aria-hidden="true"></span>
+            <span class="star star-c" aria-hidden="true"></span>
+            <h2 id="h-13">Y2K</h2>
+            <p class="s-def">
+              A glossy, optimistic look from the turn of the millennium, built from bubble shapes,
+              translucent plastic, metallic and iridescent gradients and chrome stars, and now
+              revived as a selective accent.
+            </p>
+          </header>
+          <div class="s-info">
+            <p class="s-best">
+              <strong>Best for:</strong> Fashion, beauty, music, social and youth brands, and launch
+              teasers that commit to one hero cue.
+            </p>
+            <p class="s-avoid">
+              <strong>Avoid when:</strong> Many effects would stack up, or reflective lettering
+              would land on dense, financial, health or legal copy.
+            </p>
+          </div>
+          <div class="s-demo" role="group" aria-label="Live demo">
+            <span class="bubble bubble-a" aria-hidden="true"></span>
+            <span class="bubble bubble-b" aria-hidden="true"></span>
+            <article class="demo-card">
+              <span class="star star-d" aria-hidden="true"></span>
+              <h3>Bubble Pop Drop</h3>
+              <p>
+                Sample product teaser: a gel-finish speaker in candy pink, three colours, one
+                weekend. Tap the gel button to get on the list.
+              </p>
+              <button type="button" class="demo-btn">Join the drop</button>
+            </article>
+            <div class="demo-controls">
+              <div class="ctl-row">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked="false"
+                  class="demo-switch"
+                  aria-labelledby="sw-13-l"
+                  data-section-class="is-calm"
+                >
+                  <span aria-hidden="true" class="knob"></span>
+                </button>
+                <span id="sw-13-l">Calm mode</span>
+              </div>
+              <div class="ctl-row ctl-field">
+                <label for="in-13">Your handle</label>
+                <input id="in-13" type="text" placeholder="@glitterbyte" />
+              </div>
+            </div>
+          </div>
+          <ul class="s-tags" aria-label="Key ingredients">
+            <li>gel gloss highlight</li>
+            <li>iridescent gradient</li>
+            <li>clip-path sparkles</li>
+            <li>candy-metal palette</li>
+            <li>dark ink on light plates</li>
+          </ul>
+          <div class="s-recipe">
+            <button type="button" class="show-css" aria-expanded="false" aria-controls="css-13">
+              Show CSS
+            </button>
+            <div class="css-recipe" id="css-13" hidden>
+              <pre><code>.demo-btn {
+        position: relative; isolation: isolate;
+        color: #2a0630; /* dark ink on a light gel */
+        border: 2px solid #fff;
+        border-radius: 999px;
+        background: linear-gradient(#ffa6e2, #ff4fb8 62%, #ff7fcf);
+        box-shadow: 0 0 0 2px #b0147f, inset 0 -6px 10px rgb(190 0 120 / 0.35);
+      }
+      .demo-btn::before { /* the gloss */
+        content: '';
+        position: absolute; inset: 6% 8% 50%; z-index: -1;
+        border-radius: 999px;
+        background: linear-gradient(rgb(255 255 255 / 0.85), rgb(255 255 255 / 0.15));
+      }
+      .star { clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%); }</code></pre>
+              <button type="button" class="copy-css">Copy CSS</button>
+              <span class="copy-status" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+          <aside class="s-a11y" aria-labelledby="a11y-13-h">
+            <h3 id="a11y-13-h">Accessibility note</h3>
+            <p>
+              <strong>Main risk:</strong> Gloss, chrome and low-opacity text over gradients lower
+              contrast, and meaning can slip into colour alone. <strong>Mitigation:</strong> Text is
+              dark ink on light, near-solid plates with the gloss kept as a decorative layer, the
+              switch shows a check mark as well as a colour change, and Calm mode removes the
+              twinkle and gloss.
+            </p>
+          </aside>
+        </div>
       </section>
       <!-- SECTION 13 END -->
 
       <!-- SECTION 14 START -->
       <section id="s-14" class="style-sec" data-style="14" aria-labelledby="h-14">
-        <h2 id="h-14">Retro / pixel</h2>
-        <p>Placeholder for style 14.</p>
+        <div class="s-wrap">
+          <header class="s-head">
+            <h2 id="h-14">Retro / pixel</h2>
+            <p class="s-def">
+              Interfaces that borrow 8-bit pixel art and 80s and 90s computing looks, such as bitmap
+              fonts, flat limited palettes and hard-edged borders, inside a modern layout.
+            </p>
+          </header>
+          <div class="s-info">
+            <p class="s-best">
+              <strong>Best for:</strong> Leisure, creative and relaxation products for audiences
+              that enjoy nostalgia and a fully committed look.
+            </p>
+            <p class="s-avoid">
+              <strong>Avoid when:</strong> The product is enterprise software, the audience expects
+              a sober tone, or the style would get in the way of the core task.
+            </p>
+          </div>
+          <div class="s-demo" role="group" aria-label="Live demo">
+            <article class="demo-card">
+              <div class="sprites" aria-hidden="true">
+                <span class="sprite heart"></span>
+                <span class="sprite heart"></span>
+                <span class="sprite heart"></span>
+                <span class="sprite coin"></span>
+              </div>
+              <h3>Cozy Farm Quest</h3>
+              <p>
+                Water twelve turnips before sunset. Sample quest, reward forty coins and one very
+                proud scarecrow.<span class="caret" aria-hidden="true"></span>
+              </p>
+              <button type="button" class="demo-btn">Accept quest</button>
+            </article>
+            <div class="demo-controls">
+              <div class="ctl-row">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked="false"
+                  class="demo-switch"
+                  aria-labelledby="sw-14-l"
+                  data-section-class="is-crisp"
+                >
+                  <span aria-hidden="true" class="knob"></span>
+                </button>
+                <span id="sw-14-l">Crisp mode (no scanlines)</span>
+              </div>
+              <div class="ctl-field">
+                <label for="in-14">Player name</label>
+                <input id="in-14" type="text" placeholder="TURNIP_KING" />
+              </div>
+            </div>
+          </div>
+          <ul class="s-tags" aria-label="Key ingredients">
+            <li>pixel font</li>
+            <li>stepped borders</li>
+            <li>image-rendering</li>
+            <li>steps() motion</li>
+            <li>soft scanlines</li>
+          </ul>
+          <div class="s-recipe">
+            <button type="button" class="show-css" aria-expanded="false" aria-controls="css-14">
+              Show CSS
+            </button>
+            <div class="css-recipe" id="css-14" hidden>
+              <pre><code>h2, h3, .demo-btn { font-family: 'Press Start 2P', monospace; }
+      p, label, input { font: 1.4rem/1.3 VT323, monospace; } /* legible body, rem so zoom works */
+      .demo-card {
+        --u: 0.25rem; /* one "pixel" */
+        background: repeating-linear-gradient(rgb(0 0 0 / 0.2) 0 1px, transparent 1px 3px), #1d1747;
+        box-shadow:
+          0 calc(var(--u) * -1) 0 #3be8ff, 0 var(--u) 0 #3be8ff,
+          calc(var(--u) * -1) 0 0 #3be8ff, var(--u) 0 0 #3be8ff,
+          calc(var(--u) * 2) calc(var(--u) * 2) 0 #0d0a1f;
+      }
+      .sprite { image-rendering: pixelated; width: 2.75rem; aspect-ratio: 11 / 10; }
+      .caret { animation: blink 1s steps(1) infinite; }</code></pre>
+              <button type="button" class="copy-css">Copy CSS</button>
+              <span class="copy-status" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+          <aside class="s-a11y" aria-labelledby="a11y-14-h">
+            <h3 id="a11y-14-h">Accessibility note</h3>
+            <p>
+              <strong>Main risk:</strong> Low-contrast retro palettes and small pixel fonts reduce
+              legibility, and fixed-pixel text can resist zoom. <strong>Mitigation:</strong> The
+              pixel font is limited to headings and short labels, body copy uses a larger legible
+              face, all text is sized in rem, contrast stays above 9:1, and blinking only runs when
+              motion is allowed.
+            </p>
+          </aside>
+        </div>
       </section>
       <!-- SECTION 14 END -->
 
       <!-- SECTION 15 START -->
       <section id="s-15" class="style-sec" data-style="15" aria-labelledby="h-15">
-        <h2 id="h-15">Editorial / Type-First</h2>
-        <p>Placeholder for style 15.</p>
+        <div class="s-wrap">
+          <header class="s-head">
+            <h2 id="h-15">Editorial / Type-First</h2>
+            <p class="s-def">
+              Large, expressive type is the main visual, set in magazine-style layouts of columns,
+              rules and captions, with images and controls in support.
+            </p>
+          </header>
+          <div class="s-info">
+            <p class="s-best">
+              <strong>Best for:</strong> Content that needs authored rhythm, a cultural viewpoint or
+              strong hierarchy.
+            </p>
+            <p class="s-avoid">
+              <strong>Avoid when:</strong> The screen is full of tiny supporting text, dense utility
+              controls or data tables.
+            </p>
+          </div>
+          <div class="s-demo" role="group" aria-label="Live demo">
+            <article class="demo-card">
+              <p class="kicker">Essay</p>
+              <h3>The Case for Bigger Headlines</h3>
+              <p class="byline">Sample byline, 6 minute read</p>
+              <p class="body">
+                A headline is the first paragraph most readers see and the last they forget. Give it
+                scale, give it room, and let the rules and columns around it do the quiet work of
+                structure.
+              </p>
+              <blockquote class="pull">
+                <p>Let the type be the picture.</p>
+              </blockquote>
+              <button type="button" class="demo-btn">Read the essay</button>
+            </article>
+            <div class="demo-controls">
+              <div class="ctl-row">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked="false"
+                  class="demo-switch"
+                  aria-labelledby="sw-15-l"
+                  data-section-class="is-guides"
+                >
+                  <span aria-hidden="true" class="knob"></span>
+                </button>
+                <span id="sw-15-l">Show column guides</span>
+              </div>
+              <div class="ctl-field">
+                <label for="in-15">Newsletter email</label>
+                <input id="in-15" type="text" placeholder="name@example.com" />
+              </div>
+            </div>
+          </div>
+          <ul class="s-tags" aria-label="Key ingredients">
+            <li>fluid display type</li>
+            <li>serif and grotesk pairing</li>
+            <li>hairline rules</li>
+            <li>pull quote</li>
+            <li>restrained colour</li>
+          </ul>
+          <div class="s-recipe">
+            <button type="button" class="show-css" aria-expanded="false" aria-controls="css-15">
+              Show CSS
+            </button>
+            <div class="css-recipe" id="css-15" hidden>
+              <pre><code>h2 {
+        font: 800 clamp(2.75rem, 1rem + 8vw, 8.5rem) / 0.95 'Bodoni Moda', serif;
+        letter-spacing: -0.03em;
+        overflow-wrap: anywhere; /* no overflow at 320px */
+      }
+      .s-head { border-top: 6px solid #17140f; border-bottom: 1px solid #17140f; }
+      .pull {
+        margin: 0;
+        padding-left: 1.25rem;
+        border-left: 4px solid #a3201a;
+        font: italic 500 1.9rem / 1.2 'Bodoni Moda', serif;
+      }
+      .body::first-letter { float: left; font: 800 4.2rem / 0.8 'Bodoni Moda', serif; padding-right: 0.5rem; }</code></pre>
+              <button type="button" class="copy-css">Copy CSS</button>
+              <span class="copy-status" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+          <aside class="s-a11y" aria-labelledby="a11y-15-h">
+            <h3 id="a11y-15-h">Accessibility note</h3>
+            <p>
+              <strong>Main risk:</strong> Viewport-based fluid sizing can stop text from growing at
+              200% zoom, and huge headings can overflow narrow screens.
+              <strong>Mitigation:</strong> Every clamp() here has a rem component and a generous
+              cap, headings wrap with overflow-wrap, and the layout was checked down to 320px.
+            </p>
+          </aside>
+        </div>
       </section>
       <!-- SECTION 15 END -->
 

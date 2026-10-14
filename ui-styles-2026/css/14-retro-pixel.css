@@ -1,1 +1,477 @@
-/* 14 Retro / pixel: everything scoped under #s-14. Owned by the style 14 agent. */
+/* 14 Retro / pixel: everything scoped under #s-14. Owned by the style 14 agent.
+
+   Contrast (computed, WCAG 2.x). Scanlines and vignette are painted INSIDE the panel background
+   (below the text) and only darken it, so they never lower text contrast.
+   - Body #f4f1ff on panel #1d1747:                    14.9:1
+   - Muted #c4bdf0 on panel #1d1747:                    9.4:1  (on page #14102b: 10.4:1)
+   - Heading #ffd23f on page #14102b (large text):     12.8:1
+   - Primary button text #14102b on #ffd23f:           12.8:1
+   - Secondary button text #14102b on #3be8ff:         12.5:1
+   - Pixel edge #3be8ff on panel #1d1747 (non-text):   11.2:1
+   - Switch / input edge #c4bdf0 on #0d0a1f:           11.0:1
+   - Placeholder #9a93d6 on input #0d0a1f:              7.0:1
+   - Focus ring #ffd23f on page or panel:              12.8:1 or better
+   Type: Press Start 2P only for headings and short labels (rem sizes); body is VT323 at 1.4rem. */
+
+#s-14 {
+  --u: 0.25rem; /* one "pixel" */
+  --bg: #14102b;
+  --panel: #1d1747;
+  --deep: #0d0a1f;
+  --ink: #f4f1ff;
+  --ink-2: #c4bdf0;
+  --cyan: #3be8ff;
+  --yellow: #ffd23f;
+  --pink: #ff4fa3;
+  --green: #5dff7a;
+  --pixel-font: 'Press Start 2P', 'Courier New', monospace;
+
+  position: relative;
+  padding: clamp(3rem, 8vw, 6rem) 1rem;
+  color: var(--ink);
+  background: var(--bg);
+  font-family: VT323, 'Courier New', ui-monospace, monospace;
+  font-size: 1.4rem;
+  line-height: 1.3;
+}
+
+/* Starfield: square 4px stars from one element */
+#s-14::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  width: var(--u);
+  height: var(--u);
+  pointer-events: none;
+  background: #fff;
+  box-shadow:
+    3rem 2rem 0 #fff,
+    9rem 6rem 0 #9a93d6,
+    14rem 1.5rem 0 #fff,
+    21rem 9rem 0 #9a93d6,
+    28rem 3rem 0 #fff,
+    36rem 7rem 0 #9a93d6,
+    44rem 2rem 0 #fff,
+    52rem 10rem 0 #fff,
+    60rem 4rem 0 #9a93d6,
+    68rem 8rem 0 #fff,
+    75rem 1rem 0 #9a93d6,
+    82rem 6rem 0 #fff,
+    90rem 3rem 0 #fff,
+    6rem 14rem 0 #9a93d6,
+    33rem 17rem 0 #fff,
+    64rem 15rem 0 #9a93d6,
+    86rem 13rem 0 #fff;
+}
+
+#s-14 .s-wrap {
+  display: grid;
+  gap: 2rem;
+  max-width: 66rem;
+  margin: 0 auto;
+}
+#s-14 p {
+  margin: 0;
+}
+#s-14 strong {
+  font-weight: 400;
+  color: var(--yellow);
+}
+
+/* ---- Pixel type: headings and short labels only ---- */
+#s-14 h2,
+#s-14 h3 {
+  margin: 0;
+  font-family: var(--pixel-font);
+  font-weight: 400;
+}
+#s-14 h2 {
+  font-size: clamp(1.5rem, 0.9rem + 3vw, 3.25rem);
+  line-height: 1.35;
+  color: var(--yellow);
+  text-shadow: var(--u) var(--u) 0 var(--pink);
+  overflow-wrap: anywhere;
+}
+#s-14 h3 {
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+#s-14 .s-def {
+  max-width: 44rem;
+  margin-top: 1.25rem;
+  font-size: 1.5rem;
+  color: var(--ink-2);
+}
+
+/* ---- Stepped pixel panels: borders drawn with box-shadow ---- */
+#s-14 .s-info p,
+#s-14 .demo-card,
+#s-14 .demo-controls,
+#s-14 .s-a11y,
+#s-14 .css-recipe {
+  --edge: var(--cyan);
+  margin: var(--u);
+  background:
+    repeating-linear-gradient(rgb(0 0 0 / 0.2) 0 1px, transparent 1px 3px),
+    radial-gradient(120% 100% at 50% 40%, transparent 60%, rgb(0 0 0 / 0.35)), var(--panel);
+  box-shadow:
+    0 calc(var(--u) * -1) 0 var(--edge),
+    0 var(--u) 0 var(--edge),
+    calc(var(--u) * -1) 0 0 var(--edge),
+    var(--u) 0 0 var(--edge),
+    calc(var(--u) * 2) calc(var(--u) * 2) 0 var(--deep);
+}
+#s-14 .s-info {
+  display: grid;
+  gap: 1.5rem;
+}
+#s-14 .s-info p {
+  padding: 1rem 1.25rem;
+}
+#s-14 .s-best {
+  --edge: var(--green);
+}
+#s-14 .s-avoid {
+  --edge: var(--pink);
+}
+#s-14 .s-a11y {
+  --edge: var(--yellow);
+  padding: 1.25rem 1.5rem;
+}
+#s-14 .s-a11y h3 {
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+#s-14 .s-a11y p {
+  max-width: 62rem;
+  color: var(--ink-2);
+}
+
+/* ---- Demo ---- */
+#s-14 .s-demo {
+  display: grid;
+  gap: 2rem;
+  align-items: start;
+}
+#s-14 .demo-card {
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
+  padding: 1.5rem;
+}
+#s-14 .demo-card p {
+  color: var(--ink-2);
+}
+#s-14 .sprites {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6rem;
+}
+#s-14 .sprite {
+  display: block;
+  width: 2.2rem;
+  aspect-ratio: 11 / 10;
+  background: center / 100% 100% no-repeat url('../assets/14-heart.png');
+  image-rendering: pixelated;
+}
+#s-14 .sprite.coin {
+  width: 2.4rem;
+  aspect-ratio: 1;
+  margin-left: 0.8rem;
+  background-image: url('../assets/14-coin.png');
+}
+#s-14 .caret {
+  display: inline-block;
+  width: 0.55em;
+  height: 0.9em;
+  margin-left: 0.3em;
+  vertical-align: -0.1em;
+  background: var(--yellow);
+}
+
+#s-14 .demo-controls {
+  --edge: var(--cyan);
+  display: grid;
+  gap: 1.25rem;
+  padding: 1.5rem;
+}
+#s-14 .ctl-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: 2.75rem;
+}
+#s-14 .ctl-field {
+  display: grid;
+  gap: 0.5rem;
+}
+#s-14 label {
+  color: var(--ink-2);
+}
+
+/* ---- Controls ---- */
+#s-14 :is(button, input):focus-visible {
+  outline: 4px solid var(--yellow);
+  outline-offset: 4px;
+}
+
+#s-14 .demo-btn,
+#s-14 .show-css,
+#s-14 .copy-css {
+  min-height: 2.9rem;
+  padding: 0.8rem 1.25rem;
+  border: 0;
+  border-radius: 0;
+  background: var(--yellow);
+  color: #14102b;
+  font-family: var(--pixel-font);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  cursor: pointer;
+  box-shadow:
+    0 calc(var(--u) * -1) 0 var(--deep),
+    0 var(--u) 0 var(--deep),
+    calc(var(--u) * -1) 0 0 var(--deep),
+    var(--u) 0 0 var(--deep),
+    inset 0 var(--u) 0 #fff3b0,
+    inset 0 calc(var(--u) * -1) 0 #c78a00,
+    0 calc(var(--u) * 2) 0 var(--u) var(--deep);
+}
+#s-14 .show-css,
+#s-14 .copy-css {
+  background: var(--cyan);
+  font-size: 0.75rem;
+  box-shadow:
+    0 calc(var(--u) * -1) 0 var(--deep),
+    0 var(--u) 0 var(--deep),
+    calc(var(--u) * -1) 0 0 var(--deep),
+    var(--u) 0 0 var(--deep),
+    inset 0 var(--u) 0 #b9f6ff,
+    inset 0 calc(var(--u) * -1) 0 #0e8fa6,
+    0 calc(var(--u) * 2) 0 var(--u) var(--deep);
+}
+#s-14 .demo-btn:hover {
+  background: #ffe27a;
+  transform: translateY(calc(var(--u) * -0.5));
+}
+#s-14 .show-css:hover,
+#s-14 .copy-css:hover {
+  background: #8ff1ff;
+  transform: translateY(calc(var(--u) * -0.5));
+}
+#s-14 .demo-btn:active,
+#s-14 .show-css:active,
+#s-14 .copy-css:active {
+  transform: translateY(var(--u));
+  box-shadow:
+    0 calc(var(--u) * -1) 0 var(--deep),
+    0 var(--u) 0 var(--deep),
+    calc(var(--u) * -1) 0 0 var(--deep),
+    var(--u) 0 0 var(--deep),
+    inset 0 var(--u) 0 rgb(0 0 0 / 0.25);
+}
+
+#s-14 .demo-switch {
+  --edge: #c4bdf0;
+  position: relative;
+  flex: none;
+  width: 4rem;
+  height: 2rem;
+  margin: var(--u);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--deep);
+  cursor: pointer;
+  box-shadow:
+    0 calc(var(--u) * -1) 0 var(--edge),
+    0 var(--u) 0 var(--edge),
+    calc(var(--u) * -1) 0 0 var(--edge),
+    var(--u) 0 0 var(--edge);
+}
+#s-14 .demo-switch::after {
+  content: '';
+  position: absolute;
+  inset: -0.5rem -0.4rem;
+}
+#s-14 .demo-switch .knob {
+  position: absolute;
+  top: var(--u);
+  left: var(--u);
+  width: 1.5rem;
+  height: 1.5rem;
+  background: var(--deep);
+  box-shadow: inset 0 0 0 var(--u) var(--edge);
+}
+#s-14 .demo-switch:hover {
+  --edge: #fff;
+}
+#s-14 .demo-switch[aria-checked='true'] {
+  --edge: var(--green);
+}
+#s-14 .demo-switch[aria-checked='true'] .knob {
+  background: var(--green);
+  box-shadow: inset 0 0 0 var(--u) #14102b;
+  transform: translateX(2rem);
+}
+
+#s-14 input[type='text'] {
+  --edge: #c4bdf0;
+  min-height: 2.9rem;
+  margin: var(--u);
+  padding: 0.4rem 0.9rem;
+  border: 0;
+  border-radius: 0;
+  background: var(--deep);
+  color: #fff;
+  caret-color: var(--yellow);
+  font: inherit;
+  box-shadow:
+    0 calc(var(--u) * -1) 0 var(--edge),
+    0 var(--u) 0 var(--edge),
+    calc(var(--u) * -1) 0 0 var(--edge),
+    var(--u) 0 0 var(--edge);
+}
+#s-14 input[type='text']::placeholder {
+  color: #9a93d6;
+  opacity: 1;
+}
+#s-14 input[type='text']:hover {
+  --edge: #fff;
+}
+
+/* ---- Lower blocks ---- */
+#s-14 .s-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+#s-14 .s-tags li {
+  margin: var(--u);
+  padding: 0.5rem 0.8rem;
+  background: var(--panel);
+  box-shadow:
+    0 calc(var(--u) * -1) 0 var(--pink),
+    0 var(--u) 0 var(--pink),
+    calc(var(--u) * -1) 0 0 var(--pink),
+    var(--u) 0 0 var(--pink);
+  font-family: var(--pixel-font);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--ink);
+}
+#s-14 .s-recipe {
+  display: grid;
+  gap: 1.25rem;
+  justify-items: start;
+}
+#s-14 .show-css {
+  margin: var(--u);
+}
+#s-14 .css-recipe {
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
+  width: calc(100% - var(--u) * 2);
+  padding: 1.25rem;
+}
+#s-14 .css-recipe[hidden] {
+  display: none;
+}
+#s-14 .css-recipe pre {
+  width: 100%;
+  margin: 0;
+  overflow-x: auto;
+}
+#s-14 .css-recipe code {
+  font-family: VT323, 'Courier New', monospace;
+  font-size: 1.25rem;
+  line-height: 1.3;
+  color: var(--ink);
+}
+
+@media (min-width: 48rem) {
+  #s-14 .s-info {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (min-width: 60rem) {
+  #s-14 .s-demo {
+    grid-template-columns: 1.4fr 1fr;
+  }
+}
+
+/* ---- Active only: stepped motion, never smooth ---- */
+@media (prefers-reduced-motion: no-preference) {
+  #s-14.is-active .caret {
+    animation: s14-blink 1s steps(1) infinite;
+  }
+  #s-14.is-active .sprite.coin {
+    animation: s14-hop 0.8s steps(2) infinite alternate;
+  }
+  #s-14.is-active::before {
+    animation: s14-twinkle 1.6s steps(2) infinite;
+  }
+  #s-14 .demo-btn,
+  #s-14 .show-css,
+  #s-14 .copy-css {
+    transition: transform 0.1s steps(2);
+  }
+  #s-14 .demo-switch .knob {
+    transition: transform 0.2s steps(4);
+  }
+}
+@keyframes s14-blink {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes s14-hop {
+  to {
+    transform: translateY(calc(var(--u) * -2));
+  }
+}
+@keyframes s14-twinkle {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+/* ---- Crisp mode (no scanlines or vignette), higher contrast, forced colours ---- */
+#s-14.is-crisp .s-info p,
+#s-14.is-crisp .demo-card,
+#s-14.is-crisp .demo-controls,
+#s-14.is-crisp .s-a11y,
+#s-14.is-crisp .css-recipe {
+  background: var(--panel);
+}
+@media (prefers-contrast: more) {
+  #s-14 {
+    --ink-2: #ffffff;
+  }
+  #s-14 .s-info p,
+  #s-14 .demo-card,
+  #s-14 .demo-controls,
+  #s-14 .s-a11y,
+  #s-14 .css-recipe {
+    background: var(--panel);
+    --edge: #fff;
+  }
+}
+@media (forced-colors: active) {
+  #s-14 .s-info p,
+  #s-14 .demo-card,
+  #s-14 .demo-controls,
+  #s-14 .s-a11y,
+  #s-14 .css-recipe {
+    border: 2px solid CanvasText;
+  }
+  #s-14 .demo-switch[aria-checked='true'] .knob {
+    background: Highlight;
+  }
+}

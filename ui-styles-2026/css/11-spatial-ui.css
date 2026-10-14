@@ -1,1 +1,491 @@
-/* 11 Spatial UI: everything scoped under #s-11. Owned by the style 11 agent. */
+/* 11 Spatial UI: everything scoped under #s-11. Owned by the style 11 agent.
+
+   Contrast (computed, WCAG 2.x). Panels are rgb(18 22 46 / .86) over the room; worst case is the
+   brightest orb colour (#6f8dff, about 0.28 luminance) behind a panel, which blends to roughly #2c3355.
+   - Body text #f4f6ff on worst-case panel (#2c3355):   about 10.3:1
+   - Muted text #cdd3ee on worst-case panel:             about 7.9:1
+   - Heading #f4f6ff on lightest room colour (#6a4655):  about 7.4:1
+   - Muted #cdd3ee on lightest room colour (#6a4655):    about 5.5:1
+   - Button text #10142a on #dfe5ff (lowest gradient stop): about 14.4:1
+   - Placeholder #b9c1e0 on input fill over panel (#3a4163): about 5.6:1
+   - Focus ring #ffd27a on room / panel:                 about 9:1 or better
+   Depth tilt only reacts to --mx/--my, which main.js never sets under reduced motion. */
+
+#s-11 {
+  --ink: #f4f6ff;
+  --ink-2: #cdd3ee;
+  --plate: rgb(18 22 46 / 0.94);
+  --plate-solid: #14182f;
+  --rim: rgb(255 255 255 / 0.34);
+  --focus: #ffd27a;
+  --glow: 150 190 255;
+
+  position: relative;
+  padding: clamp(3rem, 8vw, 6rem) 1rem;
+  color: var(--ink);
+  font-family:
+    Figtree,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  line-height: 1.55;
+  background:
+    radial-gradient(60% 50% at 18% 12%, #3b3a78 0%, transparent 70%),
+    radial-gradient(50% 45% at 88% 28%, #4b3563 0%, transparent 70%),
+    radial-gradient(75% 42% at 50% 108%, #6a4655 0%, transparent 70%),
+    linear-gradient(#0d1226, #161a38 60%, #231c3a);
+}
+
+/* Light shafts through an imagined window: flat stripes, no blur needed */
+#s-11::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 36%,
+    rgb(255 214 170 / 0.07) 36% 50%,
+    transparent 50% 57%,
+    rgb(255 214 170 / 0.05) 57% 66%,
+    transparent 66%
+  );
+}
+
+#s-11 .s-wrap {
+  display: grid;
+  gap: 1.75rem;
+  max-width: 68rem;
+  margin: 0 auto;
+}
+
+#s-11 h2,
+#s-11 h3 {
+  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+#s-11 h2 {
+  font-size: clamp(2.5rem, 1.6rem + 4vw, 4.5rem);
+  font-weight: 700;
+}
+#s-11 h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+#s-11 p {
+  margin: 0;
+}
+#s-11 .s-def {
+  max-width: 46rem;
+  margin-top: 1rem;
+  font-size: 1.15rem;
+  color: var(--ink-2);
+}
+
+/* ---- Glass panels (shared look) ---- */
+#s-11 .s-info p,
+#s-11 .demo-card,
+#s-11 .demo-controls,
+#s-11 .s-a11y,
+#s-11 .css-recipe {
+  background: linear-gradient(160deg, rgb(255 255 255 / 0.1), transparent 40%), var(--plate);
+  border: 1px solid var(--rim);
+  border-radius: 1.5rem;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.5),
+    inset 0 -1px 0 rgb(255 255 255 / 0.08),
+    0 18px 40px rgb(3 5 18 / 0.4);
+}
+#s-11 .s-info {
+  display: grid;
+  gap: 1rem;
+}
+#s-11 .s-info p {
+  padding: 1rem 1.25rem;
+}
+#s-11 strong {
+  font-weight: 700;
+  color: #fff;
+}
+
+/* ---- Demo stage ---- */
+#s-11 .s-demo {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 3rem 1rem 4rem;
+  perspective: 1100px;
+  perspective-origin: 50% 35%;
+}
+#s-11 .stage {
+  position: relative;
+  width: min(100%, 36rem);
+  transform-style: preserve-3d;
+  transform: rotateX(calc(2deg + var(--my, 0) * -5deg)) rotateY(calc(-4deg + var(--mx, 0) * 7deg));
+}
+/* Soft contact shadow on an imagined floor */
+#s-11 .stage::after {
+  content: '';
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  bottom: -2.75rem;
+  height: 2.5rem;
+  background: radial-gradient(closest-side, rgb(0 0 0 / 0.5), transparent);
+  transform: translateZ(-60px);
+}
+
+#s-11 .orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle at 32% 28%, #fff 0%, var(--orb) 38%, #23285a 100%);
+  box-shadow: inset 0 -0.6rem 1.2rem rgb(0 0 0 / 0.3);
+  transform: translateZ(-110px);
+}
+#s-11 .orb-a {
+  --orb: #6f8dff;
+  width: 9rem;
+  height: 9rem;
+  left: -3.5rem;
+  top: -2.5rem;
+}
+#s-11 .orb-b {
+  --orb: #d27ab0;
+  width: 6rem;
+  height: 6rem;
+  right: -2rem;
+  bottom: 2rem;
+  transform: translateZ(-60px);
+}
+
+/* Back window: pure depth, no content */
+#s-11 .pane {
+  position: absolute;
+  left: -9%;
+  right: 14%;
+  top: -2.5rem;
+  bottom: 38%;
+  border: 1px solid rgb(255 255 255 / 0.22);
+  border-radius: 1.75rem;
+  background: linear-gradient(150deg, rgb(255 255 255 / 0.14), rgb(255 255 255 / 0.03));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3);
+  transform: translateZ(-50px);
+}
+
+#s-11 .demo-card {
+  position: relative;
+  display: grid;
+  gap: 0.9rem;
+  justify-items: start;
+  padding: 1.75rem;
+  border-radius: 1.75rem;
+  transform: translateZ(30px);
+  overflow: hidden;
+}
+/* Gaze glow: follows the pointer, sits centred when there is none */
+#s-11 .demo-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at calc(50% + var(--mx, 0) * 45%) calc(35% + var(--my, 0) * 45%),
+    rgb(var(--glow) / 0.2),
+    transparent 55%
+  );
+}
+#s-11 .demo-card > * {
+  position: relative;
+}
+#s-11 .demo-card p {
+  color: var(--ink-2);
+}
+
+#s-11 .grabber {
+  display: block;
+  width: 5rem;
+  height: 0.4rem;
+  margin: 0.8rem auto 0;
+  border-radius: 1rem;
+  background: rgb(255 255 255 / 0.55);
+  transform: translateZ(30px);
+}
+
+/* Ornament: a detached control bar on a plane in front of the window */
+#s-11 .demo-controls {
+  position: relative;
+  display: grid;
+  gap: 0.75rem;
+  width: min(100%, 27rem);
+  margin: -0.4rem auto 0;
+  padding: 1rem 1.25rem;
+  border-radius: 1.75rem;
+  transform: translateZ(90px);
+}
+#s-11 .ctl-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-height: 2.75rem;
+}
+#s-11 .ctl-row label {
+  flex: none;
+  color: var(--ink-2);
+}
+#s-11 .ctl-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---- Controls ---- */
+#s-11 :is(button, input):focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+#s-11 .demo-btn,
+#s-11 .show-css,
+#s-11 .copy-css {
+  min-height: 2.75rem;
+  padding: 0.5rem 1.4rem;
+  border: 1px solid rgb(255 255 255 / 0.7);
+  border-radius: 999px;
+  background: linear-gradient(#ffffff, #dfe5ff);
+  color: #10142a;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgb(3 5 18 / 0.4);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+#s-11 .demo-btn:hover,
+#s-11 .show-css:hover,
+#s-11 .copy-css:hover {
+  box-shadow:
+    0 0 0 0.35rem rgb(var(--glow) / 0.28),
+    0 0 2rem rgb(var(--glow) / 0.7);
+}
+#s-11 .demo-btn:active,
+#s-11 .show-css:active,
+#s-11 .copy-css:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 6px rgb(3 5 18 / 0.5);
+}
+
+#s-11 .demo-switch {
+  position: relative;
+  flex: none;
+  width: 3.5rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid rgb(255 255 255 / 0.75);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.14);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+/* extends the hit area to 44px without changing the look */
+#s-11 .demo-switch::after {
+  content: '';
+  position: absolute;
+  inset: -0.45rem -0.3rem;
+}
+#s-11 .demo-switch .knob {
+  position: absolute;
+  top: 50%;
+  left: 0.25rem;
+  width: 1.4rem;
+  height: 1.4rem;
+  margin-top: -0.7rem;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.5);
+  transition:
+    transform 0.2s,
+    background-color 0.2s;
+}
+#s-11 .demo-switch:hover {
+  background: rgb(var(--glow) / 0.4);
+}
+#s-11 .demo-switch[aria-checked='true'] {
+  background: #9dbcff;
+}
+#s-11 .demo-switch[aria-checked='true'] .knob {
+  background: #10142a;
+  transform: translateX(1.5rem);
+}
+
+#s-11 input[type='text'] {
+  min-height: 2.75rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgb(255 255 255 / 0.55);
+  border-radius: 1rem;
+  background: rgb(255 255 255 / 0.1);
+  color: var(--ink);
+  font: inherit;
+}
+#s-11 input[type='text']::placeholder {
+  color: #b9c1e0;
+  opacity: 1;
+}
+#s-11 input[type='text']:hover {
+  border-color: #fff;
+  background: rgb(255 255 255 / 0.16);
+}
+
+/* ---- Lower blocks ---- */
+#s-11 .s-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+#s-11 .s-tags li {
+  padding: 0.35rem 0.95rem;
+  border: 1px solid var(--rim);
+  border-radius: 999px;
+  background: var(--plate);
+  font-size: 0.9rem;
+  color: var(--ink-2);
+}
+#s-11 .s-recipe {
+  display: grid;
+  gap: 0.9rem;
+  justify-items: start;
+}
+#s-11 .css-recipe {
+  display: grid;
+  gap: 0.8rem;
+  justify-items: start;
+  width: 100%;
+  padding: 1.1rem 1.25rem;
+}
+#s-11 .css-recipe[hidden] {
+  display: none;
+}
+#s-11 .css-recipe pre {
+  width: 100%;
+  margin: 0;
+  overflow-x: auto;
+}
+#s-11 .css-recipe code {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: #dfe6ff;
+}
+#s-11 .s-a11y {
+  padding: 1.25rem 1.5rem;
+}
+#s-11 .s-a11y h3 {
+  margin-bottom: 0.5rem;
+  font-size: 1.15rem;
+}
+#s-11 .s-a11y p {
+  max-width: 62rem;
+  color: var(--ink-2);
+}
+
+@media (min-width: 48rem) {
+  #s-11 .s-info {
+    grid-template-columns: 1fr 1fr;
+  }
+  #s-11 .s-demo {
+    padding: 4rem 0 5rem;
+  }
+}
+
+/* ---- Active only: real glass and pointer easing ---- */
+#s-11.is-active .s-info p,
+#s-11.is-active .demo-card,
+#s-11.is-active .demo-controls,
+#s-11.is-active .s-a11y {
+  --plate: rgb(18 22 46 / 0.86);
+}
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  #s-11.is-active .demo-card,
+  #s-11.is-active .demo-controls {
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    backdrop-filter: blur(18px) saturate(150%);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  #s-11.is-active .stage {
+    transition: transform 0.25s ease-out;
+  }
+  #s-11.is-active .orb-a {
+    animation: s11-float 9s ease-in-out infinite alternate;
+  }
+  #s-11.is-active .orb-b {
+    animation: s11-float 7s ease-in-out -3s infinite alternate;
+  }
+}
+@keyframes s11-float {
+  to {
+    transform: translateZ(-90px) translateY(-0.9rem);
+  }
+}
+
+/* ---- Flatten depth switch, reduced transparency, higher contrast ---- */
+#s-11.is-flat .stage,
+#s-11.is-flat .demo-card,
+#s-11.is-flat .demo-controls,
+#s-11.is-flat .grabber,
+#s-11.is-flat .pane,
+#s-11.is-flat .orb {
+  transform: none;
+  animation: none;
+}
+#s-11.is-flat .demo-card,
+#s-11.is-flat .demo-controls,
+#s-11.is-flat .s-info p,
+#s-11.is-flat .s-a11y {
+  --plate: var(--plate-solid);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+#s-11.is-flat .demo-card::before {
+  display: none;
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  #s-11 .s-info p,
+  #s-11 .demo-card,
+  #s-11 .demo-controls,
+  #s-11 .s-a11y,
+  #s-11 .css-recipe,
+  #s-11 .s-tags li {
+    --plate: var(--plate-solid);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border-color: #fff;
+  }
+}
+@media (prefers-contrast: more) {
+  #s-11 .s-def,
+  #s-11 .demo-card p,
+  #s-11 .ctl-row label,
+  #s-11 .s-a11y p,
+  #s-11 .s-tags li {
+    color: #fff;
+  }
+}
+@media (forced-colors: active) {
+  #s-11 .demo-card,
+  #s-11 .demo-controls,
+  #s-11 .s-info p,
+  #s-11 .s-a11y,
+  #s-11 .css-recipe {
+    border: 1px solid CanvasText;
+  }
+  #s-11 .demo-switch[aria-checked='true'] {
+    background: Highlight;
+  }
+}

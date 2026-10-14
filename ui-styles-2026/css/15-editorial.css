@@ -1,1 +1,421 @@
-/* 15 Editorial / Type-First: everything scoped under #s-15. Owned by the style 15 agent. */
+/* 15 Editorial / Type-First: everything scoped under #s-15. Owned by the style 15 agent.
+
+   Contrast (computed, WCAG 2.x). Colour is restrained: ink, paper and one red accent.
+   - Ink #17140f on paper #f4efe6:                16.0:1
+   - Ink #17140f on card #fffdf8:                 18.1:1
+   - Muted #5a5348 on paper #f4efe6:               6.6:1 (on card: 7.5:1)
+   - Accent #a3201a on paper:                      6.6:1 (on card: 7.4:1)
+   - Placeholder #6b6457 on card #fffdf8:          5.8:1
+   - Paper #f4efe6 on ink band #17140f:           16.0:1 (muted #d9d2c3 on ink: 12.2:1)
+   - Button text #fffdf8 on ink #17140f:          18.1:1 (hover: on accent #a3201a, 7.4:1)
+   - Focus ring #a3201a on paper: 6.6:1, on the ink band the ring is #f4efe6 (16:1)
+   Fluid type: every clamp() has a rem component, so browser zoom keeps scaling the text. */
+
+#s-15 {
+  --paper: #f4efe6;
+  --card: #fffdf8;
+  --ink: #17140f;
+  --ink-2: #5a5348;
+  --accent: #a3201a;
+  --rule: #17140f;
+  --serif: 'Bodoni Moda', 'Didot', 'Bodoni 72', 'Times New Roman', serif;
+  --sans: 'Libre Franklin', 'Helvetica Neue', Arial, sans-serif;
+
+  position: relative;
+  padding: clamp(2.5rem, 7vw, 5rem) 1rem;
+  color: var(--ink);
+  background: var(--paper);
+  font-family: var(--sans);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+
+#s-15 .s-wrap {
+  position: relative;
+  display: grid;
+  gap: clamp(1.75rem, 4vw, 3rem);
+  max-width: 76rem;
+  margin: 0 auto;
+}
+#s-15 p {
+  margin: 0;
+}
+
+/* ---- Masthead ---- */
+#s-15 .s-head {
+  padding: 1.25rem 0 1.75rem;
+  border-top: 6px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+#s-15 h2 {
+  margin: 0;
+  max-width: 14ch;
+  font-family: var(--serif);
+  font-weight: 800;
+  font-size: clamp(2.75rem, 1rem + 8vw, 8.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  text-wrap: balance;
+}
+#s-15 .s-def {
+  max-width: 34rem;
+  margin-top: 1.5rem;
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(1.25rem, 1rem + 0.9vw, 1.7rem);
+  line-height: 1.3;
+  color: var(--ink-2);
+}
+
+/* ---- Info: two columns split by a hairline ---- */
+#s-15 .s-info {
+  display: grid;
+  gap: 1.25rem;
+}
+#s-15 .s-info p {
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--rule);
+  font-size: 1.1rem;
+}
+#s-15 strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* ---- Demo: article teaser ---- */
+#s-15 .s-demo {
+  display: grid;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+#s-15 .demo-card {
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
+  align-content: start;
+  padding: 1.75rem 0;
+}
+#s-15 .kicker {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+#s-15 h3 {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 800;
+  font-size: clamp(2rem, 1.2rem + 3vw, 3.6rem);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+#s-15 .byline {
+  font-size: 0.9rem;
+  color: var(--ink-2);
+}
+#s-15 .demo-card .body {
+  max-width: 38rem;
+  font-size: 1.1rem;
+}
+#s-15 .demo-card .body::first-letter {
+  float: left;
+  padding: 0.2rem 0.55rem 0 0;
+  font-family: var(--serif);
+  font-weight: 800;
+  font-size: 4.2rem;
+  line-height: 0.8;
+  color: var(--accent);
+}
+#s-15 .pull {
+  margin: 0.5rem 0;
+  padding: 0.25rem 0 0.25rem 1.25rem;
+  border-left: 4px solid var(--accent);
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(1.5rem, 1rem + 1.6vw, 2.2rem);
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+#s-15 .demo-controls {
+  display: grid;
+  gap: 1.5rem;
+  align-content: start;
+  padding: 1.75rem 0;
+  border-top: 1px solid var(--rule);
+}
+#s-15 .ctl-row {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  min-height: 2.75rem;
+}
+#s-15 .ctl-field {
+  display: grid;
+  gap: 0.3rem;
+}
+#s-15 label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* ---- Controls ---- */
+#s-15 :is(button, input):focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+#s-15 .demo-btn,
+#s-15 .show-css,
+#s-15 .copy-css {
+  min-height: 2.9rem;
+  padding: 0.6rem 1.4rem;
+  border: 2px solid var(--ink);
+  border-radius: 0;
+  background: var(--ink);
+  color: var(--card);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+}
+#s-15 .show-css,
+#s-15 .copy-css {
+  background: transparent;
+  color: var(--ink);
+}
+#s-15 .demo-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+#s-15 .show-css:hover,
+#s-15 .copy-css:hover {
+  background: var(--ink);
+  color: var(--card);
+}
+#s-15 .demo-btn:active,
+#s-15 .show-css:active,
+#s-15 .copy-css:active {
+  transform: translateY(1px);
+}
+
+#s-15 .demo-switch {
+  position: relative;
+  flex: none;
+  width: 3.5rem;
+  height: 1.9rem;
+  padding: 0;
+  border: 2px solid var(--ink);
+  border-radius: 0;
+  background: var(--card);
+  cursor: pointer;
+}
+#s-15 .demo-switch::after {
+  content: '';
+  position: absolute;
+  inset: -0.5rem -0.3rem;
+}
+#s-15 .demo-switch .knob {
+  position: absolute;
+  top: 0.2rem;
+  left: 0.2rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  background: var(--ink);
+  transition: transform 0.2s;
+}
+#s-15 .demo-switch:hover {
+  background: #ece5d6;
+}
+#s-15 .demo-switch[aria-checked='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+#s-15 .demo-switch[aria-checked='true'] .knob {
+  background: var(--card);
+  transform: translateX(1.6rem);
+}
+
+#s-15 input[type='text'] {
+  min-height: 2.9rem;
+  padding: 0.5rem 0;
+  border: 0;
+  border-bottom: 2px solid var(--ink);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-family: var(--serif);
+  font-size: 1.25rem;
+}
+#s-15 input[type='text']::placeholder {
+  color: #6b6457;
+  font-style: italic;
+  opacity: 1;
+}
+#s-15 input[type='text']:hover {
+  background: #ece5d6;
+}
+
+/* ---- Lower blocks ---- */
+#s-15 .s-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+#s-15 .s-tags li {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.15rem;
+  color: var(--ink-2);
+}
+#s-15 .s-tags li + li::before {
+  content: '/';
+  margin-right: 1.5rem;
+  color: var(--accent);
+  font-style: normal;
+}
+#s-15 .s-recipe {
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
+}
+#s-15 .css-recipe {
+  display: grid;
+  gap: 0.9rem;
+  justify-items: start;
+  width: 100%;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--rule);
+  background: var(--card);
+}
+#s-15 .css-recipe[hidden] {
+  display: none;
+}
+#s-15 .css-recipe pre {
+  width: 100%;
+  margin: 0;
+  overflow-x: auto;
+}
+#s-15 .css-recipe code {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+#s-15 .s-a11y {
+  padding: 1.5rem;
+  background: var(--ink);
+  color: var(--paper);
+}
+#s-15 .s-a11y h3 {
+  margin-bottom: 0.6rem;
+  font-family: var(--serif);
+  font-size: 1.6rem;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+#s-15 .s-a11y p {
+  max-width: 60rem;
+  color: #d9d2c3;
+}
+#s-15 .s-a11y strong {
+  display: inline;
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--paper);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+@media (min-width: 48rem) {
+  #s-15 .s-info {
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+  }
+}
+@media (min-width: 60rem) {
+  #s-15 .s-demo {
+    grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr);
+  }
+  #s-15 .demo-card {
+    padding-right: 2.5rem;
+  }
+  #s-15 .demo-controls {
+    padding: 1.75rem 0 1.75rem 2.5rem;
+    border-top: 0;
+    border-left: 1px solid var(--rule);
+  }
+}
+@media (min-width: 72rem) {
+  #s-15 .demo-card {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    column-gap: 2.5rem;
+  }
+  #s-15 .kicker,
+  #s-15 h3,
+  #s-15 .byline,
+  #s-15 .demo-btn {
+    grid-column: 1 / -1;
+  }
+  #s-15 .demo-card .body {
+    grid-column: 1;
+  }
+  #s-15 .pull {
+    grid-column: 2;
+    margin: 0;
+    align-self: start;
+  }
+}
+
+/* ---- Column guides switch ---- */
+#s-15.is-guides .s-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    90deg,
+    rgb(163 32 26 / 0.1) 0 calc((100% - 11 * 1.25rem) / 12),
+    transparent calc((100% - 11 * 1.25rem) / 12) calc((100% - 11 * 1.25rem) / 12 + 1.25rem)
+  );
+}
+
+@media (prefers-contrast: more) {
+  #s-15 {
+    --ink-2: #17140f;
+  }
+  #s-15 .s-a11y p {
+    color: #fff;
+  }
+}
+@media (forced-colors: active) {
+  #s-15 .demo-switch[aria-checked='true'] {
+    background: Highlight;
+  }
+  #s-15 .s-a11y {
+    border: 1px solid CanvasText;
+  }
+}
