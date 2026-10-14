@@ -14,13 +14,13 @@
     "verify:console": "node scripts/verify/console.mjs"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.10.0",
-    "html-validate": "^9.0.0",
+    "@axe-core/playwright": "^4.13.0",
+    "html-validate": "^11.0.0",
     "http-server": "^14.1.1",
-    "lighthouse": "^12.0.0",
+    "lighthouse": "^13.0.0",
     "playwright": "^1.56.1",
     "prettier": "^3.3.0",
-    "stylelint": "^16.0.0",
-    "stylelint-config-standard": "^36.0.0"
+    "stylelint": "^17.0.0",
+    "stylelint-config-standard": "^40.0.0"
   }
 }
