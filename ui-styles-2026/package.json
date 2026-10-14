@@ -1,0 +1,26 @@
+{
+  "name": "ui-styles-2026",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Single-page showcase of 20 web UI styles. The site itself has no build step; these are verification tools only.",
+  "scripts": {
+    "serve": "http-server . -p 4173 -c-1 --silent",
+    "lint:css": "stylelint \"css/*.css\"",
+    "lint:html": "html-validate index.html",
+    "format:check": "prettier --check index.html css js scripts",
+    "verify:shots": "node scripts/verify/shots.mjs",
+    "verify:axe": "node scripts/verify/axe.mjs",
+    "verify:keyboard": "node scripts/verify/keyboard.mjs",
+    "verify:console": "node scripts/verify/console.mjs"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.0",
+    "html-validate": "^9.0.0",
+    "http-server": "^14.1.1",
+    "lighthouse": "^12.0.0",
+    "playwright": "^1.56.1",
+    "prettier": "^3.3.0",
+    "stylelint": "^16.0.0",
+    "stylelint-config-standard": "^36.0.0"
+  }
+}
