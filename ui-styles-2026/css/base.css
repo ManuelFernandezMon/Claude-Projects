@@ -169,6 +169,7 @@ body {
   gap: 0.5rem;
 }
 .hero-index a {
+  min-width: 0;
   display: flex;
   gap: 0.5rem;
   align-items: baseline;
@@ -375,4 +376,25 @@ body {
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Wider screens: roomier index tiles so long names ("Glassmorphism") fit on one line. */
+@media (min-width: 40rem) {
+  .hero-index {
+    grid-template-columns: repeat(auto-fill, minmax(11.5rem, 1fr));
+  }
+}
+
+.compare-lead a,
+.compare-foot a,
+.footer a {
+  color: var(--chrome-accent);
+}
+
+.hero-index .tile-n {
+  flex: none;
+}
+.hero-index .tile-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }

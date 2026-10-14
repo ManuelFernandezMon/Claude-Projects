@@ -11,7 +11,14 @@
     "verify:shots": "node scripts/verify/shots.mjs",
     "verify:axe": "node scripts/verify/axe.mjs",
     "verify:keyboard": "node scripts/verify/keyboard.mjs",
-    "verify:console": "node scripts/verify/console.mjs"
+    "verify:console": "node scripts/verify/console.mjs",
+    "verify:overflow": "node scripts/verify/overflow.mjs",
+    "verify:contrast": "node scripts/verify/contrast.mjs",
+    "verify:recipes": "node scripts/verify/recipes.mjs",
+    "verify:preferences": "node scripts/verify/preferences.mjs",
+    "verify:nojs": "node scripts/verify/nojs.mjs",
+    "verify:lighthouse": "scripts/verify/lighthouse.sh",
+    "verify": "npm run lint:html && npm run lint:css && npm run format:check && npm run verify:console && npm run verify:axe && npm run verify:keyboard && npm run verify:overflow && npm run verify:recipes && npm run verify:preferences && npm run verify:nojs"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",

@@ -171,6 +171,10 @@
   margin: 0 0 1.5rem;
   color: var(--muted);
 }
+/* Keep the heading clear of the hanging sprig (it sits 1.4rem + 2.5rem from the card edge). */
+#s-20 .demo-card h3 {
+  padding-inline-end: 4.25rem;
+}
 #s-20 .sprig {
   position: absolute;
   top: 0;

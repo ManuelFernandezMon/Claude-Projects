@@ -35,6 +35,7 @@
 
 #s-08 .s-wrap {
   position: relative;
+  grid-template-columns: minmax(0, 1fr);
   z-index: 1;
   display: grid;
   gap: clamp(1rem, 2.2vw, 1.6rem);
@@ -99,6 +100,7 @@
   background: #e0d4ff;
 }
 #s-08 h2 {
+  overflow-wrap: anywhere;
   font-size: clamp(2.5rem, 8vw, 5.25rem);
   font-weight: 800;
   line-height: 1;
