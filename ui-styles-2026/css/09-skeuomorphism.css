@@ -1,1 +1,510 @@
-/* 09 Skeuomorphism: everything scoped under #s-09. Owned by the style 09 agent. */
+/* 09 Skeuomorphism. Everything scoped under #s-09. Textures are layered CSS gradients only.
+   Contrast (computed): cream #f6e9cf on leather #3d2a1c 11.3:1 (lightest stop #54382a 8.8:1);
+   ink #2b1d12 on paper #efe3c8 12.8:1; red label #7a1d16 on paper 8.2:1; metal ink #1d2025 on #c3c8ce 9.7:1
+   (darkest stop #a0a7af 6.7:1); brass plate ink on #b8903f 5.5:1; key white on #c23a30 5.3:1 (hover 4.7:1);
+   code cream on #2a1c12 13.7:1; input text 13:1; switch track vs steel 6.8:1.
+   Focus: two-tone ring, dark #1a1208 vs steel 7.6:1 and bright #ffe28a vs wood 9.6:1. */
+
+#s-09 {
+  --ink: #2b1d12;
+  --cream: #f6e9cf;
+  --thread: #d9b36a;
+  --metal-ink: #1d2025;
+  --lamp: 0;
+  font-family: Bitter, Rockwell, 'Roboto Slab', Georgia, serif;
+  color: var(--cream);
+  line-height: 1.5;
+  background:
+    repeating-linear-gradient(90deg, rgb(0 0 0 / 0) 0 9px, rgb(0 0 0 / 0.08) 9px 10px),
+    repeating-linear-gradient(88deg, rgb(255 255 255 / 0.03) 0 31px, rgb(0 0 0 / 0.07) 31px 33px),
+    linear-gradient(180deg, #6a4527, #4a2f19);
+}
+#s-09.lit {
+  --lamp: 1;
+}
+
+#s-09 .s-wrap {
+  display: grid;
+  gap: clamp(1rem, 2.4vw, 1.75rem);
+  max-width: 68rem;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3.5rem) 1rem clamp(2rem, 5vw, 4rem);
+}
+
+#s-09 h2,
+#s-09 h3,
+#s-09 p {
+  margin: 0;
+}
+
+/* Shared plate behaviours */
+#s-09 .s-head,
+#s-09 .s-recipe,
+#s-09 .s-best,
+#s-09 .s-avoid,
+#s-09 .demo-card,
+#s-09 .demo-controls,
+#s-09 .s-a11y {
+  position: relative;
+}
+
+/* Leather header with gold stitching */
+#s-09 .s-head,
+#s-09 .s-recipe {
+  padding: clamp(1.75rem, 4vw, 3rem);
+  color: var(--cream);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 20% 30%, rgb(255 255 255 / 0.06) 0 1px, transparent 1.6px) 0 0 / 7px
+      7px,
+    radial-gradient(circle at 70% 70%, rgb(0 0 0 / 0.22) 0 1px, transparent 1.8px) 0 0 / 5px 5px,
+    linear-gradient(160deg, #54382a, #3d2a1c 55%, #2f1f14);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.16),
+    inset 0 -3px 8px rgb(0 0 0 / 0.4),
+    0 14px 24px -8px rgb(0 0 0 / 0.6);
+}
+#s-09 .s-head::after,
+#s-09 .s-recipe::after {
+  content: '';
+  position: absolute;
+  inset: 10px;
+  border: 2px dashed var(--thread);
+  border-radius: 11px;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 0 rgb(0 0 0 / 0.6));
+}
+#s-09 h2 {
+  font-size: clamp(2.4rem, 7vw, 4.5rem);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: 0.01em;
+  color: #f0d9a4;
+  text-shadow:
+    0 -1px 0 rgb(0 0 0 / 0.7),
+    0 1px 0 rgb(255 255 255 / 0.12);
+}
+#s-09 .s-def {
+  max-width: 44ch;
+  margin-top: 0.9rem;
+  font-size: clamp(1.02rem, 1.8vw, 1.2rem);
+  color: var(--cream);
+}
+
+/* Paper notes */
+#s-09 .s-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: inherit;
+}
+#s-09 .s-best,
+#s-09 .s-avoid {
+  padding: 1.5rem 1.5rem 1.25rem;
+  color: var(--ink);
+  background:
+    repeating-linear-gradient(180deg, transparent 0 26px, rgb(60 90 140 / 0.16) 26px 27px),
+    linear-gradient(180deg, #f8f0de, #efe3c8);
+  border-radius: 3px;
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.7) inset,
+    0 10px 16px -6px rgb(0 0 0 / 0.55);
+}
+#s-09 .s-best {
+  transform: rotate(-0.6deg);
+}
+#s-09 .s-avoid {
+  transform: rotate(0.5deg);
+}
+#s-09 .s-best::before,
+#s-09 .s-avoid::before {
+  content: '';
+  position: absolute;
+  top: -0.7rem;
+  left: 50%;
+  width: 5rem;
+  height: 1.4rem;
+  transform: translateX(-50%) rotate(-2deg);
+  background: linear-gradient(180deg, rgb(235 215 160 / 0.9), rgb(205 180 120 / 0.9));
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
+}
+#s-09 .s-info strong {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #7a1d16;
+}
+
+/* Brushed metal plates with screws */
+#s-09 .s-demo {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: inherit;
+}
+#s-09 .demo-card,
+#s-09 .demo-controls {
+  padding: clamp(1.75rem, 3.5vw, 2.5rem);
+  color: var(--metal-ink);
+  border-radius: 14px;
+  border: 1px solid #7d838b;
+  background:
+    radial-gradient(circle at 14px 14px, #8e949b 0 3px, #565b61 4px 5px, transparent 6px),
+    radial-gradient(
+      circle at calc(100% - 14px) 14px,
+      #8e949b 0 3px,
+      #565b61 4px 5px,
+      transparent 6px
+    ),
+    radial-gradient(
+      circle at 14px calc(100% - 14px),
+      #8e949b 0 3px,
+      #565b61 4px 5px,
+      transparent 6px
+    ),
+    radial-gradient(
+      circle at calc(100% - 14px) calc(100% - 14px),
+      #8e949b 0 3px,
+      #565b61 4px 5px,
+      transparent 6px
+    ),
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.4) 0 1px, rgb(0 0 0 / 0.04) 1px 3px),
+    linear-gradient(180deg, #eceef1, #c3c8ce);
+  box-shadow:
+    inset 0 1px 0 #fff,
+    inset 0 -2px 4px rgb(0 0 0 / 0.18),
+    0 12px 20px -6px rgb(0 0 0 / 0.55);
+}
+#s-09 .demo-controls {
+  background:
+    radial-gradient(circle at 14px 14px, #8e949b 0 3px, #565b61 4px 5px, transparent 6px),
+    radial-gradient(
+      circle at calc(100% - 14px) 14px,
+      #8e949b 0 3px,
+      #565b61 4px 5px,
+      transparent 6px
+    ),
+    radial-gradient(
+      circle at 14px calc(100% - 14px),
+      #8e949b 0 3px,
+      #565b61 4px 5px,
+      transparent 6px
+    ),
+    radial-gradient(
+      circle at calc(100% - 14px) calc(100% - 14px),
+      #8e949b 0 3px,
+      #565b61 4px 5px,
+      transparent 6px
+    ),
+    radial-gradient(
+      ellipse at 50% 0%,
+      rgb(255 226 138 / calc(0.55 * var(--lamp))),
+      transparent 70%
+    ),
+    repeating-linear-gradient(0deg, rgb(255 255 255 / 0.3) 0 1px, rgb(0 0 0 / 0.05) 1px 3px),
+    linear-gradient(180deg, #c7ccd2, #a0a7af);
+}
+#s-09 .demo-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+#s-09 .demo-card h3 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  text-shadow: 0 1px 0 rgb(255 255 255 / 0.75);
+}
+#s-09 .demo-card p {
+  max-width: 34ch;
+}
+#s-09 .demo-controls {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.6rem;
+}
+#s-09 .ctl-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-weight: 700;
+  text-shadow: 0 1px 0 rgb(255 255 255 / 0.5);
+}
+#s-09 .demo-controls label {
+  margin-top: 0.5rem;
+  font-weight: 700;
+  text-shadow: 0 1px 0 rgb(255 255 255 / 0.5);
+}
+
+/* Tactile push button: a red key cap */
+#s-09 .demo-btn {
+  min-height: 3.25rem;
+  padding: 0.7rem 1.75rem;
+  font: inherit;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #fff;
+  text-shadow: 0 -1px 0 rgb(0 0 0 / 0.5);
+  background: linear-gradient(180deg, #c23a30, #b3261e 60%, #9a1c15);
+  border: 1px solid #5c0f0a;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.45),
+    inset 0 -3px 0 rgb(0 0 0 / 0.25),
+    0 4px 0 #5c0f0a,
+    0 8px 10px rgb(0 0 0 / 0.4);
+  transition:
+    transform 0.08s,
+    box-shadow 0.08s;
+}
+#s-09 .demo-btn:hover {
+  background: linear-gradient(180deg, #cf4338, #bd2a21 60%, #a31e17);
+}
+#s-09 .demo-btn:active {
+  transform: translateY(4px);
+  box-shadow:
+    inset 0 3px 6px rgb(0 0 0 / 0.45),
+    0 0 0 #5c0f0a,
+    0 2px 3px rgb(0 0 0 / 0.4);
+}
+
+/* Brass utility keys */
+#s-09 .show-css,
+#s-09 .copy-css {
+  min-height: 2.75rem;
+  padding: 0.5rem 1.25rem;
+  font: inherit;
+  font-weight: 700;
+  color: var(--ink);
+  text-shadow: 0 1px 0 rgb(255 255 255 / 0.4);
+  background: linear-gradient(180deg, #e9ce8c, #d4ae5a 55%, #b8903f);
+  border: 1px solid #5d4417;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.6),
+    0 3px 0 #5d4417,
+    0 6px 8px rgb(0 0 0 / 0.4);
+  transition:
+    transform 0.08s,
+    box-shadow 0.08s;
+}
+#s-09 .show-css:hover,
+#s-09 .copy-css:hover {
+  background: linear-gradient(180deg, #f0d99f, #dcb868 55%, #c29a47);
+}
+#s-09 .show-css:active,
+#s-09 .copy-css:active {
+  transform: translateY(3px);
+  box-shadow:
+    inset 0 2px 5px rgb(0 0 0 / 0.4),
+    0 0 0 #5d4417;
+}
+
+/* Engraved input: recessed into the plate */
+#s-09 input[type='text'] {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.85rem;
+  font: inherit;
+  color: #f6e9cf;
+  background: linear-gradient(180deg, #1e1810, #2b2217);
+  border: 1px solid #0d0a06;
+  border-radius: 6px;
+  box-shadow:
+    inset 0 3px 6px rgb(0 0 0 / 0.7),
+    0 1px 0 rgb(255 255 255 / 0.6);
+}
+#s-09 input::placeholder {
+  color: #cdbf9f;
+  opacity: 1;
+}
+#s-09 input[type='text']:hover {
+  background: linear-gradient(180deg, #2a2216, #382d1e);
+}
+
+/* Toggle: recessed track with a ridged metal knob */
+#s-09 .demo-switch {
+  position: relative;
+  flex: none;
+  width: 5rem;
+  height: 2.75rem;
+  padding: 0;
+  background: linear-gradient(180deg, #0f1114, #1c1f23);
+  border: 1px solid #08090a;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow:
+    inset 0 4px 8px rgb(0 0 0 / 0.85),
+    0 1px 0 rgb(255 255 255 / 0.7);
+  transition: background-color 0.2s;
+}
+#s-09 .demo-switch .knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 2.45rem;
+  height: calc(100% - 8px);
+  border-radius: 7px;
+  background:
+    repeating-linear-gradient(90deg, rgb(0 0 0 / 0.18) 0 2px, rgb(255 255 255 / 0.35) 2px 4px)
+      center / 60% 100% no-repeat,
+    linear-gradient(180deg, #f3f5f7, #bcc2c8 55%, #8f959c);
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 3px 5px rgb(0 0 0 / 0.7);
+  transition: transform 0.15s cubic-bezier(0.4, 1.4, 0.6, 1);
+}
+#s-09 .demo-switch[aria-checked='true'] {
+  background: linear-gradient(180deg, #0c2a16, #17402a);
+}
+#s-09 .demo-switch[aria-checked='true'] .knob {
+  transform: translateX(2.2rem);
+}
+#s-09 .demo-switch:hover .knob {
+  filter: brightness(1.06);
+}
+#s-09 .demo-switch:active .knob {
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 1px 2px rgb(0 0 0 / 0.7);
+}
+
+/* Focus: two-tone ring that reads on leather, wood and metal */
+#s-09 button:focus-visible,
+#s-09 input:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow:
+    0 0 0 3px #1a1208,
+    0 0 0 6px #ffe28a;
+}
+
+/* Brass tag plates */
+#s-09 .s-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+#s-09 .s-tags li {
+  padding: 0.4rem 1.1rem;
+  font-weight: 700;
+  color: var(--ink);
+  text-shadow: 0 1px 0 rgb(255 255 255 / 0.4);
+  background: linear-gradient(180deg, #ecd397, #d4ae5a 55%, #bf9743);
+  border: 1px solid #5d4417;
+  border-radius: 6px;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.6),
+    0 3px 5px rgb(0 0 0 / 0.45);
+}
+
+#s-09 .s-recipe .show-css {
+  position: relative;
+  z-index: 1;
+}
+#s-09 .css-recipe {
+  position: relative;
+  z-index: 1;
+  margin-top: 1rem;
+}
+#s-09 .css-recipe pre {
+  margin: 0 0 0.9rem;
+  padding: 1rem 1.15rem;
+  font:
+    0.82rem/1.55 ui-monospace,
+    'SF Mono',
+    Menlo,
+    Consolas,
+    monospace;
+  color: var(--cream);
+  background: #2a1c12;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  box-shadow: inset 0 3px 8px rgb(0 0 0 / 0.7);
+}
+#s-09 .copy-status {
+  margin-left: 0.5rem;
+  font-weight: 700;
+}
+
+/* Paper note for the accessibility text */
+#s-09 .s-a11y {
+  padding: 1.5rem 1.75rem;
+  color: var(--ink);
+  background:
+    linear-gradient(
+      90deg,
+      transparent 2.6rem,
+      rgb(190 50 40 / 0.55) 2.6rem 2.7rem,
+      transparent 2.7rem
+    ),
+    repeating-linear-gradient(180deg, transparent 0 26px, rgb(60 90 140 / 0.16) 26px 27px),
+    linear-gradient(180deg, #f8f0de, #efe3c8);
+  border-radius: 3px;
+  box-shadow: 0 10px 16px -6px rgb(0 0 0 / 0.55);
+}
+#s-09 .s-a11y h3 {
+  margin: 0 0 0.4rem 2.2rem;
+  font-size: 1.25rem;
+  color: #7a1d16;
+}
+#s-09 .s-a11y p {
+  max-width: 64ch;
+  margin-left: 2.2rem;
+}
+
+@media (max-width: 44rem) {
+  #s-09 .s-info,
+  #s-09 .s-demo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  #s-09 .s-a11y p,
+  #s-09 .s-a11y h3 {
+    margin-left: 1.5rem;
+  }
+  #s-09 .s-a11y {
+    background:
+      linear-gradient(
+        90deg,
+        transparent 1.8rem,
+        rgb(190 50 40 / 0.55) 1.8rem 1.9rem,
+        transparent 1.9rem
+      ),
+      repeating-linear-gradient(180deg, transparent 0 26px, rgb(60 90 140 / 0.16) 26px 27px),
+      linear-gradient(180deg, #f8f0de, #efe3c8);
+  }
+}
+
+@media (prefers-contrast: more) {
+  #s-09 .demo-card,
+  #s-09 .demo-controls {
+    background: #d8dce0;
+  }
+  #s-09 .s-best,
+  #s-09 .s-avoid,
+  #s-09 .s-a11y {
+    background: #fffdf5;
+    border: 2px solid var(--ink);
+  }
+  #s-09 .s-head,
+  #s-09 .s-recipe {
+    background: #2b1d12;
+  }
+}
+
+@media (forced-colors: active) {
+  #s-09 .demo-btn,
+  #s-09 .show-css,
+  #s-09 .copy-css,
+  #s-09 .demo-switch,
+  #s-09 input[type='text'] {
+    border: 2px solid ButtonText;
+  }
+}

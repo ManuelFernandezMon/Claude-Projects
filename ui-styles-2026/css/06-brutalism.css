@@ -1,1 +1,301 @@
-/* 06 Brutalism / raw web: everything scoped under #s-06. Owned by the style 06 agent. */
+/* 06 Brutalism / raw web. Everything scoped under #s-06.
+   Contrast (computed): #000 on #fff 21:1; link #0000ee on #fff 9.4:1 (visited #551a8b 11:1);
+   black on yellow #ffff00 19.6:1; red #d40000 on #fff 5.5:1 and on yellow 5.2:1 (focus ring);
+   button/input border #767676 on #fff 4.5:1; placeholder #595959 on #fff 7:1. */
+
+#s-06 {
+  --ink: #000;
+  --paper: #fff;
+  --link: #0000ee;
+  --alert: #d40000;
+  --mark: #ffff00;
+  --serif: 'Times New Roman', Times, 'Liberation Serif', serif;
+  --mono: 'Courier New', Courier, 'Liberation Mono', monospace;
+  --sans: Arial, Helvetica, 'Liberation Sans', sans-serif;
+  font-family: var(--serif);
+  font-size: 1.125rem;
+  color: var(--ink);
+  background: var(--paper);
+  line-height: 1.35;
+  border-top: 10px solid #000;
+  border-bottom: 10px solid #000;
+}
+
+#s-06 .s-wrap {
+  padding: clamp(1.25rem, 4vw, 3rem) clamp(0.75rem, 3vw, 2rem) clamp(2rem, 5vw, 4rem);
+  border-left: clamp(8px, 2vw, 24px) solid #000;
+  min-height: calc(100svh - 20px);
+}
+
+#s-06 .s-head {
+  margin: 0 0 1.5rem;
+}
+
+#s-06 h2 {
+  display: inline-block;
+  max-width: 100%;
+  margin: 0 0 1rem;
+  padding: 0.05em 0.2em 0.1em;
+  font-family: var(--mono);
+  font-size: clamp(1.75rem, 8.4vw, 6rem);
+  font-weight: 700;
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  color: #fff;
+  background: #000;
+  overflow-wrap: anywhere;
+}
+
+#s-06 .s-def {
+  max-width: 34ch;
+  margin: 0;
+  font-size: clamp(1.4rem, 3.2vw, 2.1rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+#s-06 h3 {
+  margin: 0 0 0.5rem;
+  font-family: var(--mono);
+  font-size: 1.3rem;
+  text-transform: uppercase;
+}
+
+#s-06 p {
+  margin: 0 0 0.9rem;
+}
+
+#s-06 a {
+  color: var(--link);
+  text-decoration: underline;
+}
+#s-06 a:visited {
+  color: #551a8b;
+}
+#s-06 a:hover {
+  color: var(--alert);
+}
+
+/* Best for / Avoid when: two ruled cells, no polish */
+#s-06 .s-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 3px solid #000;
+  margin: 0 0 1.5rem;
+}
+#s-06 .s-info p {
+  margin: 0;
+  padding: 1rem;
+}
+#s-06 .s-best {
+  border-right: 3px solid #000;
+}
+#s-06 .s-avoid {
+  background: var(--mark);
+}
+
+/* Demo: a table-like joined block */
+#s-06 .s-demo {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  border: 3px solid #000;
+  margin: 0 0 1.5rem;
+}
+#s-06 .demo-card {
+  padding: 1rem;
+  border-right: 3px solid #000;
+}
+#s-06 .demo-controls {
+  display: grid;
+  align-content: start;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+#s-06 .demo-controls label {
+  margin-top: 0.75rem;
+  font-weight: 700;
+  text-decoration: underline;
+}
+#s-06 #sw-06-l {
+  font-weight: 700;
+}
+
+/* Controls look like unstyled browser controls with the corners left sharp */
+#s-06 .demo-btn,
+#s-06 .show-css,
+#s-06 .copy-css {
+  justify-self: start;
+  min-height: 2.75rem;
+  padding: 0.4rem 1rem;
+  font: 1rem var(--sans);
+  color: #000;
+  background: #e0e0e0;
+  border: 3px outset #767676;
+  border-radius: 0;
+  cursor: pointer;
+}
+#s-06 .demo-btn:hover,
+#s-06 .show-css:hover,
+#s-06 .copy-css:hover {
+  background: #fff;
+}
+#s-06 .demo-btn:active,
+#s-06 .show-css:active,
+#s-06 .copy-css:active {
+  border-style: inset;
+  background: #c8c8c8;
+}
+
+#s-06 input[type='text'] {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.3rem 0.5rem;
+  font: 1rem var(--mono);
+  color: #000;
+  background: #fff;
+  border: 3px inset #767676;
+  border-radius: 0;
+}
+#s-06 input::placeholder {
+  color: #595959;
+  opacity: 1;
+}
+
+/* Switch: a hard black slider, no easing */
+#s-06 .demo-switch {
+  display: block;
+  position: relative;
+  width: 5rem;
+  height: 2.75rem;
+  padding: 0;
+  background: #fff;
+  border: 3px solid #000;
+  border-radius: 0;
+  cursor: pointer;
+}
+#s-06 .demo-switch .knob {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  background: #000;
+}
+#s-06 .demo-switch[aria-checked='true'] {
+  background: var(--mark);
+}
+#s-06 .demo-switch[aria-checked='true'] .knob {
+  left: auto;
+  right: 3px;
+}
+#s-06 .demo-switch:hover {
+  background: #e8e8e8;
+}
+#s-06 .demo-switch[aria-checked='true']:hover {
+  background: #ffff66;
+}
+#s-06 .demo-switch:active .knob {
+  background: var(--alert);
+}
+
+/* Real, loud focus */
+#s-06 a:focus-visible,
+#s-06 button:focus-visible,
+#s-06 input:focus-visible {
+  outline: 4px solid var(--alert);
+  outline-offset: 2px;
+  background-color: var(--mark);
+}
+#s-06 .demo-switch:focus-visible .knob {
+  background: var(--alert);
+}
+
+/* Tags: bracketed monospace entries */
+#s-06 .s-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+  font-family: var(--mono);
+  font-weight: 700;
+}
+#s-06 .s-tags li {
+  padding: 0.2rem 0.6rem;
+  border: 2px solid #000;
+}
+#s-06 .s-tags li:nth-child(odd) {
+  color: #fff;
+  background: #000;
+}
+
+#s-06 .s-recipe {
+  margin: 0 0 1.5rem;
+}
+#s-06 .css-recipe {
+  margin-top: 0.75rem;
+}
+#s-06 .css-recipe pre {
+  margin: 0 0 0.75rem;
+  padding: 0.75rem;
+  font: 0.9rem/1.3 var(--mono);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: #f0f0f0;
+  border: 3px solid #000;
+}
+#s-06 .copy-status {
+  margin-left: 0.5rem;
+  font-weight: 700;
+}
+
+#s-06 .s-a11y {
+  padding: 1rem;
+  background: var(--mark);
+  border: 4px double #000;
+}
+#s-06 .s-a11y p {
+  margin: 0;
+}
+#s-06 .s-a11y h3 {
+  margin-bottom: 0.4rem;
+}
+
+/* The switch reveals the box model: every element gets a dashed red outline */
+#s-06.show-outlines .s-wrap *:not(:focus-visible) {
+  outline: 1px dashed var(--alert);
+  outline-offset: -1px;
+}
+
+@media (max-width: 48rem) {
+  #s-06 .s-info,
+  #s-06 .s-demo {
+    grid-template-columns: 1fr;
+  }
+  #s-06 .s-best,
+  #s-06 .demo-card {
+    border-right: 0;
+    border-bottom: 3px solid #000;
+  }
+}
+
+@media (prefers-contrast: more) {
+  #s-06 .demo-btn,
+  #s-06 .show-css,
+  #s-06 .copy-css,
+  #s-06 .demo-switch,
+  #s-06 input[type='text'] {
+    border-color: #000;
+  }
+}
+
+@media (forced-colors: active) {
+  #s-06 h2 {
+    border: 3px solid CanvasText;
+  }
+  #s-06 .demo-switch .knob {
+    background: CanvasText;
+  }
+}

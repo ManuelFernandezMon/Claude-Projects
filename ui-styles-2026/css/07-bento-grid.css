@@ -1,1 +1,461 @@
-/* 07 Bento Grid: everything scoped under #s-07. Owned by the style 07 agent. */
+/* 07 Bento Grid. Everything scoped under #s-07.
+   Contrast (computed): ink #14161f on white 18:1, mint #d4f3e6 15.3:1, peach #ffe1cf 14.5:1,
+   lavender #e4e1ff 14.2:1, stripe #ffe98f 14.9:1; muted #3b4052 on white 10.3:1;
+   white on head gradient #1b1a55 15.8:1 to #0e6b62 6.4:1; code #e9ebf5 on #14161f 15.2:1;
+   focus ring #4636e0 on lavender 5.8:1, #c9c4ff on dark tile 11:1; switch track #5a5f73 on lavender 5:1. */
+
+#s-07 {
+  --bg: #e9ebf2;
+  --ink: #14161f;
+  --muted: #3b4052;
+  --tile: #ffffff;
+  --accent: #4636e0;
+  --ring: #4636e0;
+  --gap: 1rem;
+  --pad: clamp(1.1rem, 2.4vw, 1.75rem);
+  font-family:
+    Manrope,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  line-height: 1.5;
+}
+#s-07.compact {
+  --gap: 0.5rem;
+  --pad: 1rem;
+}
+
+#s-07 .s-wrap {
+  display: grid;
+  gap: var(--gap);
+  max-width: 76rem;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3.5rem) 1rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: minmax(9rem, auto);
+  grid-template-areas:
+    'head head best avoid'
+    'head head card card'
+    'ctrl tags card card'
+    'code code note note';
+  transition: gap 0.2s;
+}
+#s-07 .s-info,
+#s-07 .s-demo {
+  display: contents;
+}
+#s-07 .s-head {
+  grid-area: head;
+}
+#s-07 .s-best {
+  grid-area: best;
+}
+#s-07 .s-avoid {
+  grid-area: avoid;
+}
+#s-07 .demo-card {
+  grid-area: card;
+}
+#s-07 .demo-controls {
+  grid-area: ctrl;
+}
+#s-07 .s-tags {
+  grid-area: tags;
+}
+#s-07 .s-recipe {
+  grid-area: code;
+}
+#s-07 .s-a11y {
+  grid-area: note;
+}
+
+/* Every direct child is a tile */
+#s-07 .s-head,
+#s-07 .s-best,
+#s-07 .s-avoid,
+#s-07 .demo-card,
+#s-07 .demo-controls,
+#s-07 .s-tags,
+#s-07 .s-recipe,
+#s-07 .s-a11y {
+  position: relative;
+  min-width: 0;
+  margin: 0;
+  padding: var(--pad);
+  border-radius: 28px;
+  border: 1px solid rgb(20 22 31 / 0.1);
+  background: var(--tile);
+  overflow: hidden;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+#s-07 .s-head:hover,
+#s-07 .s-best:hover,
+#s-07 .s-avoid:hover,
+#s-07 .demo-card:hover,
+#s-07 .demo-controls:hover,
+#s-07 .s-tags:hover,
+#s-07 .s-a11y:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px -12px rgb(20 22 31 / 0.35);
+}
+
+#s-07 h2,
+#s-07 h3,
+#s-07 p {
+  margin: 0;
+}
+
+/* Tile 1: gradient title tile */
+#s-07 .s-head {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  min-height: 15rem;
+  color: #fff;
+  border-color: transparent;
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgb(120 90 255 / 0.55), transparent 60%),
+    linear-gradient(145deg, #1b1a55, #0e6b62);
+}
+#s-07 h2 {
+  font-size: clamp(2.4rem, 6vw, 4.25rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+#s-07 .s-def {
+  max-width: 34ch;
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  font-weight: 500;
+}
+#s-07 .mini {
+  position: absolute;
+  top: var(--pad);
+  right: var(--pad);
+  display: grid;
+  grid-template-columns: 1.6rem 1rem;
+  grid-template-rows: 1rem 1.6rem;
+  gap: 0.3rem;
+}
+#s-07 .mini i {
+  border-radius: 0.5rem;
+  background: rgb(255 255 255 / 0.85);
+}
+#s-07 .mini i:nth-child(1) {
+  grid-row: span 1;
+}
+#s-07 .mini i:nth-child(2) {
+  background: rgb(255 255 255 / 0.4);
+}
+#s-07 .mini i:nth-child(3) {
+  background: rgb(255 255 255 / 0.4);
+}
+#s-07 .mini i:nth-child(4) {
+  background: rgb(255 255 255 / 0.85);
+}
+
+/* Tiles 2 and 3: tinted fills */
+#s-07 .s-best {
+  background: #d4f3e6;
+}
+#s-07 .s-avoid {
+  background: #ffe1cf;
+}
+#s-07 .s-best,
+#s-07 .s-avoid {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-size: 1rem;
+}
+#s-07 .s-best strong,
+#s-07 .s-avoid strong {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Tile 4: card on a dot pattern */
+#s-07 .demo-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  background-color: #fff;
+  background-image: radial-gradient(rgb(70 54 224 / 0.16) 1.2px, transparent 1.6px);
+  background-size: 16px 16px;
+}
+#s-07 .demo-card h3 {
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+#s-07 .demo-card p {
+  max-width: 36ch;
+  color: var(--muted);
+}
+#s-07 .demo-card .demo-btn {
+  margin-top: auto;
+}
+
+/* Tile 5: controls on lavender */
+#s-07 .demo-controls {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.6rem;
+  background: #e4e1ff;
+}
+#s-07 .ctl-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 700;
+}
+#s-07 .demo-controls label {
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+/* Tile 6: tags on diagonal stripes */
+#s-07 .s-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  gap: 0.5rem;
+  list-style: none;
+  background: repeating-linear-gradient(135deg, #fff0b8 0 12px, #ffe98f 12px 24px);
+}
+#s-07 .s-tags li {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  background: #fff;
+  border: 1px solid rgb(20 22 31 / 0.25);
+  border-radius: 999px;
+}
+
+/* Tile 7: recipe on dark */
+#s-07 .s-recipe {
+  --ring: #c9c4ff;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  color: #e9ebf5;
+  background: #14161f;
+  border-color: transparent;
+}
+#s-07 .css-recipe pre {
+  margin: 0 0 0.75rem;
+  font:
+    0.8125rem/1.55 ui-monospace,
+    'SF Mono',
+    Menlo,
+    Consolas,
+    monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+#s-07 .copy-status {
+  margin-left: 0.5rem;
+  font-size: 0.875rem;
+}
+
+/* Tile 8: note */
+#s-07 .s-a11y {
+  background: linear-gradient(160deg, #fff7d6, #ffe4ee);
+}
+#s-07 .s-a11y h3 {
+  margin-bottom: 0.4rem;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+#s-07 .s-a11y p {
+  max-width: 62ch;
+}
+
+/* Controls */
+#s-07 .demo-btn,
+#s-07 .show-css,
+#s-07 .copy-css {
+  min-height: 2.75rem;
+  padding: 0.5rem 1.25rem;
+  font: inherit;
+  font-weight: 700;
+  color: #fff;
+  background: var(--ink);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    transform 0.15s,
+    background-color 0.15s;
+}
+#s-07 .demo-btn:hover,
+#s-07 .show-css:hover,
+#s-07 .copy-css:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+#s-07 .demo-btn:active,
+#s-07 .show-css:active,
+#s-07 .copy-css:active {
+  transform: scale(0.96);
+}
+#s-07 .s-recipe .show-css,
+#s-07 .s-recipe .copy-css {
+  color: #14161f;
+  background: #e9ebf5;
+  border-color: #e9ebf5;
+}
+#s-07 .s-recipe .show-css:hover,
+#s-07 .s-recipe .copy-css:hover {
+  background: #c9c4ff;
+  border-color: #c9c4ff;
+}
+
+#s-07 input[type='text'] {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.9rem;
+  font: inherit;
+  color: var(--ink);
+  background: #fff;
+  border: 2px solid #5a5f73;
+  border-radius: 14px;
+}
+#s-07 input::placeholder {
+  color: #4f5468;
+  opacity: 1;
+}
+#s-07 input[type='text']:hover {
+  border-color: var(--accent);
+}
+
+#s-07 .demo-switch {
+  position: relative;
+  flex: none;
+  width: 3.5rem;
+  height: 2rem;
+  padding: 0;
+  background: #5a5f73;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+#s-07 .demo-switch::after {
+  content: '';
+  position: absolute;
+  inset: -0.35rem -0.1rem;
+}
+#s-07 .demo-switch .knob {
+  position: absolute;
+  top: 0.25rem;
+  left: 0.25rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+#s-07 .demo-switch[aria-checked='true'] {
+  background: var(--accent);
+}
+#s-07 .demo-switch[aria-checked='true'] .knob {
+  transform: translateX(1.5rem);
+}
+#s-07 .demo-switch:hover {
+  background: #3b4052;
+}
+#s-07 .demo-switch[aria-checked='true']:hover {
+  background: #3526b8;
+}
+#s-07 .demo-switch:active .knob {
+  transform: scale(0.9);
+}
+#s-07 .demo-switch[aria-checked='true']:active .knob {
+  transform: translateX(1.5rem) scale(0.9);
+}
+
+#s-07 button:focus-visible,
+#s-07 input:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  #s-07.is-active .mini {
+    animation: s07-bob 4s ease-in-out infinite alternate;
+  }
+  @keyframes s07-bob {
+    to {
+      transform: translateY(6px);
+    }
+  }
+}
+
+/* Tablet: two columns, still row-by-row in source order */
+@media (max-width: 62rem) {
+  #s-07 .s-wrap {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      'head head'
+      'best avoid'
+      'card card'
+      'ctrl tags'
+      'code code'
+      'note note';
+  }
+  #s-07 .s-head {
+    min-height: 12rem;
+  }
+}
+
+/* Phone: one column */
+@media (max-width: 40rem) {
+  #s-07 .s-wrap {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: none;
+    grid-auto-rows: auto;
+  }
+  #s-07 .s-wrap > *,
+  #s-07 .s-info > *,
+  #s-07 .s-demo > * {
+    grid-area: auto;
+  }
+  #s-07 .s-head {
+    min-height: 13rem;
+  }
+}
+
+@media (prefers-contrast: more) {
+  #s-07 .s-head,
+  #s-07 .s-best,
+  #s-07 .s-avoid,
+  #s-07 .demo-card,
+  #s-07 .demo-controls,
+  #s-07 .s-tags,
+  #s-07 .s-recipe,
+  #s-07 .s-a11y {
+    border: 2px solid var(--ink);
+  }
+}
+
+@media (forced-colors: active) {
+  #s-07 .demo-switch {
+    border: 2px solid ButtonText;
+  }
+}
