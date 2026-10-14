@@ -1188,36 +1188,545 @@
 
       <!-- SECTION 16 START -->
       <section id="s-16" class="style-sec" data-style="16" aria-labelledby="h-16">
-        <h2 id="h-16">Hand-Drawn / Scrapbook</h2>
-        <p>Placeholder for style 16.</p>
+        <div class="s-wrap">
+          <header class="s-head">
+            <h2 id="h-16">Hand-Drawn / Scrapbook / Sticker</h2>
+            <p class="s-def">
+              A personal, assembled look built from stickers, tape, stamps, snapshots and
+              handwritten touches layered on paper.
+            </p>
+          </header>
+          <div class="s-info">
+            <p class="s-best">
+              <strong>Best for:</strong> Social products, youth brands, journaling, creator tools,
+              events and community spaces.
+            </p>
+            <p class="s-avoid">
+              <strong>Avoid when:</strong> The flow is dense or transactional and playful layering
+              would fight a disciplined structure.
+            </p>
+          </div>
+          <div class="s-demo" role="group" aria-label="Live demo">
+            <span class="sticker sticker-star" aria-hidden="true"><span></span></span>
+            <span class="sticker sticker-face" aria-hidden="true"><span></span></span>
+            <article class="demo-card">
+              <span class="tape" aria-hidden="true"></span>
+              <div class="photo" aria-hidden="true"></div>
+              <h3>Saturday market</h3>
+              <p>Lemon tart, a blue bike and one ticket stub. Pin the best three to the board.</p>
+              <button type="button" class="demo-btn">Pin to board</button>
+            </article>
+            <div class="demo-controls">
+              <button
+                type="button"
+                role="switch"
+                aria-checked="false"
+                class="demo-switch"
+                aria-labelledby="sw-16-l"
+                data-section-class="straight"
+              >
+                <span aria-hidden="true" class="knob"></span>
+              </button>
+              <span id="sw-16-l">Straighten the notes</span>
+              <label for="in-16">Caption</label>
+              <input id="in-16" type="text" placeholder="Lemon tart, 4 pm" />
+            </div>
+          </div>
+          <ul class="s-tags" aria-label="Key ingredients">
+            <li>Wobbly borders</li>
+            <li>Washi tape</li>
+            <li>Die-cut stickers</li>
+            <li>Paper texture</li>
+            <li>Handwritten headings</li>
+          </ul>
+          <div class="s-recipe">
+            <button type="button" class="show-css" aria-expanded="false" aria-controls="css-16">
+              Show CSS
+            </button>
+            <div class="css-recipe" id="css-16" hidden>
+              <pre tabindex="0"><code>.note {
+  background: #fbd966;
+  border-radius: 14px 22px 12px 24px / 24px 12px 22px 14px;
+  transform: rotate(-1.2deg);
+  box-shadow: 3px 4px 0 rgb(42 34 48 / 0.18);
+}
+.note::before { /* washi tape */
+  content: '';
+  background: repeating-linear-gradient(45deg,
+    rgb(255 255 255 / 0.55) 0 6px, rgb(255 255 255 / 0.25) 6px 12px);
+}
+.sticker {
+  border: 8px solid #fffdf6;
+  filter: drop-shadow(0 3px 2px rgb(0 0 0 / 0.25));
+}</code></pre>
+              <button type="button" class="copy-css">Copy CSS</button>
+              <span class="copy-status" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+          <aside class="s-a11y" aria-labelledby="a11y-16-h">
+            <h3 id="a11y-16-h">Accessibility note</h3>
+            <p>
+              <strong>Main risk:</strong> Handwriting fonts, saturated colours and tilted layers can
+              hurt legibility and scan order. <strong>Mitigation:</strong> Handwriting is limited to
+              headings, body copy is a plain sans on opaque paper plates above 4.5:1, tilts stay
+              under 2 degrees (and a switch removes them), and stickers sit around the content, not
+              across it.
+            </p>
+          </aside>
+        </div>
       </section>
       <!-- SECTION 16 END -->
 
       <!-- SECTION 17 START -->
       <section id="s-17" class="style-sec" data-style="17" aria-labelledby="h-17">
-        <h2 id="h-17">Aurora / mesh gradients</h2>
-        <p>Placeholder for style 17.</p>
+        <div class="aurora" aria-hidden="true">
+          <span class="au au-a"></span><span class="au au-b"></span><span class="au au-c"></span>
+        </div>
+        <div class="s-wrap">
+          <header class="s-head">
+            <h2 id="h-17">Aurora / mesh gradients</h2>
+            <p class="s-def">
+              Soft, multi-point gradients blend luminous colours into clouds, glows and colour
+              fields behind the interface.
+            </p>
+          </header>
+          <div class="s-info">
+            <p class="s-best">
+              <strong>Best for:</strong> AI products, SaaS landing pages, premium branding,
+              onboarding and hero backgrounds.
+            </p>
+            <p class="s-avoid">
+              <strong>Avoid when:</strong> Text would sit directly on the gradient, such as
+              paragraphs or small labels.
+            </p>
+          </div>
+          <div class="s-demo" role="group" aria-label="Live demo">
+            <article class="demo-card">
+              <h3>Northern lights forecast</h3>
+              <p>
+                Clear skies and a strong green glow are expected after 22:00. Get a nudge when it
+                starts.
+              </p>
+              <button type="button" class="demo-btn">Notify me</button>
+            </article>
+            <div class="demo-controls">
+              <button
+                type="button"
+                role="switch"
+                aria-checked="false"
+                class="demo-switch"
+                aria-labelledby="sw-17-l"
+                data-section-class="paused"
+              >
+                <span aria-hidden="true" class="knob"></span>
+              </button>
+              <span id="sw-17-l">Pause the drift</span>
+              <label for="in-17">Location</label>
+              <input id="in-17" type="text" placeholder="Tromso, Norway" />
+            </div>
+          </div>
+          <ul class="s-tags" aria-label="Key ingredients">
+            <li>Layered radial gradients</li>
+            <li>Blur</li>
+            <li>Teal, green, magenta on navy</li>
+            <li>Solid text plates</li>
+          </ul>
+          <div class="s-recipe">
+            <button type="button" class="show-css" aria-expanded="false" aria-controls="css-17">
+              Show CSS
+            </button>
+            <div class="css-recipe" id="css-17" hidden>
+              <pre tabindex="0"><code>.aurora {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(40% 50% at 20% 30%, #2dd4bf, transparent 70%),
+    radial-gradient(35% 45% at 75% 25%, #86efac, transparent 70%),
+    radial-gradient(40% 50% at 60% 85%, #f0529c, transparent 70%),
+    #070f1f;
+  filter: blur(40px);
+}
+.plate {
+  background: rgb(7 15 31 / 0.88); /* solid enough for text */
+  backdrop-filter: blur(14px);
+}</code></pre>
+              <button type="button" class="copy-css">Copy CSS</button>
+              <span class="copy-status" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+          <aside class="s-a11y" aria-labelledby="a11y-17-h">
+            <h3 id="a11y-17-h">Accessibility note</h3>
+            <p>
+              <strong>Main risk:</strong> Text contrast varies across a gradient, and slowly moving
+              colour can distract. <strong>Mitigation:</strong> All text sits on near-opaque navy
+              plates checked above 4.5:1, the drift runs only while the section is visible and
+              motion is allowed, and a switch pauses it.
+            </p>
+          </aside>
+        </div>
       </section>
       <!-- SECTION 17 END -->
 
       <!-- SECTION 18 START -->
       <section id="s-18" class="style-sec" data-style="18" aria-labelledby="h-18">
-        <h2 id="h-18">Data-Dense Utilitarian</h2>
-        <p>Placeholder for style 18.</p>
+        <div class="s-wrap">
+          <header class="s-head">
+            <h2 id="h-18">Data-Dense Utilitarian</h2>
+            <p class="s-def">
+              Compact spacing, visible structure, tables, restrained colour and functional type with
+              almost no ornament.
+            </p>
+          </header>
+          <div class="s-info">
+            <p class="s-best">
+              <strong>Best for:</strong> Developer tools, ops, analytics, trading, logistics and
+              internal enterprise software.
+            </p>
+            <p class="s-avoid">
+              <strong>Avoid when:</strong> The audience is casual or consumer-facing and needs room
+              to breathe.
+            </p>
+          </div>
+          <div class="s-demo" role="group" aria-label="Live demo">
+            <article class="demo-card">
+              <div class="bar">
+                <h3>Lane throughput</h3>
+                <span class="badge">sample data</span>
+              </div>
+              <p>Last 24 hours across six lanes. All figures below are sample data.</p>
+              <dl class="kpis">
+                <div>
+                  <dt>Jobs</dt>
+                  <dd>12,840</dd>
+                </div>
+                <div>
+                  <dt>p95 ms</dt>
+                  <dd>412</dd>
+                </div>
+                <div>
+                  <dt>Errors</dt>
+                  <dd>0.8%</dd>
+                </div>
+                <div>
+                  <dt>Queue</dt>
+                  <dd>37</dd>
+                </div>
+              </dl>
+              <div class="table-scroll" role="region" aria-label="Lane table" tabindex="0">
+                <table>
+                  <caption>
+                    Lane status (sample data)
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Lane</th>
+                      <th scope="col">Status</th>
+                      <th scope="col" class="num">Jobs</th>
+                      <th scope="col" class="num">p95 ms</th>
+                      <th scope="col" class="num">Err %</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">LIS-01</th>
+                      <td class="st st-ok"><span aria-hidden="true">&#9679;</span> OK</td>
+                      <td class="num">3,204</td>
+                      <td class="num">188</td>
+                      <td class="num">0.2</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">LIS-02</th>
+                      <td class="st st-ok"><span aria-hidden="true">&#9679;</span> OK</td>
+                      <td class="num">2,911</td>
+                      <td class="num">203</td>
+                      <td class="num">0.3</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">POR-01</th>
+                      <td class="st st-warn"><span aria-hidden="true">&#9650;</span> Slow</td>
+                      <td class="num">2,466</td>
+                      <td class="num">731</td>
+                      <td class="num">1.4</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">POR-02</th>
+                      <td class="st st-ok"><span aria-hidden="true">&#9679;</span> OK</td>
+                      <td class="num">1,983</td>
+                      <td class="num">240</td>
+                      <td class="num">0.5</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">MAD-01</th>
+                      <td class="st st-bad"><span aria-hidden="true">&#9632;</span> Down</td>
+                      <td class="num">0</td>
+                      <td class="num">-</td>
+                      <td class="num">100.0</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">MAD-02</th>
+                      <td class="st st-ok"><span aria-hidden="true">&#9679;</span> OK</td>
+                      <td class="num">2,276</td>
+                      <td class="num">219</td>
+                      <td class="num">0.4</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <button type="button" class="demo-btn">Export CSV</button>
+            </article>
+            <div class="demo-controls">
+              <button
+                type="button"
+                role="switch"
+                aria-checked="false"
+                class="demo-switch"
+                aria-labelledby="sw-18-l"
+                data-section-class="zebra"
+              >
+                <span aria-hidden="true" class="knob"></span>
+              </button>
+              <span id="sw-18-l">Zebra rows</span>
+              <label for="in-18">Filter by lane id</label>
+              <input id="in-18" type="text" placeholder="e.g. POR-01" />
+            </div>
+          </div>
+          <ul class="s-tags" aria-label="Key ingredients">
+            <li>Tabular numerals</li>
+            <li>1px rules</li>
+            <li>Compact rows</li>
+            <li>Status with text and shape</li>
+          </ul>
+          <div class="s-recipe">
+            <button type="button" class="show-css" aria-expanded="false" aria-controls="css-18">
+              Show CSS
+            </button>
+            <div class="css-recipe" id="css-18" hidden>
+              <pre tabindex="0"><code>table {
+  width: 100%;
+  border-collapse: collapse;
+  font: 0.8125rem/1.3 'IBM Plex Mono', ui-monospace, monospace;
+}
+th, td {
+  padding: 0.35rem 0.6rem;
+  border-bottom: 1px solid #c9d1da; /* rules, not cards */
+}
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+tbody tr:hover { background: #e8eef7; }</code></pre>
+              <button type="button" class="copy-css">Copy CSS</button>
+              <span class="copy-status" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+          <aside class="s-a11y" aria-labelledby="a11y-18-h">
+            <h3 id="a11y-18-h">Accessibility note</h3>
+            <p>
+              <strong>Main risk:</strong> Small text, tight rows, small targets and colour-only
+              status make dense screens hard to read. <strong>Mitigation:</strong> Type stays at
+              13px or larger in rem, controls are at least 32px tall, every status pairs colour with
+              a shape and a word, and muted greys are checked above 4.5:1.
+            </p>
+          </aside>
+        </div>
       </section>
       <!-- SECTION 18 END -->
 
       <!-- SECTION 19 START -->
       <section id="s-19" class="style-sec" data-style="19" aria-labelledby="h-19">
-        <h2 id="h-19">Blueprint / schematic</h2>
-        <p>Placeholder for style 19.</p>
+        <span class="mark mark-tl" aria-hidden="true"></span>
+        <span class="mark mark-tr" aria-hidden="true"></span>
+        <span class="mark mark-bl" aria-hidden="true"></span>
+        <span class="mark mark-br" aria-hidden="true"></span>
+        <div class="s-wrap">
+          <header class="s-head">
+            <h2 id="h-19">Blueprint / schematic</h2>
+            <p class="s-def">
+              A technical-drafting look of thin lines, fine grids, dimension marks and monospace
+              labels on a blue ground.
+            </p>
+          </header>
+          <div class="s-info">
+            <p class="s-best">
+              <strong>Best for:</strong> Hardware, developer tools and infrastructure, product
+              explainers, posters and instructional content.
+            </p>
+            <p class="s-avoid">
+              <strong>Avoid when:</strong> The interface is content-heavy and built around long
+              reading.
+            </p>
+          </div>
+          <div class="s-demo" role="group" aria-label="Live demo">
+            <div class="dim dim-h" aria-hidden="true"><span>480</span></div>
+            <article class="demo-card">
+              <span class="anchor anchor-a" aria-hidden="true"></span>
+              <span class="anchor anchor-b" aria-hidden="true"></span>
+              <h3>Latch assembly</h3>
+              <p>
+                Spring-loaded latch with a 12 mm throw. Hold the release to see the locked and open
+                positions.
+              </p>
+              <button type="button" class="demo-btn">Release latch</button>
+            </article>
+            <div class="demo-controls">
+              <button
+                type="button"
+                role="switch"
+                aria-checked="false"
+                class="demo-switch"
+                aria-labelledby="sw-19-l"
+                data-section-class="grid-off"
+              >
+                <span aria-hidden="true" class="knob"></span>
+              </button>
+              <span id="sw-19-l">Hide drafting grid</span>
+              <label for="in-19">Part number</label>
+              <input id="in-19" type="text" placeholder="LT-0412-B" />
+            </div>
+            <dl class="titleblock">
+              <div>
+                <dt>Part</dt>
+                <dd>Latch</dd>
+              </div>
+              <div>
+                <dt>Scale</dt>
+                <dd>1:1</dd>
+              </div>
+              <div>
+                <dt>Units</dt>
+                <dd>mm</dd>
+              </div>
+            </dl>
+          </div>
+          <ul class="s-tags" aria-label="Key ingredients">
+            <li>Gradient drafting grid</li>
+            <li>1px linework</li>
+            <li>Dimension lines</li>
+            <li>Monospace labels</li>
+            <li>Corner marks</li>
+          </ul>
+          <div class="s-recipe">
+            <button type="button" class="show-css" aria-expanded="false" aria-controls="css-19">
+              Show CSS
+            </button>
+            <div class="css-recipe" id="css-19" hidden>
+              <pre tabindex="0"><code>.sheet {
+  background-color: #0f3c8c;
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.28) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.28) 1px, transparent 1px),
+    linear-gradient(rgb(255 255 255 / 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.1) 1px, transparent 1px);
+  background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+  color: #fff;
+  font-family: 'Space Mono', monospace;
+}
+.part { border: 1px solid #7dd3fc; border-radius: 0; }</code></pre>
+              <button type="button" class="copy-css">Copy CSS</button>
+              <span class="copy-status" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+          <aside class="s-a11y" aria-labelledby="a11y-19-h">
+            <h3 id="a11y-19-h">Accessibility note</h3>
+            <p>
+              <strong>Main risk:</strong> Thin light lines and light-blue text on navy can drop
+              below readable contrast, and tiny monospace annotations are hard to read.
+              <strong>Mitigation:</strong> Text is white or pale cyan on the blue at well above
+              4.5:1, annotations are real text at 0.8125rem or larger, and line-art meets 3:1 (the
+              WCAG 1.4.11 mapping is the author's inference, as the research notes it was not
+              fetched).
+            </p>
+          </aside>
+        </div>
       </section>
       <!-- SECTION 19 END -->
 
       <!-- SECTION 20 START -->
       <section id="s-20" class="style-sec" data-style="20" aria-labelledby="h-20">
-        <h2 id="h-20">Biophilic / organic</h2>
-        <p>Placeholder for style 20.</p>
+        <span class="blob blob-1" aria-hidden="true"></span>
+        <span class="blob blob-2" aria-hidden="true"></span>
+        <div class="s-wrap">
+          <header class="s-head">
+            <span class="leaf" aria-hidden="true"></span>
+            <h2 id="h-20">Biophilic / organic</h2>
+            <p class="s-def">
+              Nature-centred interfaces that use organic shapes, earthy colour, natural texture and
+              gentle motion to feel calmer and warmer.
+            </p>
+          </header>
+          <div class="s-info">
+            <p class="s-best">
+              <strong>Best for:</strong> Wellness, sustainability, and calm or focus products.
+            </p>
+            <p class="s-avoid">
+              <strong>Avoid when:</strong> The screen is a heavy data or operations tool.
+            </p>
+          </div>
+          <div class="s-demo" role="group" aria-label="Live demo">
+            <article class="demo-card">
+              <span class="sprig" aria-hidden="true"><i></i><i></i><i></i></span>
+              <h3>Ten minute forest walk</h3>
+              <p>
+                A guided pause between meetings: slow breathing, birdsong and one question to carry
+                back to your desk.
+              </p>
+              <button type="button" class="demo-btn">Start the walk</button>
+            </article>
+            <div class="demo-controls">
+              <button
+                type="button"
+                role="switch"
+                aria-checked="false"
+                class="demo-switch"
+                aria-labelledby="sw-20-l"
+                data-section-class="still"
+              >
+                <span aria-hidden="true" class="knob"></span>
+              </button>
+              <span id="sw-20-l">Still leaves</span>
+              <label for="in-20">Intention for today</label>
+              <input id="in-20" type="text" placeholder="Slow down, breathe" />
+            </div>
+          </div>
+          <ul class="s-tags" aria-label="Key ingredients">
+            <li>Blob radii</li>
+            <li>Forest and moss greens</li>
+            <li>One amber accent</li>
+            <li>Green-tinted shadows</li>
+          </ul>
+          <div class="s-recipe">
+            <button type="button" class="show-css" aria-expanded="false" aria-controls="css-20">
+              Show CSS
+            </button>
+            <div class="css-recipe" id="css-20" hidden>
+              <pre tabindex="0"><code>.card {
+  background: #f7f8f3;
+  border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%;
+  box-shadow: 0 24px 40px -20px rgb(31 77 58 / 0.4);
+}
+.leaf {
+  width: 3rem;
+  height: 3rem;
+  background: #2f6b4a;
+  border-radius: 0 100% 0 100%;
+  transform: rotate(-12deg);
+}
+.cta { background: #e8a33d; color: #14301f; }</code></pre>
+              <button type="button" class="copy-css">Copy CSS</button>
+              <span class="copy-status" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+          <aside class="s-a11y" aria-labelledby="a11y-20-h">
+            <h3 id="a11y-20-h">Accessibility note</h3>
+            <p>
+              <strong>Main risk:</strong> Muted earth and green palettes, and text over nature
+              imagery, can lose contrast, and ambient motion can distract.
+              <strong>Mitigation:</strong> Text is deep forest green on opaque stone surfaces above
+              4.5:1, no text sits over imagery, and the leaves sway only when motion is allowed and
+              can be stilled with a switch.
+            </p>
+          </aside>
+        </div>
       </section>
       <!-- SECTION 20 END -->
 

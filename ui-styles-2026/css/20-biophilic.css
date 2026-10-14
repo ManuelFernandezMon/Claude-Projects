@@ -1,1 +1,441 @@
-/* 20 Biophilic / organic: everything scoped under #s-20. Owned by the style 20 agent. */
+/* 20 Biophilic / organic: everything scoped under #s-20.
+
+   Palette: forest #1d4a36, moss #4f6f3a, stone surface #eef1ea, bone cards #f8f9f4, one amber
+   accent #e8a33d. Contrast (WCAG relative luminance, computed):
+   - forest text #16301f on stone #eef1ea ........ 12.5:1
+   - forest text on bone card #f8f9f4 ............. 13.4:1
+   - moss text #3f5c2c on stone ................... 6.6:1
+   - muted text #41544a on bone ................... 7.7:1
+   - button text #14301f on amber #e8a33d ......... 6.6:1
+   - input border #5d7a4d on bone (non-text) ...... 4.6:1
+   - focus ring #1d4a36 on stone .................. 8.8:1
+   - bone text #f1f5ee on forest code block ....... 12.9:1 */
+
+#s-20 {
+  --stone: #eef1ea;
+  --bone: #f8f9f4;
+  --moss-tint: #dbe6d0;
+  --forest: #1d4a36;
+  --forest-deep: #16301f;
+  --moss: #3f5c2c;
+  --leaf: #2f6b4a;
+  --amber: #e8a33d;
+  --muted: #41544a;
+  --edge: #5d7a4d;
+  --shadow: 0 26px 44px -22px rgb(29 74 54 / 0.45), 0 4px 10px -4px rgb(29 74 54 / 0.18);
+  position: relative;
+  padding: clamp(2.5rem, 7vw, 5.5rem) 1rem clamp(3rem, 8vw, 6rem);
+  background: var(--stone);
+  color: var(--forest-deep);
+  font-family: 'DM Sans', 'Inter', system-ui, sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+}
+
+/* ---------- Background blobs ---------- */
+#s-20 .blob {
+  position: absolute;
+  z-index: -1;
+  background: var(--moss-tint);
+  pointer-events: none;
+}
+#s-20 .blob-1 {
+  top: -10%;
+  right: -12%;
+  width: min(60vw, 42rem);
+  aspect-ratio: 1;
+  border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%;
+  opacity: 0.85;
+}
+#s-20 .blob-2 {
+  bottom: -14%;
+  left: -14%;
+  width: min(55vw, 38rem);
+  aspect-ratio: 1.1;
+  border-radius: 40% 60% 34% 66% / 55% 38% 62% 45%;
+  opacity: 0.6;
+}
+
+#s-20 .s-wrap {
+  position: relative;
+  max-width: 66rem;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas:
+    'head   head'
+    'info   demo'
+    'tags   demo'
+    'recipe recipe'
+    'a11y   a11y';
+  gap: 2rem clamp(1.5rem, 4vw, 3.5rem);
+}
+#s-20 .s-head {
+  grid-area: head;
+  position: relative;
+  max-width: 46rem;
+}
+#s-20 .s-info {
+  grid-area: info;
+  display: grid;
+  align-content: start;
+  gap: 1.25rem;
+}
+#s-20 .s-demo {
+  grid-area: demo;
+  display: grid;
+  gap: 1.25rem;
+}
+#s-20 .s-tags {
+  grid-area: tags;
+}
+#s-20 .s-recipe {
+  grid-area: recipe;
+}
+#s-20 .s-a11y {
+  grid-area: a11y;
+}
+
+/* ---------- Head hierarchy ---------- */
+#s-20 .leaf {
+  display: block;
+  width: 3.4rem;
+  height: 3.4rem;
+  margin-bottom: 1.1rem;
+  background: linear-gradient(135deg, #3c8a5f 0 50%, var(--leaf) 50%);
+  border-radius: 0 100% 0 100%;
+  transform: rotate(-10deg);
+  transform-origin: 0 100%;
+  box-shadow: 0 14px 18px -10px rgb(29 74 54 / 0.5);
+}
+#s-20 h2 {
+  margin: 0 0 1rem;
+  font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+  font-size: clamp(2.7rem, 7vw, 5rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--forest);
+}
+#s-20 h3 {
+  margin: 0 0 0.5rem;
+  font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+  font-size: 1.6rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--forest);
+}
+#s-20 .s-def {
+  margin: 0;
+  max-width: 36rem;
+  padding-left: 1.1rem;
+  border-left: 4px solid var(--amber);
+  border-radius: 0 0 0 2rem;
+  font-size: 1.25rem;
+  line-height: 1.5;
+}
+
+/* ---------- Info ---------- */
+#s-20 .s-best,
+#s-20 .s-avoid {
+  margin: 0;
+  padding: 1.25rem 1.6rem;
+  background: var(--bone);
+  box-shadow: var(--shadow);
+  color: var(--forest-deep);
+}
+#s-20 .s-best {
+  border-radius: 2.2rem 0.8rem 2.2rem 0.8rem;
+}
+#s-20 .s-avoid {
+  border-radius: 0.8rem 2.2rem 0.8rem 2.2rem;
+}
+#s-20 .s-info strong {
+  display: block;
+  color: var(--moss);
+  font-size: 0.875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ---------- Demo ---------- */
+#s-20 .demo-card {
+  position: relative;
+  padding: clamp(1.75rem, 4vw, 2.5rem) clamp(1.5rem, 4vw, 2.4rem) 2.2rem;
+  background: var(--bone);
+  border-radius: 3.5rem 1rem 4rem 1rem;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+#s-20 .demo-card p {
+  margin: 0 0 1.5rem;
+  color: var(--muted);
+}
+#s-20 .sprig {
+  position: absolute;
+  top: 0;
+  right: 1.4rem;
+  width: 2.5rem;
+  height: 5rem;
+  border-left: 2px solid var(--leaf);
+  border-radius: 0 0 0 100%;
+  transform-origin: top center;
+}
+#s-20 .sprig i {
+  position: absolute;
+  left: -0.2rem;
+  width: 1.3rem;
+  height: 1.3rem;
+  background: var(--leaf);
+  border-radius: 0 100% 0 100%;
+}
+#s-20 .sprig i:nth-child(1) {
+  top: 0.9rem;
+  transform: rotate(10deg);
+}
+#s-20 .sprig i:nth-child(2) {
+  top: 2.2rem;
+  left: -1.4rem;
+  background: #3c8a5f;
+  transform: scaleX(-1) rotate(10deg);
+}
+#s-20 .sprig i:nth-child(3) {
+  top: 3.3rem;
+  background: var(--moss);
+  transform: rotate(-4deg);
+}
+#s-20 .demo-controls {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1.5rem 1.6rem 1.7rem;
+  background: var(--moss-tint);
+  border-radius: 1rem 3rem 1rem 3rem;
+  box-shadow: var(--shadow);
+}
+#s-20 .demo-controls label {
+  grid-column: 1 / -1;
+  margin-top: 0.4rem;
+  font-weight: 700;
+}
+#s-20 input {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.55rem 1.2rem;
+  background: var(--bone);
+  border: 2px solid var(--edge);
+  border-radius: 999px;
+  color: var(--forest-deep);
+  font: inherit;
+}
+#s-20 input::placeholder {
+  color: #52645a;
+  opacity: 1;
+}
+#s-20 input:hover {
+  border-color: var(--forest);
+}
+
+#s-20 .demo-btn,
+#s-20 .show-css,
+#s-20 .copy-css {
+  min-height: 3rem;
+  padding: 0.5rem 1.7rem;
+  border: 2px solid #8a5a10;
+  border-radius: 999px 999px 999px 0.6rem;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+#s-20 .demo-btn {
+  background: var(--amber);
+  color: #14301f;
+  box-shadow: 0 12px 18px -10px rgb(150 90 10 / 0.55);
+}
+#s-20 .show-css,
+#s-20 .copy-css {
+  background: var(--bone);
+  border-color: var(--forest);
+  color: var(--forest);
+}
+#s-20 .demo-btn:hover {
+  background: #f0b455;
+  transform: translateY(-2px);
+}
+#s-20 .show-css:hover,
+#s-20 .copy-css:hover {
+  background: var(--forest);
+  color: #fff;
+}
+#s-20 .demo-btn:active,
+#s-20 .show-css:active,
+#s-20 .copy-css:active {
+  transform: translateY(1px);
+}
+#s-20 .demo-btn:focus-visible,
+#s-20 .show-css:focus-visible,
+#s-20 .copy-css:focus-visible,
+#s-20 .demo-switch:focus-visible,
+#s-20 input:focus-visible,
+#s-20 pre:focus-visible {
+  outline: 3px solid var(--forest);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px var(--stone);
+}
+
+#s-20 .demo-switch {
+  position: relative;
+  width: 3.75rem;
+  height: 2.25rem;
+  padding: 0;
+  background: var(--bone);
+  border: 2px solid var(--edge);
+  border-radius: 999px;
+  cursor: pointer;
+}
+#s-20 .demo-switch .knob {
+  position: absolute;
+  top: 0.3rem;
+  left: 0.35rem;
+  width: 1.35rem;
+  height: 1.35rem;
+  background: var(--leaf);
+  border-radius: 0 100% 0 100%;
+  transform: rotate(-20deg);
+  transition: transform 0.2s;
+}
+#s-20 .demo-switch:hover {
+  border-color: var(--forest);
+}
+#s-20 .demo-switch[aria-checked='true'] {
+  background: var(--forest);
+  border-color: var(--forest);
+}
+#s-20 .demo-switch[aria-checked='true'] .knob {
+  background: var(--amber);
+  transform: translateX(1.5rem) rotate(70deg);
+}
+
+/* ---------- Tags, recipe, note ---------- */
+#s-20 .s-tags {
+  align-self: start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+#s-20 .s-tags li {
+  padding: 0.3rem 1.1rem;
+  background: var(--bone);
+  border-radius: 999px 999px 999px 0.4rem;
+  box-shadow: 0 8px 14px -8px rgb(29 74 54 / 0.45);
+  color: var(--forest);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+#s-20 .css-recipe {
+  margin-top: 1rem;
+}
+#s-20 .css-recipe pre {
+  margin: 0 0 1rem;
+  padding: 1.1rem 1.3rem;
+  overflow-x: auto;
+  background: var(--forest-deep);
+  border-radius: 1.5rem 0.6rem 1.5rem 0.6rem;
+  color: #f1f5ee;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+#s-20 .copy-status {
+  margin-left: 0.75rem;
+  color: var(--moss);
+  font-weight: 700;
+}
+#s-20 .s-a11y {
+  max-width: 50rem;
+  padding: 1.4rem 1.8rem 1.6rem;
+  background: var(--bone);
+  border-radius: 0.8rem 3rem 0.8rem 3rem;
+  box-shadow: var(--shadow);
+}
+#s-20 .s-a11y h3 {
+  font-size: 1.35rem;
+}
+#s-20 .s-a11y p {
+  margin: 0;
+}
+
+/* ---------- Motion ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  #s-20.is-active .leaf {
+    animation: s20-sway 7s ease-in-out infinite alternate;
+  }
+  #s-20.is-active .sprig {
+    animation: s20-sway-s 6s ease-in-out infinite alternate;
+  }
+  #s-20.still .leaf,
+  #s-20.still .sprig {
+    animation: none;
+  }
+}
+@keyframes s20-sway {
+  from {
+    transform: rotate(-10deg);
+  }
+  to {
+    transform: rotate(-2deg);
+  }
+}
+@keyframes s20-sway-s {
+  from {
+    transform: rotate(-3deg);
+  }
+  to {
+    transform: rotate(3deg);
+  }
+}
+
+@media (max-width: 52rem) {
+  #s-20 .s-wrap {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'head'
+      'info'
+      'demo'
+      'tags'
+      'recipe'
+      'a11y';
+  }
+}
+
+@media (prefers-contrast: more) {
+  #s-20 {
+    --muted: #1f3328;
+    --moss: #2a4a1a;
+  }
+  #s-20 .blob {
+    display: none;
+  }
+  #s-20 .s-best,
+  #s-20 .s-avoid,
+  #s-20 .demo-card,
+  #s-20 .s-a11y {
+    border: 2px solid var(--forest-deep);
+  }
+}
+@media (forced-colors: active) {
+  #s-20 .demo-card,
+  #s-20 .demo-controls,
+  #s-20 .s-best,
+  #s-20 .s-avoid,
+  #s-20 .s-a11y,
+  #s-20 .demo-switch {
+    border: 2px solid CanvasText;
+  }
+}

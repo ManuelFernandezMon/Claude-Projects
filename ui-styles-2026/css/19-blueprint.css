@@ -1,1 +1,451 @@
-/* 19 Blueprint / schematic: everything scoped under #s-19. Owned by the style 19 agent. */
+/* 19 Blueprint / schematic: everything scoped under #s-19.
+
+   Contrast (WCAG relative luminance, computed) on blueprint blue #0f3c8c:
+   - white text #ffffff ........................ 10.3:1
+   - pale cyan text #bfe9ff ..................... 8.0:1
+   - cyan linework #7dd3fc (non-text 3:1 target) 6.2:1
+   - muted text #c9dcff ......................... 7.4:1
+   - placeholder #b4cbf5 on input #0a2f73 ....... 7.7:1
+   - button text #0f3c8c on white (hover) ....... 10.3:1
+   - focus ring #ffe14d on blue ................. 7.9:1
+   - code text #e8f1ff on #082559 ............... 13.0:1
+   All text sits on solid blue plates (worst case where two grid lines cross under bare text
+   would be 4.0:1, so no text is left bare on the grid).
+   Faint grid lines are decoration only; every line that carries meaning is #7dd3fc or white. */
+
+#s-19 {
+  --blue: #0f3c8c;
+  --blue-deep: #0a2f73;
+  --blue-darker: #082559;
+  --white: #ffffff;
+  --cyan: #7dd3fc;
+  --cyan-text: #bfe9ff;
+  --muted: #c9dcff;
+  --focus: #ffe14d;
+  --mono: 'Space Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --cond: 'Barlow Condensed', 'Arial Narrow', 'Liberation Sans Narrow', sans-serif;
+  position: relative;
+  padding: clamp(2.5rem, 6vw, 5rem) 1rem clamp(3rem, 7vw, 5.5rem);
+  background-color: var(--blue);
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.26) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.26) 1px, transparent 1px),
+    linear-gradient(rgb(255 255 255 / 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.09) 1px, transparent 1px);
+  background-size:
+    120px 120px,
+    120px 120px,
+    24px 24px,
+    24px 24px;
+  background-position: -1px -1px;
+  color: var(--white);
+  font-family: var(--mono);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+}
+#s-19.grid-off {
+  background-image: none;
+}
+
+/* ---------- Corner marks ---------- */
+#s-19 .mark {
+  position: absolute;
+  width: 2rem;
+  height: 2rem;
+  pointer-events: none;
+}
+#s-19 .mark::before,
+#s-19 .mark::after {
+  content: '';
+  position: absolute;
+  background: var(--cyan);
+}
+#s-19 .mark::before {
+  width: 100%;
+  height: 1px;
+  top: 50%;
+}
+#s-19 .mark::after {
+  width: 1px;
+  height: 100%;
+  left: 50%;
+}
+#s-19 .mark-tl {
+  top: 0.75rem;
+  left: 0.75rem;
+}
+#s-19 .mark-tr {
+  top: 0.75rem;
+  right: 0.75rem;
+}
+#s-19 .mark-bl {
+  bottom: 0.75rem;
+  left: 0.75rem;
+}
+#s-19 .mark-br {
+  bottom: 0.75rem;
+  right: 0.75rem;
+}
+
+#s-19 .s-wrap {
+  position: relative;
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+/* ---------- Head ---------- */
+#s-19 .s-head {
+  padding: 1rem 1.25rem 1.25rem;
+  background: var(--blue);
+  border: 1px solid var(--white);
+  outline: 1px solid var(--cyan);
+  outline-offset: 4px;
+}
+#s-19 h2 {
+  margin: 0 0 0.5rem;
+  font-family: var(--cond);
+  font-size: clamp(2.6rem, 8vw, 5rem);
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+#s-19 h3 {
+  margin: 0 0 0.5rem;
+  font-family: var(--cond);
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--cyan-text);
+}
+#s-19 .s-def {
+  max-width: 44rem;
+  margin: 0;
+  color: var(--cyan-text);
+}
+
+/* ---------- Info ---------- */
+#s-19 .s-info {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin: 2.25rem 0;
+}
+#s-19 .s-best,
+#s-19 .s-avoid {
+  position: relative;
+  margin: 0;
+  padding: 1rem 1.1rem;
+  background: var(--blue);
+  border: 1px dashed var(--cyan);
+}
+#s-19 .s-info strong {
+  display: block;
+  color: var(--cyan-text);
+  font-family: var(--cond);
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ---------- Demo ---------- */
+#s-19 .s-demo {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 3rem 2.5rem;
+  margin: 0 0 2.25rem;
+  padding: 3.25rem 1.5rem 1.5rem;
+  background: var(--blue);
+  border: 1px solid var(--white);
+}
+#s-19 .dim {
+  position: absolute;
+  top: 1.2rem;
+  left: 1.5rem;
+  right: calc(1.5rem + 41.5%);
+  height: 1.1rem;
+  border-left: 1px solid var(--cyan);
+  border-right: 1px solid var(--cyan);
+}
+#s-19 .dim::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--cyan);
+}
+#s-19 .dim span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  padding: 0 0.6rem;
+  background: var(--blue);
+  color: var(--cyan-text);
+  font-size: 0.8125rem;
+  line-height: 1;
+  transform: translate(-50%, -50%);
+}
+#s-19 .demo-card {
+  position: relative;
+  padding: 1.5rem 1.5rem 1.6rem;
+  background: var(--blue);
+  border: 2px solid var(--cyan);
+}
+#s-19 .demo-card p {
+  margin: 0 0 1.4rem;
+  max-width: 38ch;
+}
+#s-19 .anchor {
+  position: absolute;
+  width: 0.7rem;
+  height: 0.7rem;
+  background: var(--blue);
+  border: 2px solid var(--white);
+  border-radius: 50%;
+}
+#s-19 .anchor-a {
+  top: -0.45rem;
+  left: -0.45rem;
+}
+#s-19 .anchor-b {
+  right: -0.45rem;
+  bottom: -0.45rem;
+}
+#s-19 .demo-controls {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-content: start;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1.5rem 1.25rem;
+  border: 1px dashed var(--cyan);
+}
+#s-19 .demo-controls::before {
+  content: '';
+  position: absolute;
+  left: -2.5rem;
+  top: 50%;
+  width: 2.5rem;
+  border-top: 1px dashed var(--cyan);
+}
+#s-19 .demo-controls label {
+  grid-column: 1 / -1;
+  margin-top: 0.4rem;
+  color: var(--cyan-text);
+  font-family: var(--cond);
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+#s-19 input {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.4rem 0.75rem;
+  background: var(--blue-deep);
+  border: 1px solid var(--white);
+  border-radius: 0;
+  color: var(--white);
+  font: inherit;
+}
+#s-19 input::placeholder {
+  color: #b4cbf5;
+  opacity: 1;
+}
+#s-19 input:hover {
+  border-color: var(--cyan);
+}
+
+#s-19 .titleblock {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  border: 1px solid var(--white);
+}
+#s-19 .titleblock div {
+  padding: 0.4rem 0.8rem;
+}
+#s-19 .titleblock div + div {
+  border-left: 1px solid var(--white);
+}
+#s-19 .titleblock dt {
+  color: var(--cyan-text);
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+#s-19 .titleblock dd {
+  margin: 0;
+}
+
+/* ---------- Buttons and switch ---------- */
+#s-19 .demo-btn,
+#s-19 .show-css,
+#s-19 .copy-css {
+  min-height: 2.75rem;
+  padding: 0.4rem 1.25rem;
+  background: var(--blue);
+  border: 2px solid var(--white);
+  border-radius: 0;
+  color: var(--white);
+  font-family: var(--mono);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+#s-19 .demo-btn:hover,
+#s-19 .show-css:hover,
+#s-19 .copy-css:hover {
+  background: var(--white);
+  color: var(--blue);
+}
+#s-19 .demo-btn:active,
+#s-19 .show-css:active,
+#s-19 .copy-css:active {
+  background: var(--cyan);
+  border-color: var(--cyan);
+  color: var(--blue-darker);
+  transform: translateY(1px);
+}
+#s-19 .demo-btn:focus-visible,
+#s-19 .show-css:focus-visible,
+#s-19 .copy-css:focus-visible,
+#s-19 .demo-switch:focus-visible,
+#s-19 input:focus-visible,
+#s-19 pre:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+#s-19 .demo-switch {
+  position: relative;
+  width: 3.5rem;
+  height: 2rem;
+  padding: 0;
+  background: var(--blue-deep);
+  border: 2px solid var(--white);
+  border-radius: 0;
+  cursor: pointer;
+}
+#s-19 .demo-switch .knob {
+  position: absolute;
+  top: 0.2rem;
+  left: 0.2rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  border: 2px solid var(--white);
+  transition: transform 0.15s;
+}
+#s-19 .demo-switch:hover {
+  border-color: var(--cyan);
+}
+#s-19 .demo-switch[aria-checked='true'] {
+  background: var(--white);
+}
+#s-19 .demo-switch[aria-checked='true'] .knob {
+  background: var(--blue);
+  border-color: var(--blue);
+  transform: translateX(1.45rem);
+}
+
+/* ---------- Tags, recipe, note ---------- */
+#s-19 .s-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0 0 1.75rem;
+  padding: 0;
+  list-style: none;
+}
+#s-19 .s-tags li {
+  padding: 0.15rem 0.75rem;
+  background: var(--blue);
+  border: 1px solid var(--cyan);
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+#s-19 .s-recipe {
+  margin-bottom: 1.75rem;
+}
+#s-19 .css-recipe {
+  margin-top: 1rem;
+}
+#s-19 .css-recipe pre {
+  margin: 0 0 1rem;
+  padding: 1rem;
+  overflow-x: auto;
+  background: var(--blue-darker);
+  border: 1px solid var(--cyan);
+  color: #e8f1ff;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+}
+#s-19 .copy-status {
+  margin-left: 0.6rem;
+  background: var(--blue);
+  color: var(--cyan-text);
+  font-size: 0.875rem;
+}
+#s-19 .s-a11y {
+  max-width: 52rem;
+  padding: 1rem 1.25rem 1.2rem;
+  background: var(--blue);
+  border: 1px solid var(--white);
+  outline: 1px solid var(--cyan);
+  outline-offset: 4px;
+}
+#s-19 .s-a11y p {
+  margin: 0;
+}
+
+@media (max-width: 52rem) {
+  #s-19 .s-info,
+  #s-19 .s-demo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  #s-19 .dim {
+    right: 1.5rem;
+  }
+  #s-19 .demo-controls::before {
+    display: none;
+  }
+  #s-19 .s-demo {
+    gap: 2rem;
+  }
+}
+@media (max-width: 30rem) {
+  #s-19 .s-demo {
+    padding-inline: 1rem;
+  }
+  #s-19 .titleblock {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  #s-19 .titleblock div + div {
+    border-left: 0;
+    border-top: 1px solid var(--white);
+  }
+}
+
+@media (prefers-contrast: more) {
+  #s-19 {
+    background-image: none;
+  }
+}
+@media (forced-colors: active) {
+  #s-19 .demo-card,
+  #s-19 .demo-controls,
+  #s-19 .s-demo,
+  #s-19 .demo-switch,
+  #s-19 input {
+    border-color: CanvasText;
+  }
+}
