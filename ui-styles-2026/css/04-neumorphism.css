@@ -1,1 +1,340 @@
-/* 04 Neumorphism: everything scoped under #s-04. Owned by the style 04 agent. */
+/* 04 Neumorphism: everything scoped under #s-04.
+   Contrast on #e0e5ec: ink #232a6b 10.3:1; body #2b3350 9.8:1; accent control border #3a4db0 5.8:1;
+   field border #5f6b8a 4.2:1 (needs 3:1); placeholder #4b5675 5.8:1. */
+
+#s-04 {
+  --bg: #e0e5ec;
+  --dark: #a3b1c6;
+  --light: #ffffff;
+  --ink: #232a6b;
+  --body: #2b3350;
+  --accent: #3a4db0;
+  --edge: #5f6b8a;
+  padding: clamp(3rem, 8vw, 6rem) 1rem;
+  font-family:
+    Nunito,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: var(--body);
+  background: var(--bg);
+}
+
+#s-04 .s-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+  max-width: 62rem;
+  margin: 0 auto;
+}
+
+#s-04 .s-head h2 {
+  margin: 0 0 0.75rem;
+  font-size: clamp(2.3rem, 6.5vw, 4rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-shadow:
+    1px 1px 1px var(--light),
+    -1px -1px 1px rgb(163 177 198 / 0.45);
+}
+#s-04 .s-def {
+  margin: 0;
+  max-width: 36rem;
+  font-size: 1.15rem;
+}
+#s-04 .s-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1rem 2rem;
+  max-width: 50rem;
+}
+#s-04 .s-info p {
+  margin: 0;
+}
+#s-04 .s-info strong,
+#s-04 .s-a11y strong {
+  color: var(--ink);
+}
+
+/* ---------- Surfaces ---------- */
+#s-04 .demo-card,
+#s-04 .demo-controls,
+#s-04 .s-a11y {
+  border-radius: 1.75rem;
+  background: var(--bg);
+  box-shadow:
+    10px 10px 20px var(--dark),
+    -10px -10px 20px var(--light);
+}
+
+#s-04 .s-demo {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 3rem);
+  padding: 0.75rem;
+}
+#s-04 .demo-card {
+  display: flex;
+  align-items: center;
+  gap: clamp(1.25rem, 3vw, 2.25rem);
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+}
+#s-04 .dial {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: clamp(6rem, 14vw, 8.5rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #eef2f8, #d2d9e3);
+  box-shadow:
+    8px 8px 16px var(--dark),
+    -8px -8px 16px var(--light);
+}
+#s-04 .dial span {
+  display: grid;
+  place-items: center;
+  width: 68%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 800;
+  color: var(--ink);
+  background: var(--bg);
+  box-shadow:
+    inset 5px 5px 10px var(--dark),
+    inset -5px -5px 10px var(--light);
+}
+#s-04 .card-body {
+  min-width: 0;
+}
+#s-04 .demo-card h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+#s-04 .demo-card p {
+  margin: 0 0 1.25rem;
+}
+
+#s-04 .demo-controls {
+  display: grid;
+  grid-template-columns: 5rem minmax(0, 1fr);
+  align-content: center;
+  align-items: center;
+  gap: 1.5rem 1rem;
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+}
+#s-04 .demo-controls label {
+  grid-column: 1 / -1;
+  font-weight: 800;
+  color: var(--ink);
+  margin-bottom: -0.75rem;
+}
+#s-04 .demo-controls input {
+  grid-column: 1 / -1;
+}
+
+/* ---------- Controls ---------- */
+#s-04 .demo-btn,
+#s-04 .show-css,
+#s-04 .copy-css {
+  min-height: 2.75rem;
+  padding: 0.6rem 1.6rem;
+  border: 2px solid var(--accent);
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 800;
+  color: var(--ink);
+  background: var(--bg);
+  box-shadow:
+    6px 6px 12px var(--dark),
+    -6px -6px 12px var(--light);
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+#s-04 .demo-btn:hover,
+#s-04 .show-css:hover,
+#s-04 .copy-css:hover {
+  box-shadow:
+    8px 8px 16px var(--dark),
+    -8px -8px 16px var(--light);
+}
+#s-04 .demo-btn:active,
+#s-04 .show-css:active,
+#s-04 .copy-css:active {
+  box-shadow:
+    inset 5px 5px 10px var(--dark),
+    inset -5px -5px 10px var(--light);
+}
+
+/* Switch: a sunken track with a raised knob. On state fills the track with the accent. */
+#s-04 .demo-switch {
+  position: relative;
+  width: 5rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 2px solid var(--accent);
+  border-radius: 999px;
+  background: var(--bg);
+  box-shadow:
+    inset 4px 4px 8px var(--dark),
+    inset -4px -4px 8px var(--light);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+#s-04 .demo-switch .knob {
+  position: absolute;
+  top: 0.2rem;
+  left: 0.25rem;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #f4f7fb, #cdd5e0);
+  box-shadow:
+    3px 3px 6px var(--dark),
+    -2px -2px 5px var(--light);
+  transition: transform 0.25s;
+}
+#s-04 .demo-switch[aria-checked='true'] {
+  background: #b9c3ec;
+}
+#s-04 .demo-switch[aria-checked='true'] .knob {
+  transform: translateX(2.1rem);
+}
+#s-04 .demo-switch:hover .knob {
+  box-shadow:
+    4px 4px 8px var(--dark),
+    -3px -3px 6px var(--light);
+}
+#s-04 .demo-switch:active .knob {
+  box-shadow:
+    1px 1px 3px var(--dark),
+    -1px -1px 3px var(--light);
+}
+
+#s-04 input {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.6rem 1.25rem;
+  border: 2px solid var(--edge);
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--bg);
+  box-shadow:
+    inset 5px 5px 10px var(--dark),
+    inset -5px -5px 10px var(--light);
+}
+#s-04 input::placeholder {
+  color: #4b5675;
+  opacity: 1;
+}
+#s-04 input:hover {
+  border-color: var(--accent);
+}
+
+#s-04 .demo-btn:focus-visible,
+#s-04 .demo-switch:focus-visible,
+#s-04 input:focus-visible,
+#s-04 .show-css:focus-visible,
+#s-04 .copy-css:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 4px;
+}
+
+/* ---------- Tags, recipe, note ---------- */
+#s-04 .s-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  list-style: none;
+}
+#s-04 .s-tags li {
+  padding: 0.35rem 1.1rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
+  box-shadow:
+    inset 3px 3px 6px var(--dark),
+    inset -3px -3px 6px var(--light);
+}
+
+#s-04 .s-recipe {
+  padding: 0 0.75rem;
+}
+#s-04 .css-recipe {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  border-radius: 1.5rem;
+  background: var(--bg);
+  box-shadow:
+    inset 6px 6px 12px var(--dark),
+    inset -6px -6px 12px var(--light);
+}
+#s-04 .css-recipe pre {
+  margin: 0 0 1rem;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--body);
+}
+#s-04 .copy-status {
+  margin-left: 0.75rem;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+#s-04 .s-a11y {
+  max-width: 48rem;
+  margin: 0.75rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+#s-04 .s-a11y h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.2rem;
+  color: var(--ink);
+}
+#s-04 .s-a11y p {
+  margin: 0;
+}
+
+@media (max-width: 52rem) {
+  #s-04 .s-demo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 30rem) {
+  #s-04 .demo-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #s-04 * {
+    transition: none;
+  }
+}
+
+/* Higher contrast: stronger edges, no reliance on soft shadows alone. */
+@media (prefers-contrast: more) {
+  #s-04 {
+    --edge: #232a6b;
+  }
+  #s-04 .demo-card,
+  #s-04 .demo-controls,
+  #s-04 .s-a11y {
+    border: 2px solid var(--ink);
+  }
+}

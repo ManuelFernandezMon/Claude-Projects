@@ -1,1 +1,304 @@
-/* 03 Minimalism: everything scoped under #s-03. Owned by the style 03 agent. */
+/* 03 Minimalism: everything scoped under #s-03.
+   Contrast: ink #1b1a17 on paper 16.7:1; muted #55514a 7.6:1; accent #b4380c 5.7:1
+   (white on accent 6.0:1); control border #6b665c on white 5.7:1 (needs 3:1). */
+
+#s-03 {
+  --ink: #1b1a17;
+  --muted: #55514a;
+  --paper: #fbfaf6;
+  --line: #d8d4ca;
+  --edge: #6b665c;
+  --accent: #b4380c;
+  padding: clamp(4rem, 10vw, 8rem) 1rem;
+  font-family:
+    'Hanken Grotesk',
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+#s-03 .s-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 3.5rem);
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+#s-03 .s-head h2 {
+  margin: 0 0 1.25rem;
+  font-size: clamp(2.2rem, 6vw, 3.75rem);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+#s-03 .s-head h2::after {
+  content: '';
+  display: block;
+  width: 2.5rem;
+  height: 2px;
+  margin-top: 1.25rem;
+  background: var(--accent);
+}
+#s-03 .s-def {
+  margin: 0;
+  max-width: 34rem;
+  color: var(--ink);
+}
+
+#s-03 .s-info {
+  display: grid;
+  gap: 0;
+  max-width: 34rem;
+  border-top: 1px solid var(--line);
+}
+#s-03 .s-info p {
+  margin: 0;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+}
+#s-03 .s-info strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+#s-03 .s-demo {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: clamp(2rem, 6vw, 5rem);
+  padding: clamp(2rem, 5vw, 3.5rem) 0;
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--line);
+}
+#s-03 .demo-card h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+#s-03 .demo-card p {
+  margin: 0 0 1.75rem;
+  max-width: 28rem;
+  color: var(--muted);
+}
+
+#s-03 .demo-controls {
+  display: grid;
+  align-content: start;
+  gap: 0.5rem;
+}
+#s-03 .demo-controls .row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+#s-03 .demo-controls label {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+#s-03 .demo-btn,
+#s-03 .show-css,
+#s-03 .copy-css {
+  min-height: 2.75rem;
+  padding: 0.6rem 1.5rem;
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+#s-03 .demo-btn {
+  color: var(--paper);
+  background: var(--ink);
+}
+#s-03 .demo-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+#s-03 .show-css,
+#s-03 .copy-css {
+  color: var(--ink);
+  background: transparent;
+}
+#s-03 .show-css:hover,
+#s-03 .copy-css:hover {
+  color: var(--paper);
+  background: var(--ink);
+}
+#s-03 .demo-btn:active,
+#s-03 .show-css:active,
+#s-03 .copy-css:active {
+  transform: translateY(1px);
+}
+
+#s-03 .demo-switch {
+  position: relative;
+  flex: none;
+  width: 3.5rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+#s-03 .demo-switch::before {
+  content: '';
+  position: absolute;
+  inset: 0.65rem 0;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper);
+  transition: background-color 0.15s;
+}
+#s-03 .demo-switch .knob {
+  position: absolute;
+  top: 0.9rem;
+  left: 0.25rem;
+  width: 0.95rem;
+  height: 0.95rem;
+  border-radius: 50%;
+  background: var(--ink);
+  transition: transform 0.2s;
+}
+#s-03 .demo-switch[aria-checked='true']::before {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+#s-03 .demo-switch[aria-checked='true'] .knob {
+  background: #ffffff;
+  transform: translateX(1.5rem);
+}
+#s-03 .demo-switch:hover::before {
+  border-width: 2px;
+}
+
+#s-03 input {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--edge);
+  border-radius: 2px;
+  font: inherit;
+  color: var(--ink);
+  background: #ffffff;
+}
+#s-03 input::placeholder {
+  color: #6b665c;
+  opacity: 1;
+}
+#s-03 input:hover {
+  border-color: var(--ink);
+}
+
+#s-03 .demo-btn:focus-visible,
+#s-03 .demo-switch:focus-visible,
+#s-03 input:focus-visible,
+#s-03 .show-css:focus-visible,
+#s-03 .copy-css:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+#s-03 .s-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+#s-03 .s-tags li::before {
+  content: '';
+  display: inline-block;
+  width: 0.9rem;
+  height: 1px;
+  margin-right: 0.6rem;
+  vertical-align: middle;
+  background: var(--accent);
+}
+
+#s-03 .css-recipe {
+  margin-top: 1.25rem;
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  background: #ffffff;
+}
+#s-03 .css-recipe pre {
+  margin: 0 0 1rem;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--ink);
+}
+#s-03 .copy-status {
+  margin-left: 0.75rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+#s-03 .s-a11y {
+  max-width: 36rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--ink);
+}
+#s-03 .s-a11y h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+#s-03 .s-a11y p {
+  margin: 0;
+  color: var(--muted);
+}
+#s-03 .s-a11y strong {
+  color: var(--ink);
+}
+
+@media (min-width: 60rem) {
+  #s-03 .s-wrap {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    column-gap: clamp(3rem, 8vw, 7rem);
+  }
+  #s-03 .s-head,
+  #s-03 .s-info {
+    grid-column: 1;
+  }
+  #s-03 .s-demo {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+    align-self: start;
+    margin-top: 1.5rem;
+  }
+  #s-03 .s-tags,
+  #s-03 .s-recipe,
+  #s-03 .s-a11y {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 44rem) {
+  #s-03 .s-demo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #s-03 * {
+    transition: none;
+  }
+}
