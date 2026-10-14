@@ -270,36 +270,434 @@
 
       <!-- SECTION 06 START -->
       <section id="s-06" class="style-sec" data-style="06" aria-labelledby="h-06">
-        <h2 id="h-06">Brutalism / raw web</h2>
-        <p>Placeholder for style 06.</p>
+        <div class="s-wrap">
+          <header class="s-head">
+            <h2 id="h-06">Brutalism / raw web</h2>
+            <p class="s-def">
+              Web design that deliberately rejects polish in favour of raw, unadorned layouts that
+              make no effort to look comfortable or easy.
+            </p>
+          </header>
+          <div class="s-info">
+            <p class="s-best">
+              <strong>Best for:</strong> Brands that want to be memorable, especially in design,
+              art, fashion and culture.
+            </p>
+            <p class="s-avoid">
+              <strong>Avoid when:</strong> Finance, healthcare or banking, where clear navigation
+              and structure matter most.
+            </p>
+          </div>
+          <div class="s-demo" role="group" aria-label="Live demo">
+            <article class="demo-card">
+              <h3>Zine submissions close Friday</h3>
+              <p>
+                Send a link to the live page, not a mockup. Read the
+                <a href="https://brutalistwebsites.com" rel="noopener">gallery of raw sites</a>
+                first.
+              </p>
+              <button type="button" class="demo-btn">Submit page</button>
+            </article>
+            <div class="demo-controls">
+              <button
+                type="button"
+                role="switch"
+                aria-checked="false"
+                class="demo-switch"
+                aria-labelledby="sw-06-l"
+                data-section-class="show-outlines"
+              >
+                <span aria-hidden="true" class="knob"></span>
+              </button>
+              <span id="sw-06-l">Show element outlines</span>
+              <label for="in-06">Page address</label>
+              <input id="in-06" type="text" placeholder="http://example.org/sample" />
+            </div>
+          </div>
+          <ul class="s-tags" aria-label="Key ingredients">
+            <li>system fonts</li>
+            <li>2-5px black borders</li>
+            <li>default blue links</li>
+            <li>no rounding</li>
+          </ul>
+          <div class="s-recipe">
+            <button type="button" class="show-css" aria-expanded="false" aria-controls="css-06">
+              Show CSS
+            </button>
+            <div class="css-recipe" id="css-06" hidden>
+              <pre><code>#s-06 {
+  font-family: "Times New Roman", Times, serif;
+  background: #fff;
+  color: #000;
+}
+#s-06 .demo-card { border: 3px solid #000; padding: 1rem; }
+#s-06 a { color: #0000ee; text-decoration: underline; }
+#s-06 .demo-btn {
+  border: 3px outset #767676;
+  background: #e0e0e0;
+  border-radius: 0;
+}
+#s-06 :focus-visible { outline: 4px solid #d40000; background: #ff0; }</code></pre>
+              <button type="button" class="copy-css">Copy CSS</button>
+              <span class="copy-status" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+          <aside class="s-a11y" aria-labelledby="a11y-06-h">
+            <h3 id="a11y-06-h">Accessibility note</h3>
+            <p>
+              <strong>Main risk:</strong> Clashing colours and non-standard layout can hurt
+              legibility and orientation. <strong>Mitigation:</strong> This demo keeps a
+              conventional document order, black on white text, 3:1 borders and a red focus outline.
+            </p>
+          </aside>
+        </div>
       </section>
       <!-- SECTION 06 END -->
 
       <!-- SECTION 07 START -->
       <section id="s-07" class="style-sec" data-style="07" aria-labelledby="h-07">
-        <h2 id="h-07">Bento Grid</h2>
-        <p>Placeholder for style 07.</p>
+        <div class="s-wrap">
+          <header class="s-head">
+            <h2 id="h-07">Bento Grid</h2>
+            <p class="s-def">
+              A modular layout of distinct, rounded, differently sized content blocks packed into a
+              compartmentalised grid, like the sections of a bento lunchbox.
+            </p>
+            <span class="mini" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          </header>
+          <div class="s-info">
+            <p class="s-best">
+              <strong>Best for:</strong> Bite-sized content with a simple hierarchy, such as feature
+              showcases, dashboards and portfolios.
+            </p>
+            <p class="s-avoid">
+              <strong>Avoid when:</strong> There is no clear hierarchy, every cell is the same size,
+              or there are more than about nine boxes.
+            </p>
+          </div>
+          <div class="s-demo" role="group" aria-label="Live demo">
+            <article class="demo-card">
+              <h3>Weekly summary</h3>
+              <p>Three launches shipped and the backlog shrank by a fifth. Sample figures.</p>
+              <button type="button" class="demo-btn">Open the report</button>
+            </article>
+            <div class="demo-controls">
+              <div class="ctl-row">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked="false"
+                  class="demo-switch"
+                  aria-labelledby="sw-07-l"
+                  data-section-class="compact"
+                >
+                  <span aria-hidden="true" class="knob"></span>
+                </button>
+                <span id="sw-07-l">Compact tiles</span>
+              </div>
+              <label for="in-07">Tile title</label>
+              <input id="in-07" type="text" placeholder="Name this tile" />
+            </div>
+          </div>
+          <ul class="s-tags" aria-label="Key ingredients">
+            <li>CSS grid</li>
+            <li>grid-template-areas</li>
+            <li>mixed spans</li>
+            <li>rounded corners</li>
+          </ul>
+          <div class="s-recipe">
+            <button type="button" class="show-css" aria-expanded="false" aria-controls="css-07">
+              Show CSS
+            </button>
+            <div class="css-recipe" id="css-07" hidden>
+              <pre><code>.bento {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-areas:
+    "head head best  avoid"
+    "head head card  card"
+    "ctrl tags card  card"
+    "code code note  note";
+}
+.bento > * { border-radius: 28px; padding: 1.5rem; }
+@media (max-width: 40rem) {
+  .bento { grid-template-columns: 1fr; grid-template-areas: none; }
+}</code></pre>
+              <button type="button" class="copy-css">Copy CSS</button>
+              <span class="copy-status" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+          <aside class="s-a11y" aria-labelledby="a11y-07-h">
+            <h3 id="a11y-07-h">Accessibility note</h3>
+            <p>
+              <strong>Main risk:</strong> Differently sized tiles can make the visual order drift
+              from the source order, which confuses screen reader and keyboard users.
+              <strong>Mitigation:</strong> The HTML is written in reading order, the areas follow it
+              row by row, and the grid collapses to one column on small screens.
+            </p>
+          </aside>
+        </div>
       </section>
       <!-- SECTION 07 END -->
 
       <!-- SECTION 08 START -->
       <section id="s-08" class="style-sec" data-style="08" aria-labelledby="h-08">
-        <h2 id="h-08">Claymorphism</h2>
-        <p>Placeholder for style 08.</p>
+        <span class="blob b1" aria-hidden="true"></span>
+        <span class="blob b2" aria-hidden="true"></span>
+        <span class="blob b3" aria-hidden="true"></span>
+        <div class="s-wrap">
+          <header class="s-head">
+            <h2 id="h-08">Claymorphism</h2>
+            <p class="s-def">
+              Soft, inflated, clay-like 3D interfaces built from rounded shapes, inner and outer
+              shadows and pastel colours.
+            </p>
+          </header>
+          <div class="s-info">
+            <p class="s-best">
+              <strong>Best for:</strong> Friendly consumer, fintech, health and education products.
+            </p>
+            <p class="s-avoid">
+              <strong>Avoid when:</strong> The interface is data-dense or needs a serious,
+              enterprise tone.
+            </p>
+          </div>
+          <div class="s-demo" role="group" aria-label="Live demo">
+            <article class="demo-card">
+              <h3>Piggy bank goal</h3>
+              <p>You saved 120 of 200 dollars for the new bike. Sample amounts.</p>
+              <button type="button" class="demo-btn">Add savings</button>
+            </article>
+            <div class="demo-controls">
+              <div class="ctl-row">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked="false"
+                  class="demo-switch"
+                  aria-labelledby="sw-08-l"
+                  data-section-class="puffy"
+                >
+                  <span aria-hidden="true" class="knob"></span>
+                </button>
+                <span id="sw-08-l">Extra puffy</span>
+              </div>
+              <label for="in-08">Goal name</label>
+              <input id="in-08" type="text" placeholder="New bike" />
+            </div>
+          </div>
+          <ul class="s-tags" aria-label="Key ingredients">
+            <li>pastel fills</li>
+            <li>28px+ radii</li>
+            <li>two inner shadows</li>
+            <li>soft drop shadow</li>
+            <li>squish on press</li>
+          </ul>
+          <div class="s-recipe">
+            <button type="button" class="show-css" aria-expanded="false" aria-controls="css-08">
+              Show CSS
+            </button>
+            <div class="css-recipe" id="css-08" hidden>
+              <pre><code>.clay {
+  background: #cfe6ff;
+  color: #2a2150;
+  border-radius: 36px;
+  box-shadow:
+    inset 8px 8px 14px rgb(255 255 255 / 0.8),
+    inset -8px -10px 16px rgb(60 70 140 / 0.18),
+    14px 18px 30px -8px rgb(70 50 140 / 0.32);
+}
+.clay-btn:active {
+  transform: translateY(2px) scale(0.96);
+}</code></pre>
+              <button type="button" class="copy-css">Copy CSS</button>
+              <span class="copy-status" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+          <aside class="s-a11y" aria-labelledby="a11y-08-h">
+            <h3 id="a11y-08-h">Accessibility note</h3>
+            <p>
+              <strong>Main risk:</strong> Soft shading and pastel fills leave little contrast
+              between a control and its background. <strong>Mitigation:</strong> Text is dark plum,
+              controls have saturated edges or fills, and the press animation stops under reduced
+              motion.
+            </p>
+          </aside>
+        </div>
       </section>
       <!-- SECTION 08 END -->
 
       <!-- SECTION 09 START -->
       <section id="s-09" class="style-sec" data-style="09" aria-labelledby="h-09">
-        <h2 id="h-09">Skeuomorphism</h2>
-        <p>Placeholder for style 09.</p>
+        <div class="s-wrap">
+          <header class="s-head">
+            <h2 id="h-09">Skeuomorphism</h2>
+            <p class="s-def">
+              Interfaces that imitate real-world objects and materials, with textures, highlights
+              and depth so that controls look tangible.
+            </p>
+          </header>
+          <div class="s-info">
+            <p class="s-best">
+              <strong>Best for:</strong> Hero objects, audio and tactile controls, games and
+              onboarding where affordance matters.
+            </p>
+            <p class="s-avoid">
+              <strong>Avoid when:</strong> The interface is a dense productivity tool or page weight
+              is tightly constrained.
+            </p>
+          </div>
+          <div class="s-demo" role="group" aria-label="Live demo">
+            <article class="demo-card">
+              <h3>Studio monitor</h3>
+              <p>Output level is set to 6 and the limiter is armed. Sample readout.</p>
+              <button type="button" class="demo-btn">Test tone</button>
+            </article>
+            <div class="demo-controls">
+              <div class="ctl-row">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked="false"
+                  class="demo-switch"
+                  aria-labelledby="sw-09-l"
+                  data-section-class="lit"
+                >
+                  <span aria-hidden="true" class="knob"></span>
+                </button>
+                <span id="sw-09-l">Panel lamp</span>
+              </div>
+              <label for="in-09">Channel name</label>
+              <input id="in-09" type="text" placeholder="Vocals" />
+            </div>
+          </div>
+          <ul class="s-tags" aria-label="Key ingredients">
+            <li>layered gradients</li>
+            <li>stitching</li>
+            <li>embossed text</li>
+            <li>inset shadows</li>
+          </ul>
+          <div class="s-recipe">
+            <button type="button" class="show-css" aria-expanded="false" aria-controls="css-09">
+              Show CSS
+            </button>
+            <div class="css-recipe" id="css-09" hidden>
+              <pre><code>.metal {
+  background:
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.4) 0 1px, rgb(0 0 0 / 0.04) 1px 3px),
+    linear-gradient(180deg, #eceef1, #c3c8ce);
+  box-shadow: inset 0 1px 0 #fff, 0 6px 14px rgb(0 0 0 / 0.4);
+}
+.leather::after {
+  content: ""; position: absolute; inset: 10px;
+  border: 2px dashed #d9b36a; border-radius: 12px;
+}
+.key:active { transform: translateY(3px); box-shadow: inset 0 3px 6px #0006; }
+.engraved { text-shadow: 0 1px 0 rgb(255 255 255 / 0.6); }</code></pre>
+              <button type="button" class="copy-css">Copy CSS</button>
+              <span class="copy-status" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+          <aside class="s-a11y" aria-labelledby="a11y-09-h">
+            <h3 id="a11y-09-h">Accessibility note</h3>
+            <p>
+              <strong>Main risk:</strong> Textures and translucent layers make text contrast depend
+              on what sits behind it, and buttons can disappear. <strong>Mitigation:</strong> Every
+              label sits on a solid plate, and controls keep strong bevels plus a two-tone focus
+              ring.
+            </p>
+          </aside>
+        </div>
       </section>
       <!-- SECTION 09 END -->
 
       <!-- SECTION 10 START -->
       <section id="s-10" class="style-sec" data-style="10" aria-labelledby="h-10">
-        <h2 id="h-10">Dark Mode UI</h2>
-        <p>Placeholder for style 10.</p>
+        <div class="s-wrap">
+          <header class="s-head">
+            <h2 id="h-10">Dark Mode UI</h2>
+            <p class="s-def">
+              A light-on-dark colour scheme built from tonal dark surfaces, offered as a theme or an
+              alternative to the light interface.
+            </p>
+            <ol class="elev" aria-hidden="true">
+              <li>L0</li>
+              <li>L1</li>
+              <li>L2</li>
+              <li>L3</li>
+              <li>L4</li>
+            </ol>
+          </header>
+          <div class="s-info">
+            <p class="s-best">
+              <strong>Best for:</strong> Low-light use, light-sensitive people, and media, developer
+              or creative tools.
+            </p>
+            <p class="s-avoid">
+              <strong>Avoid when:</strong> Users read long text or work in bright sunlight.
+            </p>
+          </div>
+          <div class="s-demo" role="group" aria-label="Live demo">
+            <article class="demo-card">
+              <h3>Build 4182 passed</h3>
+              <p>All 312 checks are green and the preview is ready to review. Sample data.</p>
+              <button type="button" class="demo-btn">Open report</button>
+            </article>
+            <div class="demo-controls">
+              <div class="ctl-row">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked="false"
+                  class="demo-switch"
+                  aria-labelledby="sw-10-l"
+                  data-section-class="soft"
+                >
+                  <span aria-hidden="true" class="knob"></span>
+                </button>
+                <span id="sw-10-l">Softer text</span>
+              </div>
+              <label for="in-10">Branch name</label>
+              <input id="in-10" type="text" placeholder="feature/night-theme" />
+            </div>
+          </div>
+          <ul class="s-tags" aria-label="Key ingredients">
+            <li>#121316 surface</li>
+            <li>tonal elevation</li>
+            <li>off-white text</li>
+            <li>desaturated accents</li>
+          </ul>
+          <div class="s-recipe">
+            <button type="button" class="show-css" aria-expanded="false" aria-controls="css-10">
+              Show CSS
+            </button>
+            <div class="css-recipe" id="css-10" hidden>
+              <pre><code>.dark {
+  color-scheme: dark;
+  --l0: #121316; --l1: #1a1c21; --l2: #21242a;
+  --l3: #292d34; --l4: #31363e;
+  --text: #e6e8eb;
+  --accent: #8ab4f8;
+  background: var(--l0);
+  color: var(--text);
+}
+.dark .card { background: var(--l2); border: 1px solid #ffffff14; }
+.dark :focus-visible { outline: 3px solid #e8f0ff; outline-offset: 3px; }</code></pre>
+              <button type="button" class="copy-css">Copy CSS</button>
+              <span class="copy-status" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+          <aside class="s-a11y" aria-labelledby="a11y-10-h">
+            <h3 id="a11y-10-h">Accessibility note</h3>
+            <p>
+              <strong>Main risk:</strong> Pure white on pure black causes halation and glare,
+              particularly for people with astigmatism, and focus indicators can vanish against dark
+              surfaces. <strong>Mitigation:</strong> This demo uses a near-black surface, off-white
+              text, desaturated accents and a pale 3:1 focus ring.
+            </p>
+          </aside>
+        </div>
       </section>
       <!-- SECTION 10 END -->
 

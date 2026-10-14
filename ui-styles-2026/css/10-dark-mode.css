@@ -1,1 +1,403 @@
-/* 10 Dark Mode UI: everything scoped under #s-10. Owned by the style 10 agent. */
+/* 10 Dark Mode UI. Fixed dark theme, independent of the OS setting. Everything scoped under #s-10.
+   Contrast (computed): text #e6e8eb on L0 #121316 15.1:1, L2 12.7:1, L3 11.3:1, L4 9.7:1;
+   muted #a9b0ba on L3 6.3:1, L4 5.5:1; accent #8ab4f8 on L1 8.1:1; button #0d1726 on accent 8.5:1;
+   teal #7fd0c0 on L2 8.7:1; focus ring #e8f0ff on L3 12.1:1; control edge #7b828d on L2 4:1;
+   switch knob #e6e8eb on off-track 5.2:1 and on-track 3.3:1; placeholder #9097a3 on L1 5.8:1. */
+
+#s-10 {
+  color-scheme: dark;
+  --l0: #121316;
+  --l1: #1a1c21;
+  --l2: #21242a;
+  --l3: #292d34;
+  --l4: #323740;
+  --text: #e6e8eb;
+  --muted: #a9b0ba;
+  --line: rgb(255 255 255 / 0.1);
+  --edge: #7b828d;
+  --accent: #8ab4f8;
+  --accent-2: #7fd0c0;
+  --ring: #e8f0ff;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  color: var(--text);
+  background: var(--l0);
+  line-height: 1.55;
+}
+#s-10.soft {
+  --text: #c5cad2;
+  --muted: #a0a7b2;
+}
+
+#s-10 .s-wrap {
+  display: grid;
+  gap: 1rem;
+  max-width: 68rem;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3.5rem) 1rem clamp(2rem, 5vw, 4rem);
+}
+
+#s-10 h2,
+#s-10 h3,
+#s-10 p {
+  margin: 0;
+}
+
+/* Tonal elevation: higher surfaces are lighter, no drop shadows */
+#s-10 .s-head,
+#s-10 .s-best,
+#s-10 .s-avoid,
+#s-10 .demo-card,
+#s-10 .demo-controls,
+#s-10 .s-recipe,
+#s-10 .s-a11y {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+#s-10 .s-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 2rem;
+  row-gap: 1rem;
+  align-items: end;
+  padding: clamp(1.5rem, 4vw, 2.75rem);
+  background: var(--l1);
+}
+#s-10 h2 {
+  font-size: clamp(2.25rem, 6.5vw, 4rem);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+#s-10 .s-def {
+  max-width: 48ch;
+  font-size: clamp(1rem, 1.8vw, 1.2rem);
+  color: var(--muted);
+}
+
+/* Elevation ladder: five tonal steps */
+#s-10 .elev {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+#s-10 .elev li {
+  width: 4rem;
+  padding: 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+#s-10 .elev li:nth-child(1) {
+  height: 3rem;
+  background: var(--l0);
+}
+#s-10 .elev li:nth-child(2) {
+  height: 4rem;
+  background: var(--l1);
+}
+#s-10 .elev li:nth-child(3) {
+  height: 5rem;
+  background: var(--l2);
+}
+#s-10 .elev li:nth-child(4) {
+  height: 6rem;
+  background: var(--l3);
+}
+#s-10 .elev li:nth-child(5) {
+  height: 7rem;
+  background: var(--l4);
+}
+
+#s-10 .s-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: inherit;
+}
+#s-10 .s-best,
+#s-10 .s-avoid {
+  padding: 1.25rem 1.5rem;
+  background: var(--l2);
+}
+#s-10 .s-best strong {
+  color: var(--accent-2);
+}
+#s-10 .s-avoid strong {
+  color: #f0b38a;
+}
+#s-10 .s-info strong {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#s-10 .s-demo {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: inherit;
+}
+#s-10 .demo-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: clamp(1.5rem, 3.5vw, 2.25rem);
+  background: var(--l3);
+}
+#s-10 .demo-card h3 {
+  font-size: clamp(1.4rem, 3vw, 1.85rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+#s-10 .demo-card p {
+  max-width: 38ch;
+  color: var(--muted);
+}
+#s-10 .demo-controls {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  background: var(--l2);
+}
+#s-10 .ctl-row {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  font-weight: 600;
+}
+#s-10 .demo-controls label {
+  margin-top: 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* Desaturated accent button */
+#s-10 .demo-btn,
+#s-10 .show-css,
+#s-10 .copy-css {
+  min-height: 2.75rem;
+  padding: 0.5rem 1.25rem;
+  font: inherit;
+  font-weight: 600;
+  color: #0d1726;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    transform 0.1s;
+}
+#s-10 .demo-btn:hover,
+#s-10 .show-css:hover,
+#s-10 .copy-css:hover {
+  background: #a5c5fa;
+  border-color: #a5c5fa;
+}
+#s-10 .demo-btn:active,
+#s-10 .show-css:active,
+#s-10 .copy-css:active {
+  background: #7aa3e6;
+  border-color: #7aa3e6;
+  transform: translateY(1px);
+}
+#s-10 .show-css,
+#s-10 .copy-css {
+  color: var(--text);
+  background: transparent;
+  border-color: var(--edge);
+}
+#s-10 .show-css:hover,
+#s-10 .copy-css:hover {
+  background: var(--l4);
+  border-color: var(--text);
+}
+#s-10 .show-css:active,
+#s-10 .copy-css:active {
+  background: var(--l3);
+  border-color: var(--text);
+}
+
+#s-10 input[type='text'] {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.85rem;
+  font: inherit;
+  color: var(--text);
+  background: var(--l1);
+  border: 1px solid var(--edge);
+  border-radius: 10px;
+}
+#s-10 input::placeholder {
+  color: #9097a3;
+  opacity: 1;
+}
+#s-10 input[type='text']:hover {
+  border-color: var(--text);
+}
+
+#s-10 .demo-switch {
+  position: relative;
+  flex: none;
+  width: 3.25rem;
+  height: 1.9rem;
+  padding: 0;
+  background: #5a606b;
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+#s-10 .demo-switch::after {
+  content: '';
+  position: absolute;
+  inset: -0.5rem -0.2rem;
+}
+#s-10 .demo-switch .knob {
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  width: 1.3rem;
+  height: 1.3rem;
+  margin-top: -0.65rem;
+  background: var(--text);
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+#s-10 .demo-switch[aria-checked='true'] {
+  background: #4f7fcf;
+  border-color: var(--accent);
+}
+#s-10 .demo-switch[aria-checked='true'] .knob {
+  transform: translateX(1.3rem);
+}
+#s-10 .demo-switch:hover {
+  border-color: var(--text);
+}
+#s-10 .demo-switch:active .knob {
+  transform: scale(0.9);
+}
+#s-10 .demo-switch[aria-checked='true']:active .knob {
+  transform: translateX(1.3rem) scale(0.9);
+}
+
+/* Pale focus ring with a dark gap, readable on every elevation step */
+#s-10 button:focus-visible,
+#s-10 input:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 3px;
+}
+
+#s-10 .s-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+#s-10 .s-tags li {
+  padding: 0.3rem 0.85rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--l1);
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+}
+#s-10 .s-tags li:nth-child(even) {
+  color: var(--accent-2);
+}
+
+#s-10 .s-recipe {
+  padding: 1.25rem 1.5rem;
+  background: var(--l1);
+}
+#s-10 .css-recipe {
+  margin-top: 1rem;
+}
+#s-10 .css-recipe pre {
+  margin: 0 0 0.9rem;
+  padding: 1rem 1.15rem;
+  font:
+    0.82rem/1.6 ui-monospace,
+    'SF Mono',
+    Menlo,
+    Consolas,
+    monospace;
+  color: var(--text);
+  background: var(--l0);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+#s-10 .copy-status {
+  margin-left: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--accent-2);
+}
+
+#s-10 .s-a11y {
+  padding: 1.25rem 1.5rem;
+  background: var(--l4);
+}
+#s-10 .s-a11y h3 {
+  margin-bottom: 0.4rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+#s-10 .s-a11y p {
+  max-width: 66ch;
+}
+
+@media (max-width: 44rem) {
+  #s-10 .s-head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  #s-10 .elev {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  #s-10 .elev li {
+    flex: 1 1 0;
+    width: auto;
+  }
+  #s-10 .s-info,
+  #s-10 .s-demo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-contrast: more) {
+  #s-10 {
+    --line: rgb(255 255 255 / 0.4);
+    --muted: #d0d5dc;
+  }
+}
+
+@media (forced-colors: active) {
+  #s-10 .demo-switch,
+  #s-10 .demo-btn {
+    border: 2px solid ButtonText;
+  }
+}

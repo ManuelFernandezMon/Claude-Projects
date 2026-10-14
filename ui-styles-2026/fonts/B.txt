@@ -1,0 +1,4 @@
+family=Manrope:wght@500;700;800
+family=Nunito:wght@600;700;800
+family=Bitter:wght@400;700
+family=Inter:wght@400;600
