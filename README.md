@@ -5,6 +5,7 @@ A monorepo holding independent projects, one per top-level folder.
 ## Projects
 
 - [`panama-pets-website/`](panama-pets-website/README.md) — marketing site for the Panama Pets veterinary clinic (React + Vite + TypeScript + Tailwind).
+- [`ui-styles-2026/`](ui-styles-2026/README.md) — single-page showcase of 20 web UI design styles as live demos (plain HTML, CSS and vanilla JS, no build step).
 
 ## Plans
 
