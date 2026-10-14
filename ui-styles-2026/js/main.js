@@ -1,5 +1,7 @@
 /* main.js: shared behaviour only. Style sections never edit this file; they opt in
    through attributes (see README "Section contract"):
+   - .style-sec loads css/NN-*.css (its data-css attribute) one viewport before it is needed and
+     gets class "css-ready" when that file has loaded (until then it is visibility:hidden).
    - .style-sec gets class "is-active" while it is on screen (gate heavy effects on it).
    - button.show-css[aria-controls=ID]  toggles the .css-recipe#ID element.
    - button.copy-css inside .css-recipe copies its <code> text; .copy-status announces it.
@@ -12,6 +14,61 @@
 
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   var sections = Array.prototype.slice.call(document.querySelectorAll('.style-sec'));
+
+  /* ---- Load each style's own stylesheet shortly before its section is needed ---- */
+  var readyTimers = {};
+  function markReady(sec) {
+    sec.classList.add('css-ready');
+    window.clearTimeout(readyTimers[sec.id]);
+  }
+  function loadSectionCss(sec) {
+    if (sec.getAttribute('data-css-state')) return;
+    sec.setAttribute('data-css-state', 'loading');
+    var href = sec.getAttribute('data-css');
+    if (!href) {
+      markReady(sec);
+      return;
+    }
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    var finish = function () {
+      sec.setAttribute('data-css-state', 'loaded');
+      markReady(sec);
+    };
+    link.onload = finish;
+    link.onerror = finish;
+    document.head.appendChild(link);
+    readyTimers[sec.id] = window.setTimeout(finish, 5000); // never leave a section hidden
+  }
+  if ('IntersectionObserver' in window) {
+    var cssIO = new IntersectionObserver(
+      function (entries, obs) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) {
+            loadSectionCss(e.target);
+            obs.unobserve(e.target);
+          }
+        });
+      },
+      { rootMargin: '100% 0px 100% 0px', threshold: 0 },
+    );
+    sections.forEach(function (s) {
+      cssIO.observe(s);
+    });
+  } else {
+    sections.forEach(loadSectionCss);
+  }
+
+  /* Keyboard users: when focus enters a section, make sure it and the next one are loaded so
+     Tab never skips controls inside a section that is still visibility:hidden. */
+  document.addEventListener('focusin', function (ev) {
+    var sec = ev.target.closest && ev.target.closest('.style-sec');
+    var i = sec ? sections.indexOf(sec) : sections.indexOf(null);
+    if (i < 0) return;
+    loadSectionCss(sections[i]);
+    if (sections[i + 1]) loadSectionCss(sections[i + 1]);
+  });
 
   /* ---- Activate sections only while visible ---- */
   if ('IntersectionObserver' in window) {

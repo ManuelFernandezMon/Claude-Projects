@@ -262,6 +262,12 @@ body {
   overflow: clip;
   content-visibility: auto;
   contain-intrinsic-size: auto 100svh;
+  /* Hidden until js/main.js has loaded this section's own stylesheet (no flash of
+     unstyled content). The <noscript> block in index.html makes sections visible. */
+  visibility: hidden;
+}
+.style-sec.css-ready {
+  visibility: visible;
 }
 
 /* ---------- Comparison ---------- */

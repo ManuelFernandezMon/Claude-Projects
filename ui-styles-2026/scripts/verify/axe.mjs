@@ -25,6 +25,17 @@ for (const c of configs) {
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
     .analyze();
   fs.writeFileSync(`${out}axe-${c.name}.json`, JSON.stringify(res.violations, null, 2));
+  fs.writeFileSync(
+    `${out}axe-${c.name}-incomplete.json`,
+    JSON.stringify(
+      res.incomplete.map((i) => ({
+        id: i.id,
+        nodes: i.nodes.map((n) => ({ target: n.target.join(' '), msg: n.any[0]?.message })),
+      })),
+      null,
+      2,
+    ),
+  );
   const rows = res.violations.map((v) => ({
     id: v.id,
     impact: v.impact,

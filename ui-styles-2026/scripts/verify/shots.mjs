@@ -12,6 +12,7 @@ for (const w of WIDTHS) {
   const page = await b.newPage({ viewport: { width: w, height: 900 } });
   await page.goto(BASE);
   await warmUp(page);
+  await page.addStyleTag({ content: '.topnav{visibility:hidden!important}' });
   for (const id of only) {
     const loc = page.locator(`#${id}`);
     await loc.scrollIntoViewIfNeeded();

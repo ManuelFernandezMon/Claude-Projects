@@ -1,11 +1,11 @@
 // Keyboard walk: Tab through every focusable control, check a visible focus change by comparing
 // pixels with and without focus, no positive tabindex, and that Show CSS / switches work by keyboard.
-import { launch, BASE, warmUp } from './lib.mjs';
+import { launch, BASE } from './lib.mjs';
 
 const b = await launch();
 const page = await b.newPage({ viewport: { width: 1440, height: 900 } });
 await page.goto(BASE);
-await warmUp(page);
+await page.waitForLoadState('load');
 
 const problems = [];
 const noFocusChange = [];
@@ -17,9 +17,8 @@ const positive = await page.$$eval(
 );
 if (positive) problems.push(`${positive} element(s) with positive tabindex`);
 
-await page.evaluate(() => window.scrollTo(0, 0));
-await page.keyboard.press('Tab'); // first stop (skip link)
-for (let i = 0; i < 400; i++) {
+await page.keyboard.press('Tab'); // first stop (skip link) from a fresh load
+for (let i = 0; i < 600; i++) {
   const info = await page.evaluate(() => {
     const e = document.activeElement;
     if (!e || e === document.body) return null;

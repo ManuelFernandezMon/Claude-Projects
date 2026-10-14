@@ -39,7 +39,13 @@ final report as `NEEDS main.js: ...` instead of adding script tags.
         <button type="button" class="demo-btn">Primary action</button>
       </article>
       <div class="demo-controls">
-        <button type="button" role="switch" aria-checked="false" class="demo-switch" aria-labelledby="sw-NN-l">
+        <button
+          type="button"
+          role="switch"
+          aria-checked="false"
+          class="demo-switch"
+          aria-labelledby="sw-NN-l"
+        >
           <span aria-hidden="true" class="knob"></span>
         </button>
         <span id="sw-NN-l">Switch label</span>
@@ -47,19 +53,24 @@ final report as `NEEDS main.js: ...` instead of adding script tags.
         <input id="in-NN" type="text" placeholder="Hint text" />
       </div>
     </div>
-    <ul class="s-tags" aria-label="Key ingredients"><li>tag</li><!-- 3 to 5 --></ul>
+    <ul class="s-tags" aria-label="Key ingredients">
+      <li>tag</li>
+      <!-- 3 to 5 -->
+    </ul>
     <div class="s-recipe">
-      <button type="button" class="show-css" aria-expanded="false" aria-controls="css-NN">Show CSS</button>
+      <button type="button" class="show-css" aria-expanded="false" aria-controls="css-NN">
+        Show CSS
+      </button>
       <div class="css-recipe" id="css-NN" hidden>
         <pre><code>/* at most 15 lines, real working CSS from this section */</code></pre>
         <button type="button" class="copy-css">Copy CSS</button>
         <span class="copy-status" role="status" aria-live="polite"></span>
       </div>
     </div>
-    <aside class="s-a11y" aria-labelledby="a11y-NN-h">
+    <div class="s-a11y" role="group" aria-labelledby="a11y-NN-h">
       <h3 id="a11y-NN-h">Accessibility note</h3>
       <p><strong>Main risk:</strong> ... <strong>Mitigation:</strong> ...</p>
-    </aside>
+    </div>
   </div>
 </section>
 <!-- SECTION NN END -->
@@ -134,7 +145,7 @@ At most 15 lines of real, copy-pasteable CSS that reproduces the signature of th
 2. Screenshot your sections at widths 375, 768 and 1440 with Playwright (installed globally):
    ```js
    import { chromium } from '/opt/node22/lib/node_modules/playwright/index.mjs';
-   const b = await chromium.launch();           // bundled chromium is configured
+   const b = await chromium.launch(); // bundled chromium is configured
    const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
    await p.goto('http://127.0.0.1:PORT/#s-NN');
    await p.locator('#s-NN').screenshot({ path: 'shots/NN-1440.png' });

@@ -36,6 +36,11 @@ export async function warmUp(page) {
     );
     await page.waitForTimeout(120);
   }
+  await page.waitForFunction(
+    () => document.querySelectorAll('.style-sec.css-ready').length === 20,
+    null,
+    { timeout: 15000 },
+  );
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(150);
 }
