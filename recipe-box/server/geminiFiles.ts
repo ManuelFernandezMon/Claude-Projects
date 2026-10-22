@@ -31,7 +31,20 @@ export async function startUpload(opts: { mimeType: string; size: number; displa
   }
   const url = res.headers.get('x-goog-upload-url')
   if (!url) throw new UploadError(502, 'start failed: no upload URL returned')
-  return url
+  return withoutKey(url)
+}
+
+/**
+ * Upload session URLs may carry the API key as a `key=` query parameter. The URL is later signed into a token the browser
+ * holds, so strip the key here; chunk forwards authenticate with the x-goog-api-key header instead.
+ */
+export function withoutKey(url: string): string {
+  const u = new URL(url)
+  u.searchParams.delete('key')
+  const clean = u.toString()
+  const key = process.env.GEMINI_API_KEY
+  if (key && clean.includes(key)) throw new UploadError(502, 'upload URL contains the API key')
+  return clean
 }
 
 /** Sends one chunk. Non-final chunks must be multiples of 256 KiB (enforced by the caller). */
@@ -44,6 +57,7 @@ export async function sendChunk(
   const res = await fetch(uploadUrl, {
     method: 'POST',
     headers: {
+      'x-goog-api-key': process.env.GEMINI_API_KEY ?? '',
       'x-goog-upload-command': final ? 'upload, finalize' : 'upload',
       'x-goog-upload-offset': String(offset),
       'content-length': String(bytes.length),

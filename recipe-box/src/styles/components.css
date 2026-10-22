@@ -839,3 +839,15 @@ button.chip.example {
   margin-top: 6px;
   accent-color: var(--accent);
 }
+
+label.btn {
+  cursor: pointer;
+}
+label.btn:focus-within {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+.btn--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

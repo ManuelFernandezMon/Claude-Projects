@@ -23,6 +23,7 @@ export function ImportPage() {
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
   const [video, setVideo] = useState<VideoPhase>({ kind: 'idle' })
+  const [picked, setPicked] = useState<{ name: string; mb: string }>()
   const [fetching, setFetching] = useState(false)
   const [hint, setHint] = useState<string>()
   const [error, setError] = useState<string>()
@@ -89,8 +90,11 @@ export function ImportPage() {
   async function onVideoPicked(file: File | undefined) {
     if (fileRef.current) fileRef.current.value = ''
     if (!file || working) return
+    setPicked({ name: file.name, mb: (file.size / 1024 / 1024).toFixed(1) })
     if (!passcode) {
-      setError('Enter the passcode first.')
+      setError('Enter the passcode above first, then choose the video again.')
+      pc.setEditing(true)
+      setTimeout(() => document.getElementById('ai-pass')?.focus(), 0)
       return
     }
     setError(undefined)
@@ -163,23 +167,26 @@ export function ImportPage() {
           minutes.
         </p>
         <div>
-          <button
-            type="button"
-            className="btn btn--primary"
-            onClick={() => fileRef.current?.click()}
-            disabled={working || !passcode}
-          >
+          {/* A real <label> around the input works in every mobile browser; no script-triggered click needed. */}
+          <label className={`btn btn--primary${working ? ' btn--disabled' : ''}`}>
             Choose video
-          </button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="video/*"
-            hidden
-            data-testid="video-file-input"
-            onChange={(e) => void onVideoPicked(e.target.files?.[0])}
-          />
+            <input
+              ref={fileRef}
+              type="file"
+              accept="video/*"
+              className="sr-only"
+              data-testid="video-file-input"
+              disabled={working}
+              onChange={(e) => void onVideoPicked(e.target.files?.[0])}
+            />
+          </label>
         </div>
+        {!passcode && <p className="muted small">Enter the passcode above before choosing a video.</p>}
+        {picked && (
+          <p className="small" role="status">
+            Selected: <strong>{picked.name}</strong> ({picked.mb} MB)
+          </p>
+        )}
         {video.kind === 'uploading' && (
           <div role="status">
             <label htmlFor="vid-progress" className="small muted">
