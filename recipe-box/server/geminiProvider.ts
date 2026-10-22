@@ -10,10 +10,14 @@ import { RecipeOutputSchema, type ProviderRequest, type ProviderResult } from '.
 const DEFAULT_MODELS =
   'gemini-3.8-flash,gemini-3.6-flash,gemini-3.5-flash-lite,gemini-2.5-flash,gemini-2.5-flash-lite'
 const REQUEST_TIMEOUT_MS = 25_000
-const VIDEO_REQUEST_TIMEOUT_MS = 45_000
-/** Stop starting new attempts after this long, and cap each attempt so the whole call ends before the 60 s function limit. */
-const DEADLINE_MS = 30_000
-const HARD_LIMIT_MS = 55_000
+/**
+ * Time budgets. Text endpoints run under a 60 s function limit; video-extract is configured for 300 s in vercel.json (Hobby
+ * allows it with Fluid compute), because analysing a video can take tens of seconds per attempt and an overloaded model may
+ * need that long just to answer 503.
+ */
+const TEXT = { timeout: REQUEST_TIMEOUT_MS, deadline: 30_000, hardLimit: 55_000, perModel: 2, passes: 1 }
+const VIDEO = { timeout: 100_000, deadline: 170_000, hardLimit: 285_000, perModel: 1, passes: 2 }
+const PASS_GAP_MS = () => Number(process.env.GEMINI_PASS_GAP_MS ?? 4000)
 
 const models = () =>
   (process.env.GEMINI_MODEL || DEFAULT_MODELS)
@@ -77,27 +81,30 @@ export function makeGeminiClient(timeoutMs = REQUEST_TIMEOUT_MS): GoogleGenAI {
 
 /** `started` lets a caller that already spent time (e.g. waiting for a video to process) share one overall deadline. */
 export async function callGemini(req: ProviderRequest, started = Date.now()): Promise<ProviderResult> {
+  const budget = req.video ? VIDEO : TEXT
   let lastError: unknown
-  for (const model of models()) {
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const elapsed = Date.now() - started
-      if (elapsed > DEADLINE_MS) throw lastError ?? new Error('Gemini deadline exceeded')
-      const cap = req.video ? VIDEO_REQUEST_TIMEOUT_MS : REQUEST_TIMEOUT_MS
-      const ai = makeGeminiClient(Math.max(5_000, Math.min(cap, HARD_LIMIT_MS - elapsed)))
-      try {
-        const first = await once(ai, model, req)
-        // One retry for malformed JSON on the same model; nothing else is worth spending free-tier quota on.
-        return first.kind === 'bad_output' ? await once(ai, model, req) : first
-      } catch (e) {
-        lastError = e
-        if (!(e instanceof ApiError)) throw e
-        console.warn(`gemini ${model} attempt ${attempt + 1} failed: HTTP ${e.status}`)
-        if (isTransient(e.status) && attempt === 0) {
-          await sleep(retryDelayMs()) // brief pause, then one more try on the same model
-          continue
+  for (let pass = 0; pass < budget.passes; pass++) {
+    if (pass > 0) await sleep(PASS_GAP_MS()) // everything was busy: give the service a moment, then walk the chain again
+    for (const model of models()) {
+      for (let attempt = 0; attempt < budget.perModel; attempt++) {
+        const elapsed = Date.now() - started
+        if (elapsed > budget.deadline) throw lastError ?? new Error('Gemini deadline exceeded')
+        const ai = makeGeminiClient(Math.max(5_000, Math.min(budget.timeout, budget.hardLimit - elapsed)))
+        try {
+          const first = await once(ai, model, req)
+          // One retry for malformed JSON on the same model; nothing else is worth spending free-tier quota on.
+          return first.kind === 'bad_output' ? await once(ai, model, req) : first
+        } catch (e) {
+          lastError = e
+          if (!(e instanceof ApiError)) throw e
+          console.warn(`gemini ${model} pass ${pass + 1} attempt ${attempt + 1} failed: HTTP ${e.status}`)
+          if (isTransient(e.status) && attempt + 1 < budget.perModel) {
+            await sleep(retryDelayMs()) // brief pause, then one more try on the same model
+            continue
+          }
+          if (isTransient(e.status) || e.status === 429 || e.status === 404) break // try the next model
+          throw e // bad key or bad request: another model will not help
         }
-        if (isTransient(e.status) || e.status === 429 || e.status === 404) break // try the next model
-        throw e // bad key or bad request: another model will not help
       }
     }
   }

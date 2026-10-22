@@ -229,3 +229,15 @@ export function extractVideo(
 ): Promise<ImportedRecipe | null> {
   return postAi('/api/video-extract', input, passcode)
 }
+
+/** Deletes an uploaded video from Google right away (best effort; Google also deletes uploads after 48 hours). */
+export async function discardVideo(file: UploadedVideo, passcode: string): Promise<void> {
+  try {
+    await postAi('/api/video-extract', { file, discard: true }, passcode)
+  } catch {
+    /* nothing to do: it expires on its own */
+  }
+}
+
+/** Failures after which the upload is still on Google and asking again (without uploading) can work. */
+export const RETRYABLE_CODES = new Set(['provider_overloaded', 'rate_limited', 'provider_error', 'bad_model_output'])

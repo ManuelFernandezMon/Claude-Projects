@@ -99,7 +99,14 @@ export async function handleVideoExtract(request: Request): Promise<Response> {
   const categories = cleanCategories(b.categories)
 
   const ai = makeGeminiClient()
+  // Keep the uploaded video when the failure is transient (overloaded model, quota): the browser can then ask again without
+  // uploading it a second time. Google deletes uploads after 48 hours anyway, and "discard" removes it right away.
+  let keep = false
   try {
+    if (b.discard === true) {
+      await deleteFile(ai, name)
+      return json(200, { discarded: true })
+    }
     let ready: boolean
     try {
       ready = await waitUntilActive(ai, name, Number(process.env.GEMINI_FILE_WAIT_MS ?? 15_000))
@@ -114,7 +121,7 @@ export async function handleVideoExtract(request: Request): Promise<Response> {
     if (!ready) {
       return json(422, { error: 'video_unreadable', message: 'Google could not process this video (or it took too long). Try a shorter or different file.' })
     }
-    return await runRecipeModel({
+    const res = await runRecipeModel({
       system: SYSTEM_PROMPT,
       effort: 'low',
       categories,
@@ -129,8 +136,10 @@ export async function handleVideoExtract(request: Request): Promise<Response> {
         .filter(Boolean)
         .join('\n'),
     })
+    keep = res.status === 429 || res.status >= 500
+    return res
   } finally {
-    await deleteFile(ai, name)
+    if (!keep && b.discard !== true) await deleteFile(ai, name)
   }
 }
 

@@ -108,7 +108,10 @@ not be readable from a browser (a device test failed exactly on the last part), 
 gets a unique display name and `/api/video-find` lets the server (no CORS there) look the file up by it before the app decides
 the last chunk was lost. `/api/video-extract` then waits for Google to
 process the video, asks Gemini to extract the recipe with the same model fallback as the text features, and **deletes the file**
-afterwards (Google also removes uploads after 48 hours).
+afterwards (Google also removes uploads after 48 hours). `video-extract` is allowed to run up to **300 s** (`vercel.json`; Vercel's
+Hobby plan allows that with Fluid compute) because an overloaded model can take 10 to 40 s just to answer 503: it tries each model
+once, then walks the chain a second time. If every model is busy the video is **kept** on Google, the page offers *Try again*
+(no second upload) and *Discard upload*, and choosing another video discards the kept one.
 
 **Android picker quirk:** the page has two buttons. *Choose video* opens your Files app; *From Photos* opens Android's photo
 picker. Chrome only opens the photo picker when every accepted type is an image or video, and that picker's temporary file

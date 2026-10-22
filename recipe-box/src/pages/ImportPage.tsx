@@ -7,7 +7,16 @@ import { usePasscode } from '../hooks/usePasscode'
 import { ImportError, extractRecipe, fetchTikTokCaption } from '../lib/importApi'
 import { toPrefill } from '../lib/prefill'
 import { safeHttpUrl, sourceKind } from '../lib/url'
-import { MAX_VIDEO_MB, MAX_VIDEO_MINUTES, extractVideo, loadVideo, uploadVideo } from '../lib/videoApi'
+import {
+  MAX_VIDEO_MB,
+  MAX_VIDEO_MINUTES,
+  RETRYABLE_CODES,
+  discardVideo,
+  extractVideo,
+  loadVideo,
+  uploadVideo,
+  type UploadedVideo,
+} from '../lib/videoApi'
 
 const MAX_TEXT = 8000
 
@@ -29,6 +38,8 @@ export function ImportPage() {
   const [error, setError] = useState<string>()
   const [errorDetail, setErrorDetail] = useState<string>()
   const [errorCode, setErrorCode] = useState<string>()
+  /** A video already on Google whose analysis failed for a transient reason: it can be retried without uploading again. */
+  const [pending, setPending] = useState<UploadedVideo>()
   const filesRef = useRef<HTMLInputElement>(null)
   const photosRef = useRef<HTMLInputElement>(null)
 
@@ -92,6 +103,25 @@ export function ImportPage() {
     }
   }
 
+  async function analyse(uploaded: UploadedVideo) {
+    setVideo({ kind: 'reading' })
+    try {
+      const r = await extractVideo({ file: uploaded, url: cleanUrl, categories: categories.map((c) => c.name) }, passcode)
+      setPending(undefined)
+      if (!r) {
+        setError('No recipe found in that video. Make sure it shows or explains the ingredients and steps.')
+        return
+      }
+      openEditor(r)
+    } catch (err) {
+      // Overloaded model or quota: the video is still on Google, so offer to retry without uploading it again.
+      setPending(err instanceof ImportError && RETRYABLE_CODES.has(err.code) ? uploaded : undefined)
+      fail(err)
+    } finally {
+      setVideo({ kind: 'idle' })
+    }
+  }
+
   async function onVideoPicked(file: File | undefined) {
     if (!file || working) return
     setPicked({ name: file.name, mb: (file.size / 1024 / 1024).toFixed(1) })
@@ -101,28 +131,43 @@ export function ImportPage() {
       setTimeout(() => document.getElementById('ai-pass')?.focus(), 0)
       return
     }
+    if (pending) void discardVideo(pending, passcode) // a new choice replaces the kept upload
+    setPending(undefined)
     setError(undefined)
     setErrorDetail(undefined)
     setErrorCode(undefined)
     setVideo({ kind: 'preparing' })
+    let uploaded: UploadedVideo
     try {
       // Read the whole file first thing: Android's photo picker permission can lapse seconds after picking.
       const loaded = await loadVideo(file)
       setVideo({ kind: 'uploading', fraction: 0 })
-      const uploaded = await uploadVideo(loaded, passcode, (fraction) => setVideo({ kind: 'uploading', fraction }))
-      setVideo({ kind: 'reading' })
-      const r = await extractVideo({ file: uploaded, url: cleanUrl, categories: categories.map((c) => c.name) }, passcode)
-      if (!r) {
-        setError('No recipe found in that video. Make sure it shows or explains the ingredients and steps.')
-        return
-      }
-      openEditor(r)
+      uploaded = await uploadVideo(loaded, passcode, (fraction) => setVideo({ kind: 'uploading', fraction }))
     } catch (err) {
       fail(err)
-    } finally {
       setVideo({ kind: 'idle' })
+      return
+    } finally {
       for (const ref of [filesRef, photosRef]) if (ref.current) ref.current.value = '' // only now: clearing earlier can invalidate the file on some phones
     }
+    await analyse(uploaded)
+  }
+
+  async function retryAnalysis() {
+    if (!pending || working) return
+    setError(undefined)
+    setErrorDetail(undefined)
+    setErrorCode(undefined)
+    await analyse(pending)
+  }
+
+  async function discardPending() {
+    if (!pending) return
+    await discardVideo(pending, passcode)
+    setPending(undefined)
+    setError(undefined)
+    setErrorDetail(undefined)
+    setPicked(undefined)
   }
 
   return (
@@ -233,9 +278,10 @@ export function ImportPage() {
           </p>
         )}
         <p className="muted small">
-          Needs a Gemini key on the server. The video is sent to Google, deleted right after it is read, and on
-          Gemini’s free tier Google may use submitted content to improve its products. Don’t upload videos you don’t
-          want to share.
+          Needs a Gemini key on the server. The video is sent to Google and deleted right after it is read. If the
+          analysis fails (for example because Gemini is busy) it stays on Google so you can retry, until you discard it
+          or Google removes it after 48 hours. On Gemini’s free tier Google may use submitted content to improve its
+          products. Don’t upload videos you don’t want to share.
         </p>
       </section>
 
@@ -269,6 +315,23 @@ export function ImportPage() {
           )}
         </div>
       </form>
+
+      {pending && !working && (
+        <div className="panel stack stack--tight">
+          <p>
+            <strong>Your video is already uploaded.</strong> You do not need to upload it again.
+          </p>
+          <div className="row">
+            <button type="button" className="btn btn--primary" onClick={() => void retryAnalysis()}>
+              Try again
+            </button>
+            <button type="button" className="btn btn--danger-ghost" onClick={() => void discardPending()}>
+              Discard upload
+            </button>
+          </div>
+          <p className="muted small">It stays on Google until you discard it (Google deletes uploads after 48 hours).</p>
+        </div>
+      )}
 
       {error && (
         <div role="alert">
