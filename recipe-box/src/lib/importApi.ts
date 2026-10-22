@@ -45,19 +45,20 @@ export async function fetchTikTokCaption(url: string): Promise<string | undefine
   }
 }
 
-export async function extractRecipe(
-  input: { url?: string; text: string; categories: string[] },
+async function postAi(
+  endpoint: string,
+  payload: unknown,
   passcode: string,
 ): Promise<ImportedRecipe | null> {
   let res: Response
   try {
-    res = await fetch('/api/extract', {
+    res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-import-passcode': passcode },
-      body: JSON.stringify(input),
+      body: JSON.stringify(payload),
     })
   } catch {
-    throw new ImportError('Could not reach the server. Importing needs an internet connection.', 'network')
+    throw new ImportError('Could not reach the server. This feature needs an internet connection.', 'network')
   }
   const body: { recipe?: ImportedRecipe | null; error?: string; message?: string } = await res
     .json()
@@ -65,9 +66,23 @@ export async function extractRecipe(
   if (!res.ok) {
     const fallback =
       res.status === 404
-        ? 'The import endpoint was not found. It only exists on Vercel or in `npm run dev`.'
-        : `Import failed (HTTP ${res.status}).`
+        ? 'The AI endpoint was not found. It only exists on Vercel or in `npm run dev`.'
+        : `Request failed (HTTP ${res.status}).`
     throw new ImportError(body.message ?? fallback, body.error ?? 'http')
   }
   return body.recipe ?? null
+}
+
+export function extractRecipe(
+  input: { url?: string; text: string; categories: string[] },
+  passcode: string,
+): Promise<ImportedRecipe | null> {
+  return postAi('/api/extract', input, passcode)
+}
+
+export function generateRecipe(
+  input: { prompt: string; previous?: ImportedRecipe; categories: string[] },
+  passcode: string,
+): Promise<ImportedRecipe | null> {
+  return postAi('/api/generate', input, passcode)
 }

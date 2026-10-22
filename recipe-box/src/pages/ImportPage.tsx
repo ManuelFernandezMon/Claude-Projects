@@ -1,10 +1,11 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import type { RecipePrefill } from '../types'
 import { useData } from '../hooks/useData'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
-import { ImportError, extractRecipe, fetchTikTokCaption, loadPasscode, savePasscode } from '../lib/importApi'
-import { newId } from '../lib/id'
+import { PasscodeField } from '../components/PasscodeField'
+import { usePasscode } from '../hooks/usePasscode'
+import { ImportError, extractRecipe, fetchTikTokCaption } from '../lib/importApi'
+import { toPrefill } from '../lib/prefill'
 import { safeHttpUrl, sourceKind } from '../lib/url'
 
 const MAX_TEXT = 8000
@@ -15,8 +16,8 @@ export function ImportPage() {
   const { categories } = useData()
   const [url, setUrl] = useState('')
   const [text, setText] = useState('')
-  const [passcode, setPasscode] = useState(loadPasscode)
-  const [editPasscode, setEditPasscode] = useState(() => loadPasscode() === '')
+  const pc = usePasscode()
+  const passcode = pc.passcode
   const [busy, setBusy] = useState(false)
   const [fetching, setFetching] = useState(false)
   const [hint, setHint] = useState<string>()
@@ -61,26 +62,11 @@ export function ImportPage() {
         setError('No recipe found in that text. Make sure the caption lists ingredients or steps.')
         return
       }
-      savePasscode(passcode)
-      const byName = new Map(categories.map((c) => [c.name.toLowerCase(), c.id]))
-      const prefill: RecipePrefill = {
-        title: r.title,
-        description: r.description,
-        prep: r.prepMinutes?.toString() ?? '',
-        cook: r.cookMinutes?.toString() ?? '',
-        servings: r.servings?.toString() ?? '',
-        categoryIds: r.categoryNames.flatMap((n) => byName.get(n.toLowerCase()) ?? []),
-        ingredients: r.ingredients.map((i) => ({ id: newId(), name: i.name, quantity: i.quantity || undefined })),
-        steps: r.steps,
-        sourceUrl: cleanUrl ?? '',
-      }
+      pc.remember()
+      const prefill = toPrefill(r, categories, { sourceUrl: cleanUrl })
       navigate('/recipes/new', { state: { prefill } })
     } catch (err) {
-      if (err instanceof ImportError && err.code === 'unauthorized') {
-        setEditPasscode(true)
-        setPasscode('')
-        savePasscode('')
-      }
+      if (err instanceof ImportError && err.code === 'unauthorized') pc.forget()
       setError(err instanceof Error ? err.message : String(err))
     } finally {
       setBusy(false)
@@ -144,29 +130,7 @@ export function ImportPage() {
         </p>
       )}
 
-      {editPasscode ? (
-        <div className="field">
-          <label htmlFor="imp-pass">Import passcode</label>
-          <input
-            id="imp-pass"
-            className="input"
-            type="password"
-            autoComplete="off"
-            value={passcode}
-            onChange={(e) => setPasscode(e.target.value)}
-          />
-          <span className="muted small">
-            Set as <code>RECIPE_IMPORT_PASSCODE</code> on the server. It is stored only on this device.
-          </span>
-        </div>
-      ) : (
-        <p className="muted small">
-          Passcode saved on this device.{' '}
-          <button type="button" className="link-btn" onClick={() => setEditPasscode(true)}>
-            Change
-          </button>
-        </p>
-      )}
+      <PasscodeField value={pc.passcode} onChange={pc.setPasscode} editing={pc.editing} onEdit={() => pc.setEditing(true)} />
 
       {error && (
         <p className="error" role="alert">

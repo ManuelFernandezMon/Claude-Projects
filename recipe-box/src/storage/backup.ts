@@ -126,6 +126,7 @@ function parseBackup(text: string): StorageSnapshot {
       servings: num(r.servings),
       imageIds: arr(r.imageIds).filter((s): s is string => typeof s === 'string'),
       sourceUrl: typeof r.sourceUrl === 'string' ? safeHttpUrl(r.sourceUrl) : undefined,
+      aiGenerated: r.aiGenerated === true ? true : undefined,
       isSample: r.isSample === true ? true : undefined,
       createdAt: num(r.createdAt) ?? now,
       updatedAt: num(r.updatedAt) ?? now,

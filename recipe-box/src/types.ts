@@ -20,6 +20,8 @@ export interface Recipe {
   imageIds: string[]
   /** Link to the original TikTok/Instagram/web post, if the recipe was imported from one. */
   sourceUrl?: string
+  /** Written by the AI assistant and not tested by the user. */
+  aiGenerated?: boolean
   isSample?: boolean
   createdAt: number
   updatedAt: number
@@ -71,4 +73,5 @@ export interface RecipePrefill {
   ingredients: Ingredient[]
   steps: string[]
   sourceUrl: string
+  aiGenerated?: boolean
 }

@@ -103,6 +103,13 @@ export function RecipeDetailPage() {
 
       <ImageGallery imageIds={recipe.imageIds} title={recipe.title} />
 
+      {recipe.aiGenerated && (
+        <p className="notice notice--warn small" role="note">
+          Written by the AI assistant and <strong>not tested</strong>. Double-check quantities, times and food-safety
+          temperatures.
+        </p>
+      )}
+
       {source && (
         <p className="small">
           Source:{' '}

@@ -28,6 +28,7 @@ interface Draft {
   steps: StepDraft[]
   images: ImageItem[]
   sourceUrl: string
+  aiGenerated: boolean
 }
 
 const emptyDraft = (prefill?: RecipePrefill): Draft => ({
@@ -41,6 +42,7 @@ const emptyDraft = (prefill?: RecipePrefill): Draft => ({
   steps: (prefill?.steps.length ? prefill.steps : ['']).map((text) => ({ id: newId(), text })),
   images: [],
   sourceUrl: prefill?.sourceUrl ?? '',
+  aiGenerated: prefill?.aiGenerated === true,
 })
 
 const toNum = (s: string): number | undefined => {
@@ -91,6 +93,7 @@ export function RecipeEditPage() {
           steps: (r.steps.length ? r.steps : ['']).map((text) => ({ id: newId(), text })),
           images: r.imageIds.flatMap((iid, i) => (blobs[i] ? [{ id: iid, blob: blobs[i] }] : [])),
           sourceUrl: r.sourceUrl ?? '',
+          aiGenerated: r.aiGenerated === true,
         })
       } catch (e) {
         if (!cancelled) setLoadError(errorMessage(e))
@@ -147,6 +150,7 @@ export function RecipeEditPage() {
         servings: toNum(d.servings),
         imageIds: d.images.map((i) => i.id),
         sourceUrl: safeHttpUrl(d.sourceUrl),
+        aiGenerated: d.aiGenerated || undefined,
         isSample: original?.isSample,
         createdAt: original?.createdAt ?? now,
         updatedAt: now,
@@ -185,8 +189,17 @@ export function RecipeEditPage() {
       <h1 className="h1">{isNew ? 'New recipe' : 'Edit recipe'}</h1>
       {isNew && prefill && (
         <p className="notice notice--warn" role="note">
-          <strong>Imported from a link: review before saving.</strong> The text was extracted automatically and can
-          contain mistakes. Check quantities and steps against the original video.
+          {prefill.aiGenerated ? (
+            <>
+              <strong>Written by the AI and not tested: review before saving.</strong> Check quantities, cooking times
+              and food-safety temperatures.
+            </>
+          ) : (
+            <>
+              <strong>Imported from a link: review before saving.</strong> The text was extracted automatically and can
+              contain mistakes. Check quantities and steps against the original video.
+            </>
+          )}
         </p>
       )}
 

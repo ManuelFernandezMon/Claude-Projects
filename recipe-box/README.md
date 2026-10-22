@@ -3,7 +3,7 @@
 A personal recipe app for the kitchen, built mobile-first. Single user, no backend, no accounts.
 Recipes, photos, categories and checklist state live in the browser's **IndexedDB**.
 
-**Stack:** Vite 8 · React 19 · TypeScript 7 · [`idb`](https://github.com/jakearchibald/idb) 8 · plain CSS · `react-router-dom`. The optional import feature adds one Vercel serverless function (`api/extract.ts`) that calls the Anthropic API.
+**Stack:** Vite 8 · React 19 · TypeScript 7 · [`idb`](https://github.com/jakearchibald/idb) 8 · plain CSS · `react-router-dom`. The optional AI features add two Vercel serverless functions (`api/extract.ts`, `api/generate.ts`) that call the Anthropic API.
 
 ## Features
 
@@ -12,6 +12,7 @@ Recipes, photos, categories and checklist state live in the browser's **IndexedD
 - Per-recipe ingredient checklist; state persists, with a "Reset checklist" button.
 - Custom colored categories (create, rename, recolor, delete). Deleting a category never deletes recipes.
 - Home grid with multi-select category filter (matches **any** selected), search (title + ingredients), sort (newest / A-Z).
+- **Ask AI for a recipe:** describe what you want ("gluten-free banana bread for 8"); Claude writes a full recipe, you can ask for changes ("make it vegan"), then open it in the editor to review and save. AI recipes are labeled as untested.
 - **Import from a TikTok/Instagram link:** paste the link and the video's caption; Claude turns it into a recipe (ingredients with quantities, steps, times, categories) that you review before saving. Imported ingredients become the interactive checklist.
 - Backup page: export everything to one JSON file (photos embedded as base64); import with **merge** or **replace**.
 - Three clearly labeled **SAMPLE** recipes on first run. Delete them from the home page; they will not come back.
@@ -40,28 +41,39 @@ because `crypto.randomUUID()` is also secure-context only. Deploy a preview to V
 
 `vercel.json` rewrites every path to `index.html` so deep links such as `/recipes/<id>` work on refresh.
 
-## Import from TikTok / Instagram links
+## AI features: setup, cost and limits
 
-How it works: you paste a link and the caption text on `/import`. The browser posts the caption to `/api/extract`, a
-Vercel function that asks Claude for a structured recipe, then opens the normal editor pre-filled so you can **review and
-fix it before saving**. The link is stored on the recipe as its source.
+Both AI features (**Ask AI** and **Import link**) use the same server setup, passcode and model.
 
-**Setup (required, otherwise the page shows a "not configured" error):**
+### Setup (required for both features; otherwise the page shows a "not configured" error)
 
 1. Create an API key in the [Anthropic Console](https://platform.claude.com/).
 2. Pick a long random string as `RECIPE_IMPORT_PASSCODE`.
 3. Locally: put both in `.env.local` (see `.env.example`). On Vercel: add `ANTHROPIC_API_KEY` and
    `RECIPE_IMPORT_PASSCODE` under *Project → Settings → Environment Variables*, then redeploy.
-4. The first time you import on a device, the app asks for the passcode and remembers it on that device.
+4. The first time you use an AI page on a device, the app asks for the passcode and remembers it on that device.
 
 **Why a passcode:** the function is a public URL that spends your API credits. Without the passcode, anyone who finds the
 URL could run up your bill. The passcode is compared in constant time and never sent to Anthropic.
 
-**Cost:** one import is a single short request (a caption is typically well under 1,000 tokens). The default model is
-`claude-opus-5-5` at low effort; set `RECIPE_IMPORT_MODEL` to use a cheaper model. Check current prices on Anthropic's
-pricing page. Set a spend limit in the Console as a safety net.
+**Cost:** an import is one short request at low effort. **Ask AI costs more per use** (medium effort, a full recipe back, and
+each "ask for changes" is another request). The default model is `claude-opus-5-5`; set `RECIPE_IMPORT_MODEL` to use a
+cheaper model. Check current prices on Anthropic's pricing page, and set a spend limit in the Console as a safety net.
 
-**Limits you should know about:**
+### Ask AI: what to know
+
+- The model writes recipes from general knowledge. They are **not tested**, and the app labels them so. Check quantities, times
+  and especially food-safety temperatures. The model is told to respect allergies you state, but verify ingredient labels yourself.
+- "Ask for changes" resends the current recipe plus your instruction; there is no long chat memory.
+- Requests that are not about cooking return a friendly "not a cooking request" message.
+
+### Import from TikTok / Instagram links
+
+How it works: you paste a link and the caption text on `/import`. The browser posts the caption to `/api/extract`, a
+Vercel function that asks Claude for a structured recipe, then opens the normal editor pre-filled so you can **review and
+fix it before saving**. The link is stored on the recipe as its source.
+
+Limits:
 
 - **Instagram:** no automatic reading. Instagram's oEmbed needs a Meta app token and the public page requires login, so
   you copy the caption and paste it.
@@ -97,8 +109,8 @@ src/
     recipeStore.ts         RecipeStore interface + the exported singleton the UI uses
     idbRecipeStore.ts      IndexedDB implementation (stores: recipes, categories, images, meta)
     seed.ts, backup.ts     sample data; JSON export/import + validation
-api/extract.ts             Vercel function entry (Web-standard fetch handler)
-server/extractRecipe.ts    prompt, schema and request handling for /api/extract
+api/*.ts                   Vercel function entries (Web-standard fetch handlers)
+server/                    shared auth/model call, plus prompts for extract and generate
   hooks/                   data context, object-URL helpers
   components/, pages/      small typed React components and routes
   styles/                  tokens.css, base.css, components.css (plain CSS)
