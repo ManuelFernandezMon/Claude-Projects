@@ -1,4 +1,3 @@
-import { createHmac, timingSafeEqual } from 'node:crypto'
 import { FileState, type GoogleGenAI } from '@google/genai'
 
 /** Resumable-upload protocol as used by the official SDK (@google/genai) and Google's Files API docs. */
@@ -10,8 +9,18 @@ export interface UploadedFile {
   mimeType: string
 }
 
-/** Starts a resumable upload and returns the session URL (a capability: it carries the upload id, not the API key). */
-export async function startUpload(opts: { mimeType: string; size: number; displayName: string }): Promise<string> {
+/** Scotty-style resumable uploads require every non-final chunk to be a multiple of this (8 MiB is what the official SDK uses). */
+export const DEFAULT_GRANULARITY = 8 * 1024 * 1024
+
+/**
+ * Starts a resumable upload. Returns the session URL and the chunk granularity the browser must respect. The session URL
+ * is a capability (it carries the upload id, not the API key), so the browser can upload straight to Google with it.
+ */
+export async function startUpload(opts: {
+  mimeType: string
+  size: number
+  displayName: string
+}): Promise<{ url: string; granularity: number }> {
   const res = await fetch(`${baseUrl()}/upload/v1beta/files`, {
     method: 'POST',
     headers: {
@@ -31,12 +40,13 @@ export async function startUpload(opts: { mimeType: string; size: number; displa
   }
   const url = res.headers.get('x-goog-upload-url')
   if (!url) throw new UploadError(502, 'start failed: no upload URL returned')
-  return withoutKey(url)
+  const g = Number(res.headers.get('x-goog-upload-chunk-granularity'))
+  return { url: withoutKey(url), granularity: Number.isInteger(g) && g >= 256 * 1024 ? g : DEFAULT_GRANULARITY }
 }
 
 /**
- * Upload session URLs may carry the API key as a `key=` query parameter. The URL is later signed into a token the browser
- * holds, so strip the key here; chunk forwards authenticate with the x-goog-api-key header instead.
+ * Upload session URLs may carry the API key as a `key=` query parameter. The URL is handed to the browser, so strip the key
+ * here and refuse to continue if the key is still visible in it.
  */
 export function withoutKey(url: string): string {
   const u = new URL(url)
@@ -45,32 +55,6 @@ export function withoutKey(url: string): string {
   const key = process.env.GEMINI_API_KEY
   if (key && clean.includes(key)) throw new UploadError(502, 'upload URL contains the API key')
   return clean
-}
-
-/** Sends one chunk. Non-final chunks must be multiples of 256 KiB (enforced by the caller). */
-export async function sendChunk(
-  uploadUrl: string,
-  offset: number,
-  bytes: Uint8Array,
-  final: boolean,
-): Promise<{ status: string; file?: UploadedFile }> {
-  const res = await fetch(uploadUrl, {
-    method: 'POST',
-    headers: {
-      'x-goog-api-key': process.env.GEMINI_API_KEY ?? '',
-      'x-goog-upload-command': final ? 'upload, finalize' : 'upload',
-      'x-goog-upload-offset': String(offset),
-      'content-length': String(bytes.length),
-    },
-    body: bytes as BodyInit,
-  })
-  if (!res.ok) throw new UploadError(res.status, `chunk failed: HTTP ${res.status}`)
-  const status = res.headers.get('x-goog-upload-status') ?? ''
-  if (!final) return { status }
-  const data = (await res.json().catch(() => ({}))) as { file?: { name?: string; uri?: string; mimeType?: string } }
-  const f = data.file
-  if (!f?.name || !f.uri || !f.mimeType) throw new UploadError(502, 'finalize returned no file')
-  return { status, file: { name: f.name, uri: f.uri, mimeType: f.mimeType } }
 }
 
 export class UploadError extends Error {
@@ -99,26 +83,6 @@ export async function deleteFile(ai: GoogleGenAI, name: string): Promise<void> {
   } catch {
     /* best effort: Google also deletes uploads after 48 hours */
   }
-}
-
-// --- signed upload tokens: the browser can only continue sessions this server started -------------------------
-
-const b64 = (s: string) => Buffer.from(s, 'utf8').toString('base64url')
-const mac = (payload: string, secret: string) => createHmac('sha256', secret).update(payload).digest('base64url')
-
-export function signUploadUrl(url: string, secret: string): string {
-  const payload = b64(url)
-  return `${payload}.${mac(payload, secret)}`
-}
-
-export function verifyUploadToken(token: string, secret: string): string | undefined {
-  const [payload, sig] = token.split('.')
-  if (!payload || !sig) return undefined
-  const expected = mac(payload, secret)
-  const a = Buffer.from(sig)
-  const b = Buffer.from(expected)
-  if (a.length !== b.length || !timingSafeEqual(a, b)) return undefined
-  return Buffer.from(payload, 'base64url').toString('utf8')
 }
 
 export const uploadBase = baseUrl

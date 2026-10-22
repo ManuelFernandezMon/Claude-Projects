@@ -1,23 +1,8 @@
-import { authorize, cleanCategories, guard, json, neutralize, runRecipeModel } from './shared.js'
-import {
-  UploadError,
-  deleteFile,
-  sendChunk,
-  signUploadUrl,
-  startUpload,
-  uploadBase,
-  verifyUploadToken,
-  waitUntilActive,
-} from './geminiFiles.js'
+import { cleanCategories, guard, json, neutralize, runRecipeModel } from './shared.js'
+import { UploadError, deleteFile, startUpload, uploadBase, waitUntilActive } from './geminiFiles.js'
 import { ApiError } from '@google/genai'
 import { makeGeminiClient } from './geminiProvider.js'
 
-/**
- * Chunk size the browser must use. A multiple of 256 KiB (required by the resumable protocol) and far below Vercel's 4.5 MB
- * request-body limit. Small on purpose: on a weak mobile uplink a lost request only costs 1 MiB.
- */
-export const CHUNK_SIZE = 1024 * 1024
-const GRANULARITY = 256 * 1024
 const MAX_BYTES = 100 * 1024 * 1024
 const MAX_SECONDS = 300
 
@@ -48,11 +33,11 @@ Rules:
 - category_names: choose zero or more names from <existing_categories>, copied exactly. Never create new names.
 - If the video is not about cooking or contains no usable recipe, set is_recipe to false and leave the other fields empty.`
 
-function secret(): string {
-  return process.env.RECIPE_IMPORT_PASSCODE ?? ''
-}
-
-/** POST /api/video-start: validates the file description and opens a resumable upload at Google. */
+/**
+ * POST /api/video-start: validates the file description and opens a resumable upload at Google. The browser then uploads
+ * straight to Google with the returned session URL: Google requires non-final chunks to be multiples of 8 MiB, which does
+ * not fit through a Vercel function (request bodies are limited to 4.5 MB), and the API key never leaves the server.
+ */
 export async function handleVideoStart(request: Request): Promise<Response> {
   const g = await guard(request, 'gemini')
   if ('response' in g) return g.response
@@ -70,39 +55,8 @@ export async function handleVideoStart(request: Request): Promise<Response> {
   }
 
   try {
-    const uploadUrl = await startUpload({ mimeType, size, displayName: 'recipe-video' })
-    return json(200, { uploadToken: signUploadUrl(uploadUrl, secret()), chunkSize: CHUNK_SIZE, mimeType })
-  } catch (e) {
-    return uploadFailure(e)
-  }
-}
-
-/** POST /api/video-chunk: raw bytes in the body; token, offset and final flag in headers. */
-export async function handleVideoChunk(request: Request): Promise<Response> {
-  const denied = authorize(request, 'gemini')
-  if (denied) return denied
-
-  const uploadUrl = verifyUploadToken(request.headers.get('x-upload-token') ?? '', secret())
-  if (!uploadUrl) return json(400, { error: 'bad_request', message: 'Invalid upload token.' })
-  const offset = Number(request.headers.get('x-upload-offset'))
-  if (!Number.isInteger(offset) || offset < 0 || offset % GRANULARITY !== 0) {
-    return json(400, { error: 'bad_request', message: 'Invalid upload offset.' })
-  }
-  const final = request.headers.get('x-upload-final') === '1'
-
-  const bytes = new Uint8Array(await request.arrayBuffer())
-  if (bytes.length === 0 || bytes.length > CHUNK_SIZE) {
-    return json(400, { error: 'bad_request', message: `Chunks must be 1 byte to ${CHUNK_SIZE} bytes.` })
-  }
-  if (!final && bytes.length % GRANULARITY !== 0) {
-    return json(400, { error: 'bad_request', message: 'Only the last chunk may have an irregular size.' })
-  }
-
-  try {
-    const r = await sendChunk(uploadUrl, offset, bytes, final)
-    if (!final) return json(200, { done: false })
-    if (r.status !== 'final' || !r.file) return json(502, { error: 'upload_incomplete', message: 'Google did not confirm the upload.' })
-    return json(200, { done: true, file: r.file })
+    const { url, granularity } = await startUpload({ mimeType, size, displayName: 'recipe-video' })
+    return json(200, { uploadUrl: url, chunkSize: granularity, mimeType })
   } catch (e) {
     return uploadFailure(e)
   }

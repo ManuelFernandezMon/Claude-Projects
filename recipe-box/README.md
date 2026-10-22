@@ -98,11 +98,14 @@ said out loud are picked up. You then review the recipe in the editor before sav
 public embed endpoint does not expose the video), and automated downloading is against their terms, so this app does not try.
 Save it yourself first: on TikTok use *Share → Save video*; on Instagram or anywhere else, screen-record it **with sound**.
 
-**How it works:** the browser sends the file in 1 MiB chunks (small on purpose, so a weak mobile connection only loses a little) to `/api/video-chunk`, which forwards them to Google's resumable
-Files API (Vercel limits a request body to 4.5 MB, and your API key never reaches the browser; a dropped chunk is retried automatically, and a failure says which part failed and why). `/api/video-extract` waits for
-Google to process the video, asks Gemini to extract the recipe with the same model fallback as the text features, and **deletes
-the file** afterwards (Google also removes uploads after 48 hours). Upload sessions are signed by the server, so the browser cannot
-point it at another URL.
+**How it works:** `/api/video-start` (which holds your Gemini key) opens a resumable upload at Google and returns the session URL
+and the chunk size Google requires. The browser then uploads **straight to Google** in chunks of that size (8 MiB multiples,
+as the official SDK does). It cannot go through a Vercel function: request bodies are limited to 4.5 MB there. Google's upload
+endpoint answers CORS preflights for browser origins (checked), and the session URL carries an upload id, not your API key (the
+server strips any `key=` parameter and refuses to continue if the key were still visible). A dropped connection is retried up to
+4 times, a Google 4xx is not retried, and a failure shows which part failed and why. `/api/video-extract` then waits for Google to
+process the video, asks Gemini to extract the recipe with the same model fallback as the text features, and **deletes the file**
+afterwards (Google also removes uploads after 48 hours).
 
 **Android picker quirk:** the page has two buttons. *Choose video* opens your Files app; *From Photos* opens Android's photo
 picker. Chrome only opens the photo picker when every accepted type is an image or video, and that picker's temporary file
