@@ -98,8 +98,8 @@ said out loud are picked up. You then review the recipe in the editor before sav
 public embed endpoint does not expose the video), and automated downloading is against their terms, so this app does not try.
 Save it yourself first: on TikTok use *Share → Save video*; on Instagram or anywhere else, screen-record it **with sound**.
 
-**How it works:** the browser sends the file in 4 MiB chunks to `/api/video-chunk`, which forwards them to Google's resumable
-Files API (the request body limit on Vercel is 4.5 MB, and your API key never reaches the browser). `/api/video-extract` waits for
+**How it works:** the browser sends the file in 1 MiB chunks (small on purpose, so a weak mobile connection only loses a little) to `/api/video-chunk`, which forwards them to Google's resumable
+Files API (Vercel limits a request body to 4.5 MB, and your API key never reaches the browser; a dropped chunk is retried automatically, and a failure says which part failed and why). `/api/video-extract` waits for
 Google to process the video, asks Gemini to extract the recipe with the same model fallback as the text features, and **deletes
 the file** afterwards (Google also removes uploads after 48 hours). Upload sessions are signed by the server, so the browser cannot
 point it at another URL.

@@ -27,6 +27,7 @@ export function ImportPage() {
   const [fetching, setFetching] = useState(false)
   const [hint, setHint] = useState<string>()
   const [error, setError] = useState<string>()
+  const [errorDetail, setErrorDetail] = useState<string>()
   const fileRef = useRef<HTMLInputElement>(null)
 
   const cleanUrl = safeHttpUrl(url)
@@ -63,6 +64,7 @@ export function ImportPage() {
   function fail(err: unknown) {
     if (err instanceof ImportError && err.code === 'unauthorized') pc.forget()
     setError(err instanceof Error ? err.message : String(err))
+    setErrorDetail(err instanceof ImportError ? err.detail : undefined)
   }
 
   async function submitCaption(e: FormEvent) {
@@ -88,7 +90,6 @@ export function ImportPage() {
   }
 
   async function onVideoPicked(file: File | undefined) {
-    if (fileRef.current) fileRef.current.value = ''
     if (!file || working) return
     setPicked({ name: file.name, mb: (file.size / 1024 / 1024).toFixed(1) })
     if (!passcode) {
@@ -98,6 +99,7 @@ export function ImportPage() {
       return
     }
     setError(undefined)
+    setErrorDetail(undefined)
     setVideo({ kind: 'uploading', fraction: 0 })
     try {
       const uploaded = await uploadVideo(file, passcode, (fraction) => setVideo({ kind: 'uploading', fraction }))
@@ -112,6 +114,7 @@ export function ImportPage() {
       fail(err)
     } finally {
       setVideo({ kind: 'idle' })
+      if (fileRef.current) fileRef.current.value = '' // only now: clearing earlier can invalidate the file on some phones
     }
   }
 
@@ -239,9 +242,10 @@ export function ImportPage() {
       </form>
 
       {error && (
-        <p className="error" role="alert">
-          {error}
-        </p>
+        <div role="alert">
+          <p className="error">{error}</p>
+          {errorDetail && <p className="muted small">Details: {errorDetail}</p>}
+        </div>
       )}
     </div>
   )

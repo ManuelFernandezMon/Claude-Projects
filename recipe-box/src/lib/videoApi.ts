@@ -46,12 +46,13 @@ export function readDuration(file: File): Promise<number | undefined> {
   })
 }
 
-async function post<T>(endpoint: string, init: RequestInit, passcode: string): Promise<T> {
+async function post<T>(endpoint: string, init: RequestInit, passcode: string, step: string): Promise<T> {
   let res: Response
   try {
     res = await fetch(endpoint, { ...init, method: 'POST', headers: { 'x-import-passcode': passcode, ...init.headers } })
-  } catch {
-    throw new ImportError('Network error while uploading. Check your connection and try again.', 'network')
+  } catch (e) {
+    const cause = e instanceof Error ? `${e.name}: ${e.message}` : String(e)
+    throw new ImportError(`The connection dropped while ${step}. Check your signal and try again.`, 'network', `${step} · ${cause}`)
   }
   const body = (await res.json().catch(() => ({}))) as { error?: string; message?: string } & T
   if (!res.ok) {
@@ -59,7 +60,7 @@ async function post<T>(endpoint: string, init: RequestInit, passcode: string): P
       res.status === 404
         ? 'The upload endpoint was not found. It only exists on Vercel or in `npm run dev`.'
         : `Upload failed (HTTP ${res.status}).`
-    throw new ImportError(body.message ?? fallback, body.error ?? 'http')
+    throw new ImportError(body.message ?? fallback, body.error ?? 'http', `${step} · HTTP ${res.status}`)
   }
   return body
 }
@@ -84,13 +85,27 @@ export async function uploadVideo(
     '/api/video-start',
     { headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mimeType, size: file.size, durationSec }) },
     passcode,
+    'starting the upload',
   )
 
+  const parts = Math.ceil(file.size / start.chunkSize)
   let offset = 0
   while (offset < file.size) {
     const end = Math.min(offset + start.chunkSize, file.size)
     const final = end === file.size
-    const body = file.slice(offset, end)
+    const part = offset / start.chunkSize + 1
+    // Read the bytes into memory first: if the phone cannot read the file this fails here, with a clear message,
+    // instead of surfacing later as a generic network error from a lazily streamed Blob.
+    let body: ArrayBuffer
+    try {
+      body = await file.slice(offset, end).arrayBuffer()
+    } catch (e) {
+      throw new ImportError(
+        'Your phone could not read the video file. Save it again (or copy it to Downloads) and choose it again.',
+        'file_unreadable',
+        `reading part ${part} of ${parts} · ${e instanceof Error ? `${e.name}: ${e.message}` : String(e)}`,
+      )
+    }
     let attempt = 0
     for (;;) {
       try {
@@ -106,6 +121,7 @@ export async function uploadVideo(
             body,
           },
           passcode,
+          `sending part ${part} of ${parts}`,
         )
         onProgress(end / file.size)
         if (final) {
@@ -115,7 +131,7 @@ export async function uploadVideo(
         break
       } catch (e) {
         // Only a dropped connection is worth retrying: any server answer (bad token, offset...) will not change.
-        if (!(e instanceof ImportError) || e.code !== 'network' || ++attempt >= 3) throw e
+        if (!(e instanceof ImportError) || e.code !== 'network' || ++attempt >= 4) throw e
         await new Promise((resolve) => setTimeout(resolve, 1000 * attempt))
       }
     }

@@ -22,9 +22,12 @@ export function savePasscode(value: string): void {
 
 export class ImportError extends Error {
   readonly code: string
-  constructor(message: string, code: string) {
+  /** Technical detail shown in small print, to make failures on a phone diagnosable. */
+  readonly detail?: string
+  constructor(message: string, code: string, detail?: string) {
     super(message)
     this.code = code
+    this.detail = detail
   }
 }
 

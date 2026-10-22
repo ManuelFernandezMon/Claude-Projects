@@ -12,8 +12,11 @@ import {
 import { ApiError } from '@google/genai'
 import { makeGeminiClient } from './geminiProvider.js'
 
-/** Chunk size the browser must use. 4 MiB is a multiple of 256 KiB and fits Vercel's 4.5 MB request-body limit. */
-export const CHUNK_SIZE = 4 * 1024 * 1024
+/**
+ * Chunk size the browser must use. A multiple of 256 KiB (required by the resumable protocol) and far below Vercel's 4.5 MB
+ * request-body limit. Small on purpose: on a weak mobile uplink a lost request only costs 1 MiB.
+ */
+export const CHUNK_SIZE = 1024 * 1024
 const GRANULARITY = 256 * 1024
 const MAX_BYTES = 100 * 1024 * 1024
 const MAX_SECONDS = 300
