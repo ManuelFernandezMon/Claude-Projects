@@ -3,10 +3,12 @@ import { z } from 'zod'
 import { RecipeOutputSchema, type ProviderRequest, type ProviderResult } from './schema.js'
 
 /**
- * Ordered preference list (all listed as free-of-charge on Google's pricing table). When a model is overloaded (503),
+ * Ordered preference list (all listed as free-of-charge on Google's pricing table; the 2.5 models may be restricted to
+ * keys that used them before, in which case they return 404 and are skipped). When a model is overloaded (503),
  * over quota (429) or unknown to the key (404), the next one is tried. GEMINI_MODEL can be one ID or a comma-separated list.
  */
-const DEFAULT_MODELS = 'gemini-3.8-flash,gemini-3.6-flash,gemini-3.5-flash-lite'
+const DEFAULT_MODELS =
+  'gemini-3.8-flash,gemini-3.6-flash,gemini-3.5-flash-lite,gemini-2.5-flash,gemini-2.5-flash-lite'
 const REQUEST_TIMEOUT_MS = 25_000
 /** Stop starting new attempts after this long, so the whole call stays under the function's 60 s limit. */
 const DEADLINE_MS = 30_000
@@ -79,6 +81,7 @@ export async function callGemini(req: ProviderRequest): Promise<ProviderResult> 
       } catch (e) {
         lastError = e
         if (!(e instanceof ApiError)) throw e
+        console.warn(`gemini ${model} attempt ${attempt + 1} failed: HTTP ${e.status}`)
         if (isTransient(e.status) && attempt === 0) {
           await sleep(retryDelayMs()) // brief pause, then one more try on the same model
           continue
