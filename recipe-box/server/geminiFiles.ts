@@ -77,6 +77,21 @@ export async function waitUntilActive(ai: GoogleGenAI, name: string, timeoutMs: 
   }
 }
 
+/**
+ * Finds an uploaded file by the unique display name we gave it at upload time. Used when the browser could not read Google's
+ * response to the final chunk (it has no CORS headers there, as far as we can tell) even though the upload itself succeeded.
+ */
+export async function findByDisplayName(ai: GoogleGenAI, displayName: string, maxFiles = 500): Promise<UploadedFile | undefined> {
+  let seen = 0
+  for await (const f of await ai.files.list({ config: { pageSize: 100 } })) {
+    if (f.displayName === displayName && f.name && f.uri && f.mimeType) {
+      return { name: f.name, uri: f.uri, mimeType: f.mimeType }
+    }
+    if (++seen >= maxFiles) break
+  }
+  return undefined
+}
+
 export async function deleteFile(ai: GoogleGenAI, name: string): Promise<void> {
   try {
     await ai.files.delete({ name })

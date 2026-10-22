@@ -123,6 +123,30 @@ function sendChunk(
 }
 
 /**
+ * Asks the server (which can reach Google without CORS) whether the upload finished. Google's response to the FINAL chunk
+ * can be unreadable from a browser even when the upload succeeded, so this is how we learn the file reference.
+ * Tries a few times because a just-finished upload can take a moment to appear.
+ */
+async function findUploaded(uploadId: string, passcode: string, tries = 3): Promise<UploadedVideo | undefined> {
+  for (let i = 0; i < tries; i++) {
+    if (i > 0 || tries > 1) await new Promise((resolve) => setTimeout(resolve, 1500))
+    try {
+      const r = await post<{ file?: UploadedVideo }>(
+        '/api/video-find',
+        { headers: { 'content-type': 'application/json' }, body: JSON.stringify({ uploadId }) },
+        passcode,
+        'checking the upload',
+      )
+      if (r.file) return r.file
+    } catch (e) {
+      if (e instanceof ImportError && e.code === 'unauthorized') throw e
+      /* not found yet, or a transient error: try again */
+    }
+  }
+  return undefined
+}
+
+/**
  * Uploads the in-memory video. The server only opens the session (it holds the Gemini key); the bytes go from the browser
  * straight to Google in chunks of the size Google dictates (8 MiB multiples), which could not pass through a Vercel
  * function. Progress is reported from 0 to 1.
@@ -133,7 +157,7 @@ export async function uploadVideo(
   onProgress: (fraction: number) => void,
 ): Promise<UploadedVideo> {
   const size = video.bytes.byteLength
-  const start = await post<{ uploadUrl: string; chunkSize: number }>(
+  const start = await post<{ uploadUrl: string; chunkSize: number; uploadId: string }>(
     '/api/video-start',
     { headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mimeType: video.mimeType, size, durationSec: video.durationSec }) },
     passcode,
@@ -155,6 +179,11 @@ export async function uploadVideo(
         try {
           res = await sendChunk(start.uploadUrl, offset, body, final, (sent) => onProgress((offset + sent) / size))
         } catch (e) {
+          if (final) {
+            // The upload may have succeeded even though the browser could not read the response: ask the server.
+            const found = await findUploaded(start.uploadId, passcode)
+            if (found) return found
+          }
           throw new ImportError(
             `The connection dropped while ${step}. Check your signal and try again.`,
             'network',
@@ -175,12 +204,12 @@ export async function uploadVideo(
           try {
             file = (JSON.parse(res.text) as { file?: Partial<UploadedVideo> }).file
           } catch {
-            /* handled below */
+            /* fall back to asking the server below */
           }
-          if (!file?.name || !file.uri || !file.mimeType) {
-            throw new ImportError('The upload finished but Google did not confirm it. Try again.', 'upload_incomplete', `${step} · ${res.text.slice(0, 160)}`)
-          }
-          return { name: file.name, uri: file.uri, mimeType: file.mimeType }
+          if (file?.name && file.uri && file.mimeType) return { name: file.name, uri: file.uri, mimeType: file.mimeType }
+          const found = await findUploaded(start.uploadId, passcode)
+          if (found) return found
+          throw new ImportError('The upload finished but Google did not confirm it. Try again.', 'upload_incomplete', `${step} · ${res.text.slice(0, 160)}`)
         }
         break
       } catch (e) {

@@ -103,7 +103,10 @@ and the chunk size Google requires. The browser then uploads **straight to Googl
 as the official SDK does). It cannot go through a Vercel function: request bodies are limited to 4.5 MB there. Google's upload
 endpoint answers CORS preflights for browser origins (checked), and the session URL carries an upload id, not your API key (the
 server strips any `key=` parameter and refuses to continue if the key were still visible). A dropped connection is retried up to
-4 times, a Google 4xx is not retried, and a failure shows which part failed and why. `/api/video-extract` then waits for Google to
+4 times, a Google 4xx is not retried, and a failure shows which part failed and why. Google's reply to the **final** chunk may
+not be readable from a browser (a device test failed exactly on the last part), even though the upload succeeded, so each upload
+gets a unique display name and `/api/video-find` lets the server (no CORS there) look the file up by it before the app decides
+the last chunk was lost. `/api/video-extract` then waits for Google to
 process the video, asks Gemini to extract the recipe with the same model fallback as the text features, and **deletes the file**
 afterwards (Google also removes uploads after 48 hours).
 
@@ -157,7 +160,7 @@ src/
     recipeStore.ts         RecipeStore interface + the exported singleton the UI uses
     idbRecipeStore.ts      IndexedDB implementation (stores: recipes, categories, images, meta)
     seed.ts, backup.ts     sample data; JSON export/import + validation
-api/*.ts                   Vercel function entries (extract, generate, video-start, video-chunk, video-extract)
+api/*.ts                   Vercel function entries (extract, generate, video-start, video-find, video-extract)
 server/                    shared auth + provider selection, Gemini/Anthropic providers, prompts for extract and generate
   hooks/                   data context, object-URL helpers
   components/, pages/      small typed React components and routes

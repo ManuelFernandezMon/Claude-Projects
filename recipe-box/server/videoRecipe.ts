@@ -1,5 +1,6 @@
 import { cleanCategories, guard, json, neutralize, runRecipeModel } from './shared.js'
-import { UploadError, deleteFile, startUpload, uploadBase, waitUntilActive } from './geminiFiles.js'
+import { randomUUID } from 'node:crypto'
+import { UploadError, deleteFile, findByDisplayName, startUpload, uploadBase, waitUntilActive } from './geminiFiles.js'
 import { ApiError } from '@google/genai'
 import { makeGeminiClient } from './geminiProvider.js'
 
@@ -55,10 +56,28 @@ export async function handleVideoStart(request: Request): Promise<Response> {
   }
 
   try {
-    const { url, granularity } = await startUpload({ mimeType, size, displayName: 'recipe-video' })
-    return json(200, { uploadUrl: url, chunkSize: granularity, mimeType })
+    const uploadId = `recipe-video-${randomUUID()}`
+    const { url, granularity } = await startUpload({ mimeType, size, displayName: uploadId })
+    return json(200, { uploadUrl: url, chunkSize: granularity, mimeType, uploadId })
   } catch (e) {
     return uploadFailure(e)
+  }
+}
+
+/** POST /api/video-find: looks up a finished upload by its unique id (see findByDisplayName for why). */
+export async function handleVideoFind(request: Request): Promise<Response> {
+  const g = await guard(request, 'gemini')
+  if ('response' in g) return g.response
+  const b = typeof g.body === 'object' && g.body !== null ? (g.body as Record<string, unknown>) : {}
+  const uploadId = typeof b.uploadId === 'string' ? b.uploadId : ''
+  if (!/^recipe-video-[0-9a-f-]{36}$/.test(uploadId)) return json(400, { error: 'bad_request', message: 'Invalid upload id.' })
+  try {
+    const file = await findByDisplayName(makeGeminiClient(), uploadId)
+    if (!file) return json(404, { error: 'upload_not_found', message: 'Google has no finished upload for this video yet.' })
+    return json(200, { file })
+  } catch (e) {
+    console.error('video find failed:', e instanceof Error ? e.message.slice(0, 200) : 'unknown')
+    return json(502, { error: 'provider_error', message: 'Could not check the upload. Try again.' })
   }
 }
 
