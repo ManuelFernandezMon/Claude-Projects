@@ -5,6 +5,7 @@ A monorepo holding independent projects, one per top-level folder.
 ## Projects
 
 - [`panama-pets-website/`](panama-pets-website/README.md) — marketing site for the Panama Pets veterinary clinic (React + Vite + TypeScript + Tailwind).
+- [`recipe-box/`](recipe-box/README.md) — personal recipe storage app, offline-first, data kept in the browser (React + Vite + TypeScript + IndexedDB).
 
 ## Plans
 

@@ -1,0 +1,22 @@
+name: recipe-box CI
+on:
+  pull_request:
+    paths: ['recipe-box/**']
+  push:
+    branches: [main]
+    paths: ['recipe-box/**']
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: recipe-box
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: recipe-box/package-lock.json
+      - run: npm ci
+      - run: npm run build

@@ -1,0 +1,21 @@
+:root {
+  --bg: #0b0b0c;
+  --surface: #141416;
+  --surface-2: #1d1d21;
+  --border: #34343a; /* decorative dividers */
+  --border-strong: #7a7a84; /* form controls: >= 3:1 against surfaces (WCAG 1.4.11) */
+  --text: #ededee;
+  --muted: #a6a6b0;
+  --accent: #f5b642;
+  --accent-ink: #0b0b0c;
+  --danger: #ff8a80;
+  --ok: #6ee7a0;
+
+  --font-head: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --font-body: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --radius: 10px;
+  --tap: 44px;
+  --gutter: 16px;
+  --max: 1080px;
+}
