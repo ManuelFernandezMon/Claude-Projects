@@ -66,8 +66,13 @@ A Google AI Pro subscription does **not** give API quota: the API is billed and 
 4. The first time you use an AI page on a device, the app asks for the passcode and remembers it on that device.
 
 Which provider runs: `AI_PROVIDER=gemini|anthropic` if set; otherwise Anthropic when `ANTHROPIC_API_KEY` exists, else Gemini.
-Defaults: `gemini-3.8-flash` (override with `GEMINI_MODEL`; `gemini-3.5-flash-lite` is the faster option) and
+Models: Gemini tries `gemini-3.8-flash`, then `gemini-3.6-flash`, then `gemini-3.5-flash-lite` (all listed as free on Google's pricing
+table). When a model is overloaded (503) it is retried once, and when it is overloaded, over quota (429) or unknown to your key
+(404) the next one is tried. Set `GEMINI_MODEL` to one ID or a comma-separated list to change this. Claude uses
 `claude-opus-5-5` (override with `RECIPE_IMPORT_MODEL`).
+
+**"Gemini is overloaded right now" (HTTP 503):** the free tier has no capacity guarantee, so this happens at busy times. The app
+already retries and falls back across models; if all of them are busy, wait a minute and try again.
 
 **Why a passcode:** the function is a public URL that spends your quota or credits. Without the passcode, anyone who finds the
 URL could use it up. The passcode is compared in constant time and is never sent to the AI provider.

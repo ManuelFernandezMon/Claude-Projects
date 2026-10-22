@@ -2,8 +2,22 @@ import { ApiError, FinishReason, GoogleGenAI } from '@google/genai'
 import { z } from 'zod'
 import { RecipeOutputSchema, type ProviderRequest, type ProviderResult } from './schema.js'
 
-/** gemini-3.8-flash is listed as free-of-charge in Google's pricing table; override with GEMINI_MODEL. */
-const DEFAULT_MODEL = 'gemini-3.8-flash'
+/**
+ * Ordered preference list (all listed as free-of-charge on Google's pricing table). When a model is overloaded (503),
+ * over quota (429) or unknown to the key (404), the next one is tried. GEMINI_MODEL can be one ID or a comma-separated list.
+ */
+const DEFAULT_MODELS = 'gemini-3.8-flash,gemini-3.6-flash,gemini-3.5-flash-lite'
+const REQUEST_TIMEOUT_MS = 25_000
+/** Stop starting new attempts after this long, so the whole call stays under the function's 60 s limit. */
+const DEADLINE_MS = 30_000
+
+const models = () =>
+  (process.env.GEMINI_MODEL || DEFAULT_MODELS)
+    .split(',')
+    .map((m) => m.trim())
+    .filter(Boolean)
+const retryDelayMs = () => Number(process.env.GEMINI_RETRY_DELAY_MS ?? 1000)
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 // responseJsonSchema accepts only a subset of JSON Schema; "$schema" is not in the supported list.
 const { $schema: _omit, ...RESPONSE_SCHEMA } = z.toJSONSchema(RecipeOutputSchema) as Record<string, unknown>
@@ -16,9 +30,9 @@ const BLOCKED_FINISH: string[] = [
   FinishReason.RECITATION,
 ]
 
-async function once(ai: GoogleGenAI, req: ProviderRequest): Promise<ProviderResult> {
+async function once(ai: GoogleGenAI, model: string, req: ProviderRequest): Promise<ProviderResult> {
   const res = await ai.models.generateContent({
-    model: process.env.GEMINI_MODEL || DEFAULT_MODEL,
+    model,
     contents: req.user,
     config: {
       systemInstruction: req.system,
@@ -42,14 +56,39 @@ async function once(ai: GoogleGenAI, req: ProviderRequest): Promise<ProviderResu
   return parsed.success ? { kind: 'ok', out: parsed.data } : { kind: 'bad_output' }
 }
 
+const isTransient = (status: number) => status === 500 || status === 503 || status === 504
+
 export async function callGemini(req: ProviderRequest): Promise<ProviderResult> {
   const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY,
-    ...(process.env.GEMINI_BASE_URL ? { httpOptions: { baseUrl: process.env.GEMINI_BASE_URL } } : {}),
+    httpOptions: {
+      timeout: REQUEST_TIMEOUT_MS,
+      retryOptions: { attempts: 1 }, // we do our own bounded retries below
+      ...(process.env.GEMINI_BASE_URL ? { baseUrl: process.env.GEMINI_BASE_URL } : {}),
+    },
   })
-  const first = await once(ai, req)
-  // One retry for malformed JSON; nothing else is worth spending free-tier quota on.
-  return first.kind === 'bad_output' ? once(ai, req) : first
+  const started = Date.now()
+  let lastError: unknown
+  for (const model of models()) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      if (Date.now() - started > DEADLINE_MS) throw lastError ?? new Error('Gemini deadline exceeded')
+      try {
+        const first = await once(ai, model, req)
+        // One retry for malformed JSON on the same model; nothing else is worth spending free-tier quota on.
+        return first.kind === 'bad_output' ? await once(ai, model, req) : first
+      } catch (e) {
+        lastError = e
+        if (!(e instanceof ApiError)) throw e
+        if (isTransient(e.status) && attempt === 0) {
+          await sleep(retryDelayMs()) // brief pause, then one more try on the same model
+          continue
+        }
+        if (isTransient(e.status) || e.status === 429 || e.status === 404) break // try the next model
+        throw e // bad key or bad request: another model will not help
+      }
+    }
+  }
+  throw lastError
 }
 
 export function mapGeminiError(e: unknown): { status: number; error: string; message: string } {
@@ -59,6 +98,20 @@ export function mapGeminiError(e: unknown): { status: number; error: string; mes
         status: 429,
         error: 'rate_limited',
         message: 'Gemini free-tier quota reached. Try again later (limits reset daily and per minute).',
+      }
+    }
+    if (isTransient(e.status)) {
+      return {
+        status: 502,
+        error: 'provider_overloaded',
+        message: 'Gemini is overloaded right now (the free tier has no capacity guarantee). Try again in a minute.',
+      }
+    }
+    if (e.status === 404) {
+      return {
+        status: 502,
+        error: 'model_unavailable',
+        message: 'None of the configured Gemini models is available to this API key. Set GEMINI_MODEL to a model you can use.',
       }
     }
     if (e.status === 401 || e.status === 403 || /api key/i.test(e.message)) {

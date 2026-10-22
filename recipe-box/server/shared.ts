@@ -86,7 +86,7 @@ export async function runRecipeModel(opts: ProviderRequest & { categories: strin
   try {
     result = provider === 'gemini' ? await callGemini(opts) : await callAnthropic(opts)
   } catch (e) {
-    console.error('AI request failed:', provider, e instanceof Error ? e.name : 'unknown', (e as { status?: number }).status ?? '')
+    console.error('AI request failed:', provider, e instanceof Error ? e.name : 'unknown', (e as { status?: number }).status ?? '', e instanceof Error ? e.message.slice(0, 300) : '')
     const m = provider === 'gemini' ? mapGeminiError(e) : mapAnthropicError(e)
     return json(m.status, { error: m.error, message: m.message })
   }
