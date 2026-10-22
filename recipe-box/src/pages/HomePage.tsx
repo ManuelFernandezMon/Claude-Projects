@@ -62,10 +62,15 @@ export function HomePage() {
     <div className="stack">
       <div className="page-head">
         <h1 className="h1">Recipes</h1>
-        <span className="muted mono">
-          {visible.length}
-          {filtering ? ` of ${recipes.length}` : ''}
-        </span>
+        <div className="row">
+          <span className="muted mono">
+            {visible.length}
+            {filtering ? ` of ${recipes.length}` : ''}
+          </span>
+          <Link to="/import" className="btn">
+            Import link
+          </Link>
+        </div>
       </div>
 
       {recipes.length > 0 && (

@@ -1,4 +1,5 @@
 import type { Category, ImportMode, Recipe, StorageSnapshot, StoredImage } from '../types'
+import { safeHttpUrl } from '../lib/url'
 import { recipeStore } from './recipeStore'
 
 const APP_ID = 'recipe-box'
@@ -124,6 +125,7 @@ function parseBackup(text: string): StorageSnapshot {
       cookMinutes: num(r.cookMinutes),
       servings: num(r.servings),
       imageIds: arr(r.imageIds).filter((s): s is string => typeof s === 'string'),
+      sourceUrl: typeof r.sourceUrl === 'string' ? safeHttpUrl(r.sourceUrl) : undefined,
       isSample: r.isSample === true ? true : undefined,
       createdAt: num(r.createdAt) ?? now,
       updatedAt: num(r.updatedAt) ?? now,

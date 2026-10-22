@@ -18,6 +18,8 @@ export interface Recipe {
   servings?: number
   /** Image IDs in display order; the first one is the cover. */
   imageIds: string[]
+  /** Link to the original TikTok/Instagram/web post, if the recipe was imported from one. */
+  sourceUrl?: string
   isSample?: boolean
   createdAt: number
   updatedAt: number
@@ -45,3 +47,28 @@ export interface StorageSnapshot {
 }
 
 export type ImportMode = 'merge' | 'replace'
+
+/** Shape returned by /api/extract. */
+export interface ImportedRecipe {
+  title: string
+  description: string
+  ingredients: { quantity: string; name: string }[]
+  steps: string[]
+  prepMinutes: number | null
+  cookMinutes: number | null
+  servings: number | null
+  categoryNames: string[]
+}
+
+/** Data handed from the import page to the editor via router state. */
+export interface RecipePrefill {
+  title: string
+  description: string
+  prep: string
+  cook: string
+  servings: string
+  categoryIds: string[]
+  ingredients: Ingredient[]
+  steps: string[]
+  sourceUrl: string
+}

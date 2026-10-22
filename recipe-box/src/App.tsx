@@ -3,6 +3,7 @@ import { DataProvider } from './hooks/useData'
 import { BackupPage } from './pages/BackupPage'
 import { CategoriesPage } from './pages/CategoriesPage'
 import { HomePage } from './pages/HomePage'
+import { ImportPage } from './pages/ImportPage'
 import { RecipeDetailPage } from './pages/RecipeDetailPage'
 import { RecipeEditPage } from './pages/RecipeEditPage'
 import { EmptyState } from './components/EmptyState'
@@ -34,6 +35,7 @@ function Shell() {
       <main id="main" className="main">
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/import" element={<ImportPage />} />
           <Route path="/recipes/new" element={<RecipeEditPage />} />
           <Route path="/recipes/:id" element={<RecipeDetailPage />} />
           <Route path="/recipes/:id/edit" element={<RecipeEditPage />} />

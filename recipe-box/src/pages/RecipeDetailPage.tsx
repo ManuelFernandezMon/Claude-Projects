@@ -11,6 +11,7 @@ import { ImageGallery } from '../components/ImageGallery'
 import { IngredientChecklist } from '../components/IngredientChecklist'
 import { Spinner } from '../components/Spinner'
 import { errorMessage, formatMinutes } from '../lib/format'
+import { safeHttpUrl } from '../lib/url'
 
 export function RecipeDetailPage() {
   const { id } = useParams()
@@ -55,6 +56,7 @@ export function RecipeDetailPage() {
   }
 
   const recipeCategories = categories.filter((c) => recipe.categoryIds.includes(c.id))
+  const source = safeHttpUrl(recipe.sourceUrl)
   const facts: [string, string][] = []
   if (recipe.prepMinutes) facts.push(['Prep', formatMinutes(recipe.prepMinutes)])
   if (recipe.cookMinutes) facts.push(['Cook', formatMinutes(recipe.cookMinutes)])
@@ -100,6 +102,15 @@ export function RecipeDetailPage() {
       </header>
 
       <ImageGallery imageIds={recipe.imageIds} title={recipe.title} />
+
+      {source && (
+        <p className="small">
+          Source:{' '}
+          <a href={source} target="_blank" rel="noopener noreferrer">
+            {new URL(source).hostname.replace(/^www\./, '')} ↗
+          </a>
+        </p>
+      )}
 
       {recipe.description && <p className="prose">{recipe.description}</p>}
 

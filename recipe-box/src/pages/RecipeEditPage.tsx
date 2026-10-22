@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { recipeStore } from '../storage/recipeStore'
-import type { Ingredient, Recipe } from '../types'
+import type { Ingredient, Recipe, RecipePrefill } from '../types'
 import { useData } from '../hooks/useData'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { CategoryChip } from '../components/CategoryChip'
@@ -10,6 +10,7 @@ import { ImagePicker, type ImageItem } from '../components/ImagePicker'
 import { Spinner } from '../components/Spinner'
 import { newId } from '../lib/id'
 import { errorMessage } from '../lib/format'
+import { safeHttpUrl } from '../lib/url'
 
 interface StepDraft {
   id: string
@@ -26,18 +27,20 @@ interface Draft {
   ingredients: Ingredient[]
   steps: StepDraft[]
   images: ImageItem[]
+  sourceUrl: string
 }
 
-const emptyDraft = (): Draft => ({
-  title: '',
-  description: '',
-  prep: '',
-  cook: '',
-  servings: '',
-  categoryIds: [],
-  ingredients: [{ id: newId(), name: '' }],
-  steps: [{ id: newId(), text: '' }],
+const emptyDraft = (prefill?: RecipePrefill): Draft => ({
+  title: prefill?.title ?? '',
+  description: prefill?.description ?? '',
+  prep: prefill?.prep ?? '',
+  cook: prefill?.cook ?? '',
+  servings: prefill?.servings ?? '',
+  categoryIds: prefill?.categoryIds ?? [],
+  ingredients: prefill?.ingredients.length ? prefill.ingredients : [{ id: newId(), name: '' }],
+  steps: (prefill?.steps.length ? prefill.steps : ['']).map((text) => ({ id: newId(), text })),
   images: [],
+  sourceUrl: prefill?.sourceUrl ?? '',
 })
 
 const toNum = (s: string): number | undefined => {
@@ -56,9 +59,10 @@ export function RecipeEditPage() {
   const { id } = useParams()
   const isNew = id === undefined
   const navigate = useNavigate()
+  const prefill = (useLocation().state as { prefill?: RecipePrefill } | null)?.prefill
   const { categories, refresh } = useData()
   const [original, setOriginal] = useState<Recipe>()
-  const [draft, setDraft] = useState<Draft | undefined>(isNew ? emptyDraft() : undefined)
+  const [draft, setDraft] = useState<Draft | undefined>(isNew ? emptyDraft(prefill) : undefined)
   const [loadError, setLoadError] = useState<string>()
   const [saveError, setSaveError] = useState<string>()
   const [saving, setSaving] = useState(false)
@@ -86,6 +90,7 @@ export function RecipeEditPage() {
           ingredients: r.ingredients.length ? r.ingredients : [{ id: newId(), name: '' }],
           steps: (r.steps.length ? r.steps : ['']).map((text) => ({ id: newId(), text })),
           images: r.imageIds.flatMap((iid, i) => (blobs[i] ? [{ id: iid, blob: blobs[i] }] : [])),
+          sourceUrl: r.sourceUrl ?? '',
         })
       } catch (e) {
         if (!cancelled) setLoadError(errorMessage(e))
@@ -141,6 +146,7 @@ export function RecipeEditPage() {
         cookMinutes: toNum(d.cook),
         servings: toNum(d.servings),
         imageIds: d.images.map((i) => i.id),
+        sourceUrl: safeHttpUrl(d.sourceUrl),
         isSample: original?.isSample,
         createdAt: original?.createdAt ?? now,
         updatedAt: now,
@@ -177,6 +183,12 @@ export function RecipeEditPage() {
         ← Cancel
       </Link>
       <h1 className="h1">{isNew ? 'New recipe' : 'Edit recipe'}</h1>
+      {isNew && prefill && (
+        <p className="notice notice--warn" role="note">
+          <strong>Imported from a link: review before saving.</strong> The text was extracted automatically and can
+          contain mistakes. Check quantities and steps against the original video.
+        </p>
+      )}
 
       <div className="field">
         <label htmlFor="title">Title</label>
@@ -200,6 +212,19 @@ export function RecipeEditPage() {
           rows={3}
           value={d.description}
           onChange={(e) => update({ description: e.target.value })}
+        />
+      </div>
+
+      <div className="field">
+        <label htmlFor="source">Source link (optional)</label>
+        <input
+          id="source"
+          className="input"
+          type="url"
+          inputMode="url"
+          value={d.sourceUrl}
+          onChange={(e) => update({ sourceUrl: e.target.value })}
+          placeholder="https://…"
         />
       </div>
 
