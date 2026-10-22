@@ -104,6 +104,12 @@ Google to process the video, asks Gemini to extract the recipe with the same mod
 the file** afterwards (Google also removes uploads after 48 hours). Upload sessions are signed by the server, so the browser cannot
 point it at another URL.
 
+**Android picker quirk:** the page has two buttons. *Choose video* opens your Files app; *From Photos* opens Android's photo
+picker. Chrome only opens the photo picker when every accepted type is an image or video, and that picker's temporary file
+permission can lapse, which shows up as `NotReadableError` ("the requested file could not be read"). *Choose video* therefore
+also accepts `application/octet-stream` to get the normal file chooser. In either case the whole file is read into memory the
+moment it is chosen and the upload works from that copy (so the browser needs about as much free memory as the video size).
+
 **Limits:** up to 100 MB and 5 minutes per video; formats MP4, MOV, WebM, 3GP, MPEG, AVI. Video always uses **Gemini**, even if
 `AI_PROVIDER=anthropic`, so `GEMINI_API_KEY` is required (Claude has no video input here). A minute of video is roughly 6,000 to
 18,000 tokens according to Google's docs, so it uses free-tier quota much faster than text. On the free tier Google may use

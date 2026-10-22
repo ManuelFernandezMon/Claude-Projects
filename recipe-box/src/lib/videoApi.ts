@@ -28,7 +28,7 @@ export function videoMime(file: File): string {
 }
 
 /** Reads the duration from the file's metadata; undefined if the browser cannot decode it quickly. */
-export function readDuration(file: File): Promise<number | undefined> {
+export function readDuration(file: Blob): Promise<number | undefined> {
   return new Promise((resolve) => {
     const video = document.createElement('video')
     const url = URL.createObjectURL(file)
@@ -65,47 +65,63 @@ async function post<T>(endpoint: string, init: RequestInit, passcode: string, st
   return body
 }
 
-/** Uploads the file through the server (which holds the Gemini key) in chunks, reporting progress from 0 to 1. */
-export async function uploadVideo(
-  file: File,
-  passcode: string,
-  onProgress: (fraction: number) => void,
-): Promise<UploadedVideo> {
+export interface LoadedVideo {
+  name: string
+  mimeType: string
+  bytes: ArrayBuffer
+  durationSec?: number
+}
+
+const UNREADABLE =
+  'Your phone gave the browser a video it cannot read. Try the other choose button (Files instead of Photos), ' +
+  'or save the video to Downloads and pick it from there.'
+
+/**
+ * Validates the file and reads ALL of it into memory right away. Android's photo picker hands the browser a temporary
+ * permission that can lapse a few seconds later, so every later step (duration, upload) works from this copy and never
+ * touches the original file again.
+ */
+export async function loadVideo(file: File): Promise<LoadedVideo> {
   const mimeType = videoMime(file)
   if (!mimeType) throw new ImportError('That does not look like a video file.', 'bad_request')
   if (file.size > MAX_VIDEO_MB * 1024 * 1024) {
     throw new ImportError(`The video is too large (max ${MAX_VIDEO_MB} MB). Try a shorter clip.`, 'too_large')
   }
-  const durationSec = await readDuration(file)
+  let bytes: ArrayBuffer
+  try {
+    bytes = await file.arrayBuffer()
+  } catch (e) {
+    throw new ImportError(UNREADABLE, 'file_unreadable', `reading the file · ${e instanceof Error ? `${e.name}: ${e.message}` : String(e)}`)
+  }
+  if (bytes.byteLength === 0) throw new ImportError('The video file is empty.', 'bad_request')
+  const durationSec = await readDuration(new Blob([bytes], { type: mimeType }))
   if (durationSec && durationSec > MAX_VIDEO_MINUTES * 60) {
     throw new ImportError(`The video is too long (max ${MAX_VIDEO_MINUTES} minutes).`, 'too_long')
   }
+  return { name: file.name, mimeType, bytes, durationSec }
+}
 
+/** Uploads the in-memory video through the server (which holds the Gemini key) in chunks, reporting progress 0 to 1. */
+export async function uploadVideo(
+  video: LoadedVideo,
+  passcode: string,
+  onProgress: (fraction: number) => void,
+): Promise<UploadedVideo> {
+  const size = video.bytes.byteLength
   const start = await post<{ uploadToken: string; chunkSize: number }>(
     '/api/video-start',
-    { headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mimeType, size: file.size, durationSec }) },
+    { headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mimeType: video.mimeType, size, durationSec: video.durationSec }) },
     passcode,
     'starting the upload',
   )
 
-  const parts = Math.ceil(file.size / start.chunkSize)
+  const parts = Math.ceil(size / start.chunkSize)
   let offset = 0
-  while (offset < file.size) {
-    const end = Math.min(offset + start.chunkSize, file.size)
-    const final = end === file.size
+  while (offset < size) {
+    const end = Math.min(offset + start.chunkSize, size)
+    const final = end === size
     const part = offset / start.chunkSize + 1
-    // Read the bytes into memory first: if the phone cannot read the file this fails here, with a clear message,
-    // instead of surfacing later as a generic network error from a lazily streamed Blob.
-    let body: ArrayBuffer
-    try {
-      body = await file.slice(offset, end).arrayBuffer()
-    } catch (e) {
-      throw new ImportError(
-        'Your phone could not read the video file. Save it again (or copy it to Downloads) and choose it again.',
-        'file_unreadable',
-        `reading part ${part} of ${parts} · ${e instanceof Error ? `${e.name}: ${e.message}` : String(e)}`,
-      )
-    }
+    const body = video.bytes.slice(offset, end)
     let attempt = 0
     for (;;) {
       try {
@@ -123,7 +139,7 @@ export async function uploadVideo(
           passcode,
           `sending part ${part} of ${parts}`,
         )
-        onProgress(end / file.size)
+        onProgress(end / size)
         if (final) {
           if (!r.file) throw new ImportError('The upload did not finish. Try again.', 'upload_incomplete')
           return r.file

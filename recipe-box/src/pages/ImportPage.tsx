@@ -7,11 +7,11 @@ import { usePasscode } from '../hooks/usePasscode'
 import { ImportError, extractRecipe, fetchTikTokCaption } from '../lib/importApi'
 import { toPrefill } from '../lib/prefill'
 import { safeHttpUrl, sourceKind } from '../lib/url'
-import { MAX_VIDEO_MB, MAX_VIDEO_MINUTES, extractVideo, uploadVideo } from '../lib/videoApi'
+import { MAX_VIDEO_MB, MAX_VIDEO_MINUTES, extractVideo, loadVideo, uploadVideo } from '../lib/videoApi'
 
 const MAX_TEXT = 8000
 
-type VideoPhase = { kind: 'idle' } | { kind: 'uploading'; fraction: number } | { kind: 'reading' }
+type VideoPhase = { kind: 'idle' } | { kind: 'preparing' } | { kind: 'uploading'; fraction: number } | { kind: 'reading' }
 
 export function ImportPage() {
   useDocumentTitle('Import a recipe')
@@ -28,7 +28,9 @@ export function ImportPage() {
   const [hint, setHint] = useState<string>()
   const [error, setError] = useState<string>()
   const [errorDetail, setErrorDetail] = useState<string>()
-  const fileRef = useRef<HTMLInputElement>(null)
+  const [errorCode, setErrorCode] = useState<string>()
+  const filesRef = useRef<HTMLInputElement>(null)
+  const photosRef = useRef<HTMLInputElement>(null)
 
   const cleanUrl = safeHttpUrl(url)
   const kind = cleanUrl ? sourceKind(cleanUrl) : 'other'
@@ -65,6 +67,7 @@ export function ImportPage() {
     if (err instanceof ImportError && err.code === 'unauthorized') pc.forget()
     setError(err instanceof Error ? err.message : String(err))
     setErrorDetail(err instanceof ImportError ? err.detail : undefined)
+    setErrorCode(err instanceof ImportError ? err.code : undefined)
   }
 
   async function submitCaption(e: FormEvent) {
@@ -100,9 +103,13 @@ export function ImportPage() {
     }
     setError(undefined)
     setErrorDetail(undefined)
-    setVideo({ kind: 'uploading', fraction: 0 })
+    setErrorCode(undefined)
+    setVideo({ kind: 'preparing' })
     try {
-      const uploaded = await uploadVideo(file, passcode, (fraction) => setVideo({ kind: 'uploading', fraction }))
+      // Read the whole file first thing: Android's photo picker permission can lapse seconds after picking.
+      const loaded = await loadVideo(file)
+      setVideo({ kind: 'uploading', fraction: 0 })
+      const uploaded = await uploadVideo(loaded, passcode, (fraction) => setVideo({ kind: 'uploading', fraction }))
       setVideo({ kind: 'reading' })
       const r = await extractVideo({ file: uploaded, url: cleanUrl, categories: categories.map((c) => c.name) }, passcode)
       if (!r) {
@@ -114,7 +121,7 @@ export function ImportPage() {
       fail(err)
     } finally {
       setVideo({ kind: 'idle' })
-      if (fileRef.current) fileRef.current.value = '' // only now: clearing earlier can invalidate the file on some phones
+      for (const ref of [filesRef, photosRef]) if (ref.current) ref.current.value = '' // only now: clearing earlier can invalidate the file on some phones
     }
   }
 
@@ -170,24 +177,46 @@ export function ImportPage() {
           minutes.
         </p>
         <div>
-          {/* A real <label> around the input works in every mobile browser; no script-triggered click needed. */}
-          <label className={`btn btn--primary${working ? ' btn--disabled' : ''}`}>
-            Choose video
-            <input
-              ref={fileRef}
-              type="file"
-              accept="video/*"
-              className="sr-only"
-              data-testid="video-file-input"
-              disabled={working}
-              onChange={(e) => void onVideoPicked(e.target.files?.[0])}
-            />
-          </label>
+          {/* Real <label>s around the inputs work in every mobile browser; no script-triggered click needed.
+              The first input also accepts application/octet-stream: Chrome on Android only opens the system photo picker
+              when EVERY accepted type is an image or video, and that picker's temporary file permission can fail with
+              NotReadableError. Adding a non-media type makes Chrome open the normal file chooser instead. */}
+          <div className="row">
+            <label className={`btn btn--primary${working ? ' btn--disabled' : ''}`}>
+              Choose video
+              <input
+                ref={filesRef}
+                type="file"
+                accept="video/*,application/octet-stream"
+                className="sr-only"
+                data-testid="video-file-input"
+                disabled={working}
+                onChange={(e) => void onVideoPicked(e.target.files?.[0])}
+              />
+            </label>
+            <label className={`btn${working ? ' btn--disabled' : ''}`}>
+              From Photos
+              <input
+                ref={photosRef}
+                type="file"
+                accept="video/*"
+                className="sr-only"
+                data-testid="video-photos-input"
+                disabled={working}
+                onChange={(e) => void onVideoPicked(e.target.files?.[0])}
+              />
+            </label>
+          </div>
         </div>
         {!passcode && <p className="muted small">Enter the passcode above before choosing a video.</p>}
         {picked && (
           <p className="small" role="status">
             Selected: <strong>{picked.name}</strong> ({picked.mb} MB)
+          </p>
+        )}
+        {video.kind === 'preparing' && (
+          <p className="muted" role="status">
+            Preparing the video…
           </p>
         )}
         {video.kind === 'uploading' && (
@@ -244,6 +273,12 @@ export function ImportPage() {
       {error && (
         <div role="alert">
           <p className="error">{error}</p>
+          {errorCode === 'file_unreadable' && (
+            <p className="muted small">
+              This is a phone permission problem, not your connection. “Choose video” opens your Files app; “From
+              Photos” opens the photo picker. If both fail, save the video to Downloads first.
+            </p>
+          )}
           {errorDetail && <p className="muted small">Details: {errorDetail}</p>}
         </div>
       )}
