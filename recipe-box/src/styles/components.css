@@ -830,3 +830,12 @@ button.chip.example {
   min-height: var(--tap);
   text-align: left;
 }
+
+/* ---------- video upload ---------- */
+.progress {
+  display: block;
+  width: 100%;
+  height: 14px;
+  margin-top: 6px;
+  accent-color: var(--accent);
+}

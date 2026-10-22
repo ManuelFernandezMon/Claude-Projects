@@ -51,24 +51,31 @@ export function resolveProvider(): { provider: ProviderName } | { error: string 
 }
 
 /**
- * Common gate for every AI endpoint: POST only, server configured, passcode correct, body is JSON.
- * Returns the parsed body, or a ready-made error Response.
+ * Common gate for every AI endpoint: POST only, server configured, passcode correct.
+ * `needs: 'gemini'` is for video, which only Gemini can read. Returns an error Response, or null when allowed.
  */
-export async function guard(request: Request): Promise<{ body: unknown } | { response: Response }> {
-  if (request.method !== 'POST') {
-    return { response: json(405, { error: 'method_not_allowed', message: 'Use POST.' }) }
-  }
+export function authorize(request: Request, needs?: 'gemini'): Response | null {
+  if (request.method !== 'POST') return json(405, { error: 'method_not_allowed', message: 'Use POST.' })
   const passcode = process.env.RECIPE_IMPORT_PASSCODE
-  if (!passcode) {
-    return { response: json(503, { error: 'not_configured', message: 'RECIPE_IMPORT_PASSCODE is not set on the server.' }) }
-  }
-  const resolved = resolveProvider()
-  if ('error' in resolved) {
-    return { response: json(503, { error: 'not_configured', message: resolved.error }) }
+  if (!passcode) return json(503, { error: 'not_configured', message: 'RECIPE_IMPORT_PASSCODE is not set on the server.' })
+  if (needs === 'gemini') {
+    if (!hasGeminiKey()) {
+      return json(503, { error: 'not_configured', message: 'GEMINI_API_KEY is not set on the server (video understanding uses Gemini).' })
+    }
+  } else {
+    const resolved = resolveProvider()
+    if ('error' in resolved) return json(503, { error: 'not_configured', message: resolved.error })
   }
   if (!sameSecret(request.headers.get('x-import-passcode') ?? '', passcode)) {
-    return { response: json(401, { error: 'unauthorized', message: 'Wrong or missing passcode.' }) }
+    return json(401, { error: 'unauthorized', message: 'Wrong or missing passcode.' })
   }
+  return null
+}
+
+/** `authorize` plus a JSON body. Returns the parsed body, or a ready-made error Response. */
+export async function guard(request: Request, needs?: 'gemini'): Promise<{ body: unknown } | { response: Response }> {
+  const denied = authorize(request, needs)
+  if (denied) return { response: denied }
   try {
     return { body: await request.json() }
   } catch {
@@ -77,14 +84,21 @@ export async function guard(request: Request): Promise<{ body: unknown } | { res
 }
 
 /** Calls the configured provider for a structured recipe and maps the outcome to an HTTP response. */
-export async function runRecipeModel(opts: ProviderRequest & { categories: string[] }): Promise<Response> {
-  const resolved = resolveProvider()
-  if ('error' in resolved) return json(503, { error: 'not_configured', message: resolved.error })
-  const { provider } = resolved
+export async function runRecipeModel(
+  opts: ProviderRequest & { categories: string[]; provider?: ProviderName; started?: number },
+): Promise<Response> {
+  let provider: ProviderName
+  if (opts.provider) {
+    provider = opts.provider
+  } else {
+    const resolved = resolveProvider()
+    if ('error' in resolved) return json(503, { error: 'not_configured', message: resolved.error })
+    provider = resolved.provider
+  }
 
   let result: ProviderResult
   try {
-    result = provider === 'gemini' ? await callGemini(opts) : await callAnthropic(opts)
+    result = provider === 'gemini' ? await callGemini(opts, opts.started) : await callAnthropic(opts)
   } catch (e) {
     console.error('AI request failed:', provider, e instanceof Error ? e.name : 'unknown', (e as { status?: number }).status ?? '', e instanceof Error ? e.message.slice(0, 300) : '')
     const m = provider === 'gemini' ? mapGeminiError(e) : mapAnthropicError(e)

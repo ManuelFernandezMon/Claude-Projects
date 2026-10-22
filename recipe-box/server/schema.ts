@@ -18,6 +18,8 @@ export interface ProviderRequest {
   system: string
   user: string
   effort: 'low' | 'medium' | 'high'
+  /** Gemini-only: an uploaded video file the model should watch and listen to. */
+  video?: { uri: string; mimeType: string }
 }
 
 /** What a provider hands back; API/network failures are thrown and mapped by that provider's `mapError`. */

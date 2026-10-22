@@ -45,7 +45,7 @@ export async function fetchTikTokCaption(url: string): Promise<string | undefine
   }
 }
 
-async function postAi(
+export async function postAi(
   endpoint: string,
   payload: unknown,
   passcode: string,

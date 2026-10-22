@@ -13,7 +13,7 @@ function apiDev(): Plugin {
       }
       server.middlewares.use('/api', async (req: IncomingMessage, res: ServerResponse) => {
         try {
-          const name = /^\/([a-z]+)(?:\?|$)/.exec(req.url ?? '')?.[1]
+          const name = /^\/([a-z-]+)(?:\?|$)/.exec(req.url ?? '')?.[1]
           if (!name) {
             res.statusCode = 404
             return res.end('Not found')

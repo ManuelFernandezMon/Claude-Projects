@@ -1,4 +1,4 @@
-import { ApiError, FinishReason, GoogleGenAI } from '@google/genai'
+import { ApiError, FinishReason, GoogleGenAI, createPartFromUri } from '@google/genai'
 import { z } from 'zod'
 import { RecipeOutputSchema, type ProviderRequest, type ProviderResult } from './schema.js'
 
@@ -10,8 +10,10 @@ import { RecipeOutputSchema, type ProviderRequest, type ProviderResult } from '.
 const DEFAULT_MODELS =
   'gemini-3.8-flash,gemini-3.6-flash,gemini-3.5-flash-lite,gemini-2.5-flash,gemini-2.5-flash-lite'
 const REQUEST_TIMEOUT_MS = 25_000
-/** Stop starting new attempts after this long, so the whole call stays under the function's 60 s limit. */
+const VIDEO_REQUEST_TIMEOUT_MS = 45_000
+/** Stop starting new attempts after this long, and cap each attempt so the whole call ends before the 60 s function limit. */
 const DEADLINE_MS = 30_000
+const HARD_LIMIT_MS = 55_000
 
 const models = () =>
   (process.env.GEMINI_MODEL || DEFAULT_MODELS)
@@ -35,7 +37,9 @@ const BLOCKED_FINISH: string[] = [
 async function once(ai: GoogleGenAI, model: string, req: ProviderRequest): Promise<ProviderResult> {
   const res = await ai.models.generateContent({
     model,
-    contents: req.user,
+    contents: req.video
+      ? [{ role: 'user', parts: [createPartFromUri(req.video.uri, req.video.mimeType), { text: req.user }] }]
+      : req.user,
     config: {
       systemInstruction: req.system,
       responseMimeType: 'application/json',
@@ -60,20 +64,26 @@ async function once(ai: GoogleGenAI, model: string, req: ProviderRequest): Promi
 
 const isTransient = (status: number) => status === 500 || status === 503 || status === 504
 
-export async function callGemini(req: ProviderRequest): Promise<ProviderResult> {
-  const ai = new GoogleGenAI({
+export function makeGeminiClient(timeoutMs = REQUEST_TIMEOUT_MS): GoogleGenAI {
+  return new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY,
     httpOptions: {
-      timeout: REQUEST_TIMEOUT_MS,
+      timeout: timeoutMs,
       retryOptions: { attempts: 1 }, // we do our own bounded retries below
       ...(process.env.GEMINI_BASE_URL ? { baseUrl: process.env.GEMINI_BASE_URL } : {}),
     },
   })
-  const started = Date.now()
+}
+
+/** `started` lets a caller that already spent time (e.g. waiting for a video to process) share one overall deadline. */
+export async function callGemini(req: ProviderRequest, started = Date.now()): Promise<ProviderResult> {
   let lastError: unknown
   for (const model of models()) {
     for (let attempt = 0; attempt < 2; attempt++) {
-      if (Date.now() - started > DEADLINE_MS) throw lastError ?? new Error('Gemini deadline exceeded')
+      const elapsed = Date.now() - started
+      if (elapsed > DEADLINE_MS) throw lastError ?? new Error('Gemini deadline exceeded')
+      const cap = req.video ? VIDEO_REQUEST_TIMEOUT_MS : REQUEST_TIMEOUT_MS
+      const ai = makeGeminiClient(Math.max(5_000, Math.min(cap, HARD_LIMIT_MS - elapsed)))
       try {
         const first = await once(ai, model, req)
         // One retry for malformed JSON on the same model; nothing else is worth spending free-tier quota on.
