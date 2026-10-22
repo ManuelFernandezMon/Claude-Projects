@@ -1,4 +1,4 @@
-import { cleanCategories, guard, json, neutralize, runRecipeModel } from './shared'
+import { cleanCategories, guard, json, neutralize, runRecipeModel } from './shared.js'
 
 const MIN_TEXT = 20
 const MAX_TEXT = 8000

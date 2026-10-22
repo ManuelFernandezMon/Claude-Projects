@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { cleanCategories, guard, json, neutralize, runRecipeModel } from './shared'
+import { cleanCategories, guard, json, neutralize, runRecipeModel } from './shared.js'
 
 const MIN_PROMPT = 3
 const MAX_PROMPT = 1000

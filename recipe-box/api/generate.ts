@@ -1,4 +1,4 @@
-import { handleGenerate } from '../server/generateRecipe'
+import { handleGenerate } from '../server/generateRecipe.js'
 
 export default {
   fetch(request: Request): Promise<Response> {

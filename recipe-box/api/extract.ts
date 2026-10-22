@@ -1,4 +1,4 @@
-import { handleExtract } from '../server/extractRecipe'
+import { handleExtract } from '../server/extractRecipe.js'
 
 export default {
   fetch(request: Request): Promise<Response> {
