@@ -80,7 +80,7 @@ export function ImportPage() {
       </Link>
       <h1 className="h1">Import from link</h1>
       <p className="muted">
-        Paste a TikTok or Instagram link and the video’s caption. Claude turns the text into a recipe with an
+        Paste a TikTok or Instagram link and the video’s caption. An AI model turns the text into a recipe with an
         ingredient checklist, and you review it before saving. Recipes that are only spoken in the video, with no
         ingredients in the caption, can’t be read.
       </p>

@@ -3,7 +3,7 @@
 A personal recipe app for the kitchen, built mobile-first. Single user, no backend, no accounts.
 Recipes, photos, categories and checklist state live in the browser's **IndexedDB**.
 
-**Stack:** Vite 8 · React 19 · TypeScript 7 · [`idb`](https://github.com/jakearchibald/idb) 8 · plain CSS · `react-router-dom`. The optional AI features add two Vercel serverless functions (`api/extract.ts`, `api/generate.ts`) that call the Anthropic API.
+**Stack:** Vite 8 · React 19 · TypeScript 7 · [`idb`](https://github.com/jakearchibald/idb) 8 · plain CSS · `react-router-dom`. The optional AI features add two Vercel serverless functions (`api/extract.ts`, `api/generate.ts`) that call an AI provider: Google Gemini (has a free tier) or Anthropic Claude (paid).
 
 ## Features
 
@@ -12,8 +12,8 @@ Recipes, photos, categories and checklist state live in the browser's **IndexedD
 - Per-recipe ingredient checklist; state persists, with a "Reset checklist" button.
 - Custom colored categories (create, rename, recolor, delete). Deleting a category never deletes recipes.
 - Home grid with multi-select category filter (matches **any** selected), search (title + ingredients), sort (newest / A-Z).
-- **Ask AI for a recipe:** describe what you want ("gluten-free banana bread for 8"); Claude writes a full recipe, you can ask for changes ("make it vegan"), then open it in the editor to review and save. AI recipes are labeled as untested.
-- **Import from a TikTok/Instagram link:** paste the link and the video's caption; Claude turns it into a recipe (ingredients with quantities, steps, times, categories) that you review before saving. Imported ingredients become the interactive checklist.
+- **Ask AI for a recipe:** describe what you want ("gluten-free banana bread for 8"); the AI writes a full recipe, you can ask for changes ("make it vegan"), then open it in the editor to review and save. AI recipes are labeled as untested.
+- **Import from a TikTok/Instagram link:** paste the link and the video's caption; the AI turns it into a recipe (ingredients with quantities, steps, times, categories) that you review before saving. Imported ingredients become the interactive checklist.
 - Backup page: export everything to one JSON file (photos embedded as base64); import with **merge** or **replace**.
 - Three clearly labeled **SAMPLE** recipes on first run. Delete them from the home page; they will not come back.
 
@@ -43,22 +43,38 @@ because `crypto.randomUUID()` is also secure-context only. Deploy a preview to V
 
 ## AI features: setup, cost and limits
 
-Both AI features (**Ask AI** and **Import link**) use the same server setup, passcode and model.
+Both AI features (**Ask AI** and **Import link**) use the same server setup and passcode.
 
 ### Setup (required for both features; otherwise the page shows a "not configured" error)
 
-1. Create an API key in the [Anthropic Console](https://platform.claude.com/).
+Choose a provider. Both features work the same with either.
+
+| | **Gemini (free tier)** | **Claude (Anthropic, paid)** |
+|---|---|---|
+| Cost | Free-of-charge tier for the models listed on [Google's pricing page](https://ai.google.dev/gemini-api/docs/pricing); free-tier limits are not published there (see them in AI Studio) and are not guaranteed | Pay per use, no free tier confirmed |
+| Privacy | On the free tier Google states the content is **used to improve its products** | Per Anthropic's terms |
+| Quality | Not tested with a real key. The server validates every response against the schema and retries once if it is malformed | Schema-constrained structured outputs |
+| Key | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) | [Anthropic Console](https://platform.claude.com/) |
+| Env var | `GEMINI_API_KEY` | `ANTHROPIC_API_KEY` |
+
+A Google AI Pro subscription does **not** give API quota: the API is billed and limited separately from the Gemini app.
+
+1. Create the API key for your provider.
 2. Pick a long random string as `RECIPE_IMPORT_PASSCODE`.
-3. Locally: put both in `.env.local` (see `.env.example`). On Vercel: add `ANTHROPIC_API_KEY` and
-   `RECIPE_IMPORT_PASSCODE` under *Project → Settings → Environment Variables*, then redeploy.
+3. Locally: put them in `.env.local` (see `.env.example`). On Vercel: add the same names under
+   *Project → Settings → Environment Variables*, then **redeploy** (variables only apply to new deployments).
 4. The first time you use an AI page on a device, the app asks for the passcode and remembers it on that device.
 
-**Why a passcode:** the function is a public URL that spends your API credits. Without the passcode, anyone who finds the
-URL could run up your bill. The passcode is compared in constant time and never sent to Anthropic.
+Which provider runs: `AI_PROVIDER=gemini|anthropic` if set; otherwise Anthropic when `ANTHROPIC_API_KEY` exists, else Gemini.
+Defaults: `gemini-3.8-flash` (override with `GEMINI_MODEL`; `gemini-3.5-flash-lite` is the faster option) and
+`claude-opus-5-5` (override with `RECIPE_IMPORT_MODEL`).
 
-**Cost:** an import is one short request at low effort. **Ask AI costs more per use** (medium effort, a full recipe back, and
-each "ask for changes" is another request). The default model is `claude-opus-5-5`; set `RECIPE_IMPORT_MODEL` to use a
-cheaper model. Check current prices on Anthropic's pricing page, and set a spend limit in the Console as a safety net.
+**Why a passcode:** the function is a public URL that spends your quota or credits. Without the passcode, anyone who finds the
+URL could use it up. The passcode is compared in constant time and is never sent to the AI provider.
+
+**Quota and cost:** on Gemini's free tier, when you hit the limit the app shows "free-tier quota reached" (HTTP 429); wait and
+retry. On Claude, Ask AI costs more per use than an import (medium vs low effort, and every "ask for changes" is another
+request); check Anthropic's pricing page and set a spend limit in the Console.
 
 ### Ask AI: what to know
 
@@ -70,7 +86,7 @@ cheaper model. Check current prices on Anthropic's pricing page, and set a spend
 ### Import from TikTok / Instagram links
 
 How it works: you paste a link and the caption text on `/import`. The browser posts the caption to `/api/extract`, a
-Vercel function that asks Claude for a structured recipe, then opens the normal editor pre-filled so you can **review and
+Vercel function that asks the AI for a structured recipe, then opens the normal editor pre-filled so you can **review and
 fix it before saving**. The link is stored on the recipe as its source.
 
 Limits:
@@ -110,7 +126,7 @@ src/
     idbRecipeStore.ts      IndexedDB implementation (stores: recipes, categories, images, meta)
     seed.ts, backup.ts     sample data; JSON export/import + validation
 api/*.ts                   Vercel function entries (Web-standard fetch handlers)
-server/                    shared auth/model call, plus prompts for extract and generate
+server/                    shared auth + provider selection, Gemini/Anthropic providers, prompts for extract and generate
   hooks/                   data context, object-URL helpers
   components/, pages/      small typed React components and routes
   styles/                  tokens.css, base.css, components.css (plain CSS)
