@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ArrowUpRight, CaretLeft, DotsThree, Sparkle } from '@phosphor-icons/react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import { Link, useNavigate } from '../lib/nav'
 import { recipeStore } from '../storage/recipeStore'
 import type { Recipe } from '../types'
 import { useData } from '../hooks/useData'
@@ -110,7 +111,7 @@ export function RecipeDetailPage() {
         )}
       </header>
 
-      <ImageGallery imageIds={recipe.imageIds} title={recipe.title} />
+      <ImageGallery imageIds={recipe.imageIds} title={recipe.title} recipeId={recipe.id} />
 
       {recipe.aiGenerated && (
         <p className="notice notice--warn small" role="note">

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { HandTap, LinkSimple, Sparkle, X } from '@phosphor-icons/react'
-import { Link } from 'react-router-dom'
+import { Link } from '../lib/nav'
 import { useData } from '../hooks/useData'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { recipeStore } from '../storage/recipeStore'

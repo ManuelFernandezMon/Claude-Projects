@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { CaretLeft, Sparkle } from '@phosphor-icons/react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import { Link, useNavigate } from '../lib/nav'
 import { EmptyState } from '../components/EmptyState'
 import { PasscodeField } from '../components/PasscodeField'
 import { Spinner } from '../components/Spinner'

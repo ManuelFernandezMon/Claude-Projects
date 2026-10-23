@@ -1,6 +1,6 @@
 import { useRef, useState, type FormEvent } from 'react'
 import { CaretLeft } from '@phosphor-icons/react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from '../lib/nav'
 import { PasscodeField } from '../components/PasscodeField'
 import { useData } from '../hooks/useData'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'

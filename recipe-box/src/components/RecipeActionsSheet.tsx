@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
+import { useNavigate } from '../lib/nav'
 import { BookOpenText, Copy, ListChecks, PencilSimple, ShareNetwork, Sparkle, Trash } from '@phosphor-icons/react'
 import { useData } from '../hooks/useData'
 import { currentGesture } from '../hooks/useLongPress'

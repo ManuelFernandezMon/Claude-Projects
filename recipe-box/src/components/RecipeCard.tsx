@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSharedElement } from '../lib/nav'
 import type { Category, Recipe } from '../types'
 import { useImageUrl } from '../hooks/useImageUrl'
 import { formatMinutes } from '../lib/format'
@@ -14,6 +14,7 @@ interface Props {
 }
 
 export function RecipeCard({ recipe, categories, onMenu }: Props) {
+  const shared = useSharedElement(`/recipes/${recipe.id}`)
   const press = useLongPress(() => onMenu?.(recipe))
   const cover = useImageUrl(recipe.imageIds[0])
   const total = (recipe.prepMinutes ?? 0) + (recipe.cookMinutes ?? 0)
@@ -24,7 +25,7 @@ export function RecipeCard({ recipe, categories, onMenu }: Props) {
   return (
     <li className="card">
       <Link to={`/recipes/${recipe.id}`} className="card__link" draggable={false} {...(onMenu ? press : {})}>
-        <div className="card__media" style={categories[0] ? ({ '--tint': categories[0].color } as CSSProperties) : undefined}>
+        <div className="card__media" style={{ ...(categories[0] ? { '--tint': categories[0].color } : {}), ...(shared ? { viewTransitionName: 'recipe-photo' } : {}) } as CSSProperties}>
           {cover ? (
             <img src={cover} alt="" loading="lazy" />
           ) : (

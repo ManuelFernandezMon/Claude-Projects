@@ -2,10 +2,13 @@
 *::before,
 *::after {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html {
   -webkit-text-size-adjust: 100%;
+  /* Android's WebView paints a translucent square over whatever is tapped; every control has its own press state instead */
+  -webkit-tap-highlight-color: transparent;
   color-scheme: dark light;
   background: var(--bg);
 }
@@ -63,6 +66,11 @@ img {
   max-width: 100%;
 }
 
+/* A mouse or finger never leaves a focus box behind; keyboard focus (below) still gets the amber ring. */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
 :focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 3px;
@@ -104,7 +112,8 @@ img {
 
 /* Page content eases in once per navigation; the motion only carries hierarchy (content arrives after the chrome). */
 @media (prefers-reduced-motion: no-preference) {
-  .main > * {
+  /* first paint only: later navigations are view transitions (below), which would double up with this */
+  html:not([data-vt]) .main > * {
     animation: rise 0.55s var(--ease) both;
   }
   @keyframes rise {
@@ -133,5 +142,69 @@ img {
   * {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* Press feedback: a quick squeeze replaces the system tap highlight. */
+@media (prefers-reduced-motion: no-preference) {
+  a,
+  button,
+  summary,
+  label.btn,
+  .nav a {
+    transition-property: transform, background-color, border-color, color, opacity, box-shadow;
+    transition-duration: 0.2s;
+    transition-timing-function: var(--ease);
+  }
+  .nav a:active,
+  button:not(:disabled):active,
+  label.btn:active {
+    transform: scale(0.97);
+  }
+}
+
+/* ---------- page transitions (View Transitions API; see src/lib/nav.tsx) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  /* the top bar and bottom nav stay put while the page between them changes */
+  .topbar {
+    view-transition-name: topbar;
+  }
+  .nav {
+    view-transition-name: nav;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    mix-blend-mode: normal;
+  }
+  ::view-transition-old(root) {
+    animation: vt-out 0.16s ease both;
+  }
+  ::view-transition-new(root) {
+    animation: vt-in 0.36s var(--ease) 0.04s both;
+  }
+  @keyframes vt-out {
+    to {
+      opacity: 0;
+      transform: translateY(-6px) scale(0.995);
+    }
+  }
+  @keyframes vt-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.995);
+    }
+  }
+  /* a recipe photo glides between its card and its page, rounding as it goes */
+  ::view-transition-group(recipe-photo) {
+    animation-duration: 0.45s;
+    animation-timing-function: var(--ease);
+    border-radius: var(--r-card);
+    overflow: hidden;
+  }
+  ::view-transition-old(recipe-photo),
+  ::view-transition-new(recipe-photo) {
+    height: 100%;
+    object-fit: cover;
+    mix-blend-mode: normal;
   }
 }

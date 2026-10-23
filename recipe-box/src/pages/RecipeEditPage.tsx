@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { CaretLeft } from '@phosphor-icons/react'
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
+import { Link, useNavigate } from '../lib/nav'
 import { recipeStore } from '../storage/recipeStore'
 import type { Ingredient, Recipe, RecipePrefill } from '../types'
 import { useData } from '../hooks/useData'

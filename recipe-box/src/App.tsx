@@ -1,4 +1,5 @@
-import { BrowserRouter, HashRouter, Link, NavLink, Route, Routes } from 'react-router-dom'
+import { Outlet, RouterProvider, ScrollRestoration, createBrowserRouter, createHashRouter, type RouteObject } from 'react-router-dom'
+import { Link, NavLink } from './lib/nav'
 import { FloppyDisk, House, Plus, Tag } from '@phosphor-icons/react'
 import { isNativeApp } from './lib/apiBase'
 import { DataProvider } from './hooks/useData'
@@ -52,44 +53,57 @@ function Shell() {
         </NavLink>
       </nav>
       <main id="main" className="main" tabIndex={-1}>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/import" element={<ImportPage />} />
-          <Route path="/ai" element={<GeneratePage />} />
-          <Route path="/recipes/new" element={<RecipeEditPage />} />
-          <Route path="/recipes/:id" element={<RecipeDetailPage />} />
-          <Route path="/recipes/:id/edit" element={<RecipeEditPage />} />
-          <Route path="/recipes/:id/ai" element={<AiEditPage />} />
-          <Route path="/categories" element={<CategoriesPage />} />
-          <Route path="/backup" element={<BackupPage />} />
-          <Route
-            path="*"
-            element={
-              <EmptyState
-                title="Page not found"
-                action={
-                  <Link to="/" className="btn">
-                    Back to recipes
-                  </Link>
-                }
-              />
-            }
-          />
-        </Routes>
+        <Outlet />
       </main>
       <ToastHost />
+      <ScrollRestoration />
     </>
   )
 }
 
-export default function App() {
-  // The app's local web server cannot be assumed to fall back to index.html for deep links, so it routes by hash instead.
-  const Router = isNativeApp() ? HashRouter : BrowserRouter
+function NotFound() {
   return (
-    <Router>
-      <DataProvider>
-        <Shell />
-      </DataProvider>
-    </Router>
+    <EmptyState
+      title="Page not found"
+      action={
+        <Link to="/" className="btn">
+          Back to recipes
+        </Link>
+      }
+    />
   )
+}
+
+function Root() {
+  return (
+    <DataProvider>
+      <Shell />
+    </DataProvider>
+  )
+}
+
+const routes: RouteObject[] = [
+  {
+    element: <Root />,
+    children: [
+      { path: '/', element: <HomePage /> },
+      { path: '/import', element: <ImportPage /> },
+      { path: '/ai', element: <GeneratePage /> },
+      { path: '/recipes/new', element: <RecipeEditPage /> },
+      { path: '/recipes/:id', element: <RecipeDetailPage /> },
+      { path: '/recipes/:id/edit', element: <RecipeEditPage /> },
+      { path: '/recipes/:id/ai', element: <AiEditPage /> },
+      { path: '/categories', element: <CategoriesPage /> },
+      { path: '/backup', element: <BackupPage /> },
+      { path: '*', element: <NotFound /> },
+    ],
+  },
+]
+
+// The app's local web server cannot be assumed to fall back to index.html for deep links, so it routes by hash instead.
+// A data router (rather than <BrowserRouter>) is what lets navigations run as view transitions.
+const router = isNativeApp() ? createHashRouter(routes) : createBrowserRouter(routes)
+
+export default function App() {
+  return <RouterProvider router={router} />
 }
