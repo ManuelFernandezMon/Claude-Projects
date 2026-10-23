@@ -2,6 +2,7 @@ import { BrowserRouter, HashRouter, Link, NavLink, Route, Routes } from 'react-r
 import { FloppyDisk, House, Plus, Tag } from '@phosphor-icons/react'
 import { isNativeApp } from './lib/apiBase'
 import { DataProvider } from './hooks/useData'
+import { AiEditPage } from './pages/AiEditPage'
 import { BackupPage } from './pages/BackupPage'
 import { CategoriesPage } from './pages/CategoriesPage'
 import { HomePage } from './pages/HomePage'
@@ -58,6 +59,7 @@ function Shell() {
           <Route path="/recipes/new" element={<RecipeEditPage />} />
           <Route path="/recipes/:id" element={<RecipeDetailPage />} />
           <Route path="/recipes/:id/edit" element={<RecipeEditPage />} />
+          <Route path="/recipes/:id/ai" element={<AiEditPage />} />
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/backup" element={<BackupPage />} />
           <Route

@@ -1,15 +1,21 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { recipeStore } from '../storage/recipeStore'
 import type { Ingredient } from '../types'
 import { errorMessage } from '../lib/format'
+import { showQuantity, type UnitMode } from '../lib/measures'
 
 interface Props {
   recipeId: string
   ingredients: Ingredient[]
   initialChecked: string[]
+  mode?: UnitMode
+  /** Rendered under the heading (the unit switch). */
+  controls?: ReactNode
+  /** Rendered under the list (the AI measurement helper). */
+  footer?: ReactNode
 }
 
-export function IngredientChecklist({ recipeId, ingredients, initialChecked }: Props) {
+export function IngredientChecklist({ recipeId, ingredients, initialChecked, mode = 'written', controls, footer }: Props) {
   const [checked, setChecked] = useState<string[]>(initialChecked)
   const [error, setError] = useState<string>()
 
@@ -43,6 +49,7 @@ export function IngredientChecklist({ recipeId, ingredients, initialChecked }: P
           </span>
         )}
       </div>
+      {controls}
       {ingredients.length === 0 ? (
         <p className="muted">No ingredients listed.</p>
       ) : (
@@ -50,13 +57,25 @@ export function IngredientChecklist({ recipeId, ingredients, initialChecked }: P
           <ul className="checklist">
             {ingredients.map((ing) => {
               const on = checked.includes(ing.id)
+              const shown = showQuantity(ing, mode)
               return (
                 <li key={ing.id}>
                   <label className={`check${on ? ' check--on' : ''}`}>
                     <input type="checkbox" checked={on} onChange={() => toggle(ing.id)} />
                     <span className="check__text">
-                      {ing.quantity && <span className="check__qty">{ing.quantity}</span>}
+                      {shown.text && (
+                        <span className="check__qty">
+                          {shown.approx && !shown.extra ? '≈ ' : ''}
+                          {shown.text}
+                        </span>
+                      )}
                       <span>{ing.name}</span>
+                      {shown.extra && (
+                        <span className="check__alt">
+                          ({shown.approx ? '≈ ' : ''}
+                          {shown.extra})
+                        </span>
+                      )}
                     </span>
                   </label>
                 </li>
@@ -68,6 +87,7 @@ export function IngredientChecklist({ recipeId, ingredients, initialChecked }: P
           </button>
         </>
       )}
+      {footer}
       {error && (
         <p className="error" role="alert">
           {error}

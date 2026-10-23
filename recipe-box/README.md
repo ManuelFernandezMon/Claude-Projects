@@ -16,6 +16,14 @@ Recipes, photos, categories and checklist state live in the browser's **IndexedD
 - **Import from a video:** upload a video you saved from TikTok/Instagram (or a screen recording) and the AI watches and listens to it, so no caption is needed. Or paste the caption instead. Either way the AI turns it into a recipe (ingredients with quantities, steps, times, categories) that you review before saving. Imported ingredients become the interactive checklist.
 - Quick actions: press and hold a recipe (or right-click, or the Menu key / Shift+F10) for Open, Edit, Duplicate (photos are copied too),
   Share, Copy ingredients and Delete. The recipe page has the same menu behind "More". Delete always asks first.
+- Edit with AI: describe a change ("make it vegan", "double it for 8", "swap the butter") on a saved recipe. You get a
+  **review of exactly what would change** (New / Changed / Removed lines, with the old value) and then choose Replace,
+  Save as a copy, or Discard. You can keep refining the proposal. Photos, categories and the source link are never sent to the
+  AI and never changed by it; unchanged ingredients keep their ticked state.
+- Measurements: a switch on the recipe page shows amounts As written / Metric / US / Both. Same-kind conversions (cups to ml,
+  ounces to grams) are computed on the device. Volume to weight (cups of flour to grams) depends on the ingredient, so the AI
+  estimates it once; the result is saved on the recipe, works offline afterwards and is marked "≈". Editing an ingredient's
+  amount drops its saved conversion. Kitchen values are used (1 cup = 240 ml, 1 lb = 450 g).
 - Backup page: export everything to one JSON file (photos embedded as base64); import with **merge** or **replace**.
 - Three clearly labeled **SAMPLE** recipes on first run. Delete them from the home page; they will not come back.
 
@@ -83,6 +91,12 @@ URL could use it up. The passcode is compared in constant time and is never sent
 **Quota and cost:** on Gemini's free tier, when you hit the limit the app shows "free-tier quota reached" (HTTP 429); wait and
 retry. On Claude, Ask AI costs more per use than an import (medium vs low effort, and every "ask for changes" is another
 request); check Anthropic's pricing page and set a spend limit in the Console.
+
+### Endpoints
+
+`/api/extract` (caption to recipe), `/api/generate` (new recipe; with `mode: "edit"` it changes a saved recipe and offers no
+categories), `/api/convert` (metric and US amounts for a list of ingredients), and the three video endpoints. All need the
+passcode header; all answer CORS preflights for the Android app only.
 
 ### Ask AI: what to know
 

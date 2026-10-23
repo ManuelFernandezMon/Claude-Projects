@@ -82,6 +82,16 @@ export async function postAi(endpoint: string, payload: unknown, passcode: strin
   return (await postAiDetailed(endpoint, payload, passcode)).recipe
 }
 
+/** Asks the AI for metric and US versions of each amount. Resolves to one entry per ingredient, in the same order. */
+export async function convertIngredients(
+  ingredients: { quantity: string; name: string }[],
+  passcode: string,
+): Promise<ImportedRecipe['ingredients']> {
+  const r = await postAi('/api/convert', { ingredients }, passcode)
+  if (!r) throw new ImportError('The AI could not convert these measurements. Try again.', 'no_result')
+  return r.ingredients
+}
+
 export function extractRecipe(
   input: { url?: string; text: string; categories: string[] },
   passcode: string,

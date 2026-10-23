@@ -20,6 +20,20 @@ Rules:
 - If <current_recipe> is present, the request is a change to that recipe: return the full updated recipe, keeping everything the user did not ask to change.
 - If the request is not about food or cooking, set is_recipe to false and leave the other fields empty.`
 
+/**
+ * Appended when the user edits a recipe they already saved (mode "edit"): the model must change only what was asked.
+ * Categories are not offered in this mode, so the AI cannot retag the recipe.
+ */
+const EDIT_RULES = `
+
+You are editing a recipe the user already has saved:
+- Apply only the change requested in <request>. Keep the title, description, ingredient names, quantities, step wording and step order of everything that is not affected, word for word.
+- When the change affects other parts, update them consistently: changing servings scales every quantity (and cooking times only if that is realistic); swapping an ingredient changes every step that mentions it.
+- Keep the recipe's language and its units. Do not switch between metric and US units unless asked.
+- Do not add commentary to steps. If the request cannot be done safely, make the closest safe change and say why in the description.
+- Never remove an allergen warning or a food-safety temperature that is already there.
+- Return category_names as an empty list.`
+
 const PreviousSchema = z.object({
   title: z.string().max(200),
   description: z.string().max(2000),
@@ -45,10 +59,12 @@ export async function handleGenerate(request: Request): Promise<Response> {
     if (!p.success) return json(400, { error: 'bad_request', message: 'The current recipe is invalid.' })
     previous = p.data
   }
-  const categories = cleanCategories(b.categories)
+  const editing = b.mode === 'edit'
+  if (editing && !previous) return json(400, { error: 'bad_request', message: 'Editing needs the current recipe.' })
+  const categories = editing ? [] : cleanCategories(b.categories)
 
   return runRecipeModel({
-    system: SYSTEM_PROMPT,
+    system: editing ? SYSTEM_PROMPT + EDIT_RULES : SYSTEM_PROMPT,
     effort: 'medium',
     categories,
     user: [

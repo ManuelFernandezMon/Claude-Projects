@@ -9,6 +9,9 @@
     "api/generate.ts": {
       "maxDuration": 120
     },
+    "api/convert.ts": {
+      "maxDuration": 120
+    },
     "api/video-start.ts": {
       "maxDuration": 60
     },

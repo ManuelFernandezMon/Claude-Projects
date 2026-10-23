@@ -4,7 +4,17 @@ export const RecipeOutputSchema = z.object({
   is_recipe: z.boolean(),
   title: z.string(),
   description: z.string(),
-  ingredients: z.array(z.object({ quantity: z.string(), name: z.string() })),
+  ingredients: z.array(
+    z.object({
+      quantity: z.string(),
+      name: z.string(),
+      /** Only filled by the conversion task: the same amount in grams / millilitres, and in US cups / spoons / ounces. */
+      metric: z.string().optional(),
+      us: z.string().optional(),
+      /** True when a conversion crossed between volume and weight (needs a typical density) or is a rough estimate. */
+      approximate: z.boolean().optional(),
+    }),
+  ),
   steps: z.array(z.string()),
   prep_minutes: z.number().nullable(),
   cook_minutes: z.number().nullable(),

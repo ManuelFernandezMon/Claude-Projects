@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { BookOpenText, Copy, ListChecks, PencilSimple, ShareNetwork, Trash } from '@phosphor-icons/react'
+import { BookOpenText, Copy, ListChecks, PencilSimple, ShareNetwork, Sparkle, Trash } from '@phosphor-icons/react'
 import { useData } from '../hooks/useData'
 import { currentGesture } from '../hooks/useLongPress'
 import { useImageUrl } from '../hooks/useImageUrl'
@@ -79,6 +79,7 @@ export function RecipeActionsSheet({ recipe, onClose, showOpen = true }: Props) 
     }
     items.push(
       { key: 'edit', label: 'Edit', icon: <PencilSimple />, onSelect: () => { onClose(); navigate(`/recipes/${r.id}/edit`) } },
+      { key: 'ai', label: 'Edit with AI', icon: <Sparkle />, onSelect: () => { onClose(); navigate(`/recipes/${r.id}/ai`) } },
       {
         key: 'duplicate',
         label: 'Duplicate',

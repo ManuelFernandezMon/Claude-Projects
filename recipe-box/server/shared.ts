@@ -54,7 +54,7 @@ function sameSecret(a: string, b: string): boolean {
 
 /** Stops untrusted text from closing or opening the XML-style wrappers used in prompts. */
 export function neutralize(value: string): string {
-  return value.replace(/<(\/?)(caption|existing_categories|source_url|request|current_recipe)/gi, '‹$1$2')
+  return value.replace(/<(\/?)(caption|existing_categories|source_url|request|current_recipe|ingredients)/gi, '‹$1$2')
 }
 
 export function cleanCategories(raw: unknown): string[] {
@@ -161,7 +161,13 @@ export async function runRecipeModel(
       title: out.title.trim().slice(0, 200),
       description: out.description.trim().slice(0, 2000),
       ingredients: out.ingredients
-        .map((i) => ({ quantity: i.quantity.trim().slice(0, 60), name: i.name.trim().slice(0, 200) }))
+        .map((i) => ({
+          quantity: i.quantity.trim().slice(0, 60),
+          name: i.name.trim().slice(0, 200),
+          ...(i.metric?.trim() ? { metric: i.metric.trim().slice(0, 60) } : {}),
+          ...(i.us?.trim() ? { us: i.us.trim().slice(0, 60) } : {}),
+          ...(i.approximate ? { approximate: true } : {}),
+        }))
         .filter((i) => i.name)
         .slice(0, 100),
       steps: out.steps.map((s) => s.trim().slice(0, 1000)).filter(Boolean).slice(0, 100),

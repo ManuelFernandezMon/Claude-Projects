@@ -1,7 +1,16 @@
+/** The same amount written in other units. Filled by the AI conversion, so cups of flour can also be shown in grams. */
+export interface Measures {
+  metric?: string
+  us?: string
+  /** True when a conversion crossed between volume and weight (needs a typical density) or is a rough estimate. */
+  approx?: boolean
+}
+
 export interface Ingredient {
   id: string
   name: string
   quantity?: string
+  measures?: Measures
 }
 
 export interface Recipe {
@@ -22,6 +31,8 @@ export interface Recipe {
   sourceUrl?: string
   /** Written by the AI assistant and not tested by the user. */
   aiGenerated?: boolean
+  /** An existing recipe the AI assistant changed (not tested). */
+  aiEdited?: boolean
   isSample?: boolean
   createdAt: number
   updatedAt: number
@@ -54,7 +65,7 @@ export type ImportMode = 'merge' | 'replace'
 export interface ImportedRecipe {
   title: string
   description: string
-  ingredients: { quantity: string; name: string }[]
+  ingredients: { quantity: string; name: string; metric?: string; us?: string; approximate?: boolean }[]
   steps: string[]
   prepMinutes: number | null
   cookMinutes: number | null

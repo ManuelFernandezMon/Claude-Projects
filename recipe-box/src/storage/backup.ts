@@ -1,4 +1,4 @@
-import type { Category, ImportMode, Recipe, StorageSnapshot, StoredImage } from '../types'
+import type { Category, ImportMode, Measures, Recipe, StorageSnapshot, StoredImage } from '../types'
 import { safeHttpUrl } from '../lib/url'
 import { recipeStore } from './recipeStore'
 
@@ -102,6 +102,13 @@ function parseBackup(text: string): StorageSnapshot {
     }
   })
 
+  const shortText = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim().slice(0, 60) : undefined)
+  const cleanMeasures = (v: unknown): Measures | undefined => {
+    if (!isObj(v)) return undefined
+    const metric = shortText(v.metric)
+    const us = shortText(v.us)
+    return metric || us ? { ...(metric ? { metric } : {}), ...(us ? { us } : {}), ...(v.approx === true ? { approx: true } : {}) } : undefined
+  }
   const arr = (v: unknown) => (Array.isArray(v) ? v : [])
   const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : undefined)
   const recipes = raw.recipes.map((r: unknown, i): Recipe => {
@@ -116,7 +123,14 @@ function parseBackup(text: string): StorageSnapshot {
       steps: arr(r.steps).filter((s): s is string => typeof s === 'string'),
       ingredients: arr(r.ingredients).flatMap((g) =>
         isObj(g) && typeof g.id === 'string' && typeof g.name === 'string'
-          ? [{ id: g.id, name: g.name, quantity: typeof g.quantity === 'string' ? g.quantity : undefined }]
+          ? [
+              {
+                id: g.id,
+                name: g.name,
+                quantity: typeof g.quantity === 'string' ? g.quantity : undefined,
+                measures: cleanMeasures(g.measures),
+              },
+            ]
           : [],
       ),
       checked: arr(r.checked).filter((s): s is string => typeof s === 'string'),
@@ -127,6 +141,7 @@ function parseBackup(text: string): StorageSnapshot {
       imageIds: arr(r.imageIds).filter((s): s is string => typeof s === 'string'),
       sourceUrl: typeof r.sourceUrl === 'string' ? safeHttpUrl(r.sourceUrl) : undefined,
       aiGenerated: r.aiGenerated === true ? true : undefined,
+      aiEdited: r.aiEdited === true ? true : undefined,
       isSample: r.isSample === true ? true : undefined,
       createdAt: num(r.createdAt) ?? now,
       updatedAt: num(r.updatedAt) ?? now,

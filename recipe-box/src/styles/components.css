@@ -1245,3 +1245,118 @@ label.btn:focus-within {
     animation: rise 0.4s var(--ease) both;
   }
 }
+
+/* ---------- measurement switch + AI helper ---------- */
+.seg {
+  display: flex;
+  gap: 2px;
+  margin: 0 0 12px;
+  padding: 4px;
+  min-width: 0;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-pill);
+  box-shadow: inset 0 1px 0 var(--glass-hi);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+.seg__opt {
+  position: relative;
+  flex: 1;
+  display: grid;
+  place-items: center;
+  min-height: 40px;
+  padding: 0 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--muted);
+  white-space: nowrap;
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  transition:
+    background-color 0.25s var(--ease),
+    color 0.25s var(--ease);
+}
+.seg__opt input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.seg__opt--on {
+  color: var(--text);
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-text) 55%, transparent);
+}
+.seg__opt:has(input:focus-visible) {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.check__alt {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.fill {
+  margin-top: 12px;
+}
+
+/* ---------- AI edit: what changes ---------- */
+.diff {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.diff__line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+}
+.diff__line--added {
+  background: color-mix(in srgb, var(--ok) 14%, transparent);
+  border-color: color-mix(in srgb, var(--ok) 40%, transparent);
+}
+.diff__line--changed {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.diff__line--removed {
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
+}
+.diff__line--removed .diff__text {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+.diff__tag {
+  display: inline-block;
+  padding: 1px 8px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text);
+  background: var(--glass-strong);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-pill);
+}
+.diff__was {
+  flex-basis: 100%;
+}
+.h3 {
+  font-size: 1rem;
+  margin: 8px 0 6px;
+}
+
+#proposal-h:focus {
+  outline: none; /* focus is moved here to bring the result into view; it is a heading, not a control */
+}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ArrowUpRight, CaretLeft, DotsThree } from '@phosphor-icons/react'
+import { ArrowUpRight, CaretLeft, DotsThree, Sparkle } from '@phosphor-icons/react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { recipeStore } from '../storage/recipeStore'
 import type { Recipe } from '../types'
@@ -11,6 +11,10 @@ import { EmptyState } from '../components/EmptyState'
 import { ImageGallery } from '../components/ImageGallery'
 import { RecipeActionsSheet } from '../components/RecipeActionsSheet'
 import { IngredientChecklist } from '../components/IngredientChecklist'
+import { MeasureFill } from '../components/MeasureFill'
+import { UnitToggle } from '../components/UnitToggle'
+import { useUnitMode } from '../hooks/useUnitMode'
+import { canConvert, needsAi } from '../lib/measures'
 import { Spinner } from '../components/Spinner'
 import { errorMessage, formatMinutes } from '../lib/format'
 import { safeHttpUrl } from '../lib/url'
@@ -23,6 +27,7 @@ export function RecipeDetailPage() {
   const [error, setError] = useState<string>()
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [unitMode, setUnitMode] = useUnitMode()
   useDocumentTitle(recipe?.title)
 
   useEffect(() => {
@@ -114,6 +119,13 @@ export function RecipeDetailPage() {
         </p>
       )}
 
+      {recipe.aiEdited && !recipe.aiGenerated && (
+        <p className="notice notice--warn small" role="note">
+          Changed by the AI assistant and <strong>not tested</strong>. Double-check quantities, times and food-safety
+          temperatures.
+        </p>
+      )}
+
       {source && (
         <p className="small">
           Source:{' '}
@@ -126,7 +138,14 @@ export function RecipeDetailPage() {
 
       {recipe.description && <p className="prose">{recipe.description}</p>}
 
-      <IngredientChecklist recipeId={recipe.id} ingredients={recipe.ingredients} initialChecked={recipe.checked} />
+      <IngredientChecklist
+        recipeId={recipe.id}
+        ingredients={recipe.ingredients}
+        initialChecked={recipe.checked}
+        mode={unitMode}
+        controls={canConvert(recipe.ingredients) ? <UnitToggle value={unitMode} onChange={setUnitMode} /> : undefined}
+        footer={needsAi(recipe.ingredients, unitMode) ? <MeasureFill recipe={recipe} onSaved={setRecipe} /> : undefined}
+      />
 
       <section aria-labelledby="steps-h">
         <h2 id="steps-h" className="h2">
@@ -146,6 +165,10 @@ export function RecipeDetailPage() {
       <div className="row">
         <Link to={`/recipes/${recipe.id}/edit`} className="btn btn--primary">
           Edit
+        </Link>
+        <Link to={`/recipes/${recipe.id}/ai`} className="btn">
+          <Sparkle aria-hidden="true" />
+          Edit with AI
         </Link>
         <button type="button" className="btn btn--danger-ghost" onClick={() => setConfirmDelete(true)}>
           Delete

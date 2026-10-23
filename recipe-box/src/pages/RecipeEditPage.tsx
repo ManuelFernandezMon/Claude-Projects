@@ -134,7 +134,14 @@ export function RecipeEditPage() {
       const recipeId = original?.id ?? newRecipeId.current
       const now = Date.now()
       const ingredients = d.ingredients
-        .map((i) => ({ id: i.id, name: i.name.trim(), quantity: i.quantity?.trim() || undefined }))
+        .map((i) => {
+          const name = i.name.trim()
+          const quantity = i.quantity?.trim() || undefined
+          // stored conversions describe the old amount: keep them only while the ingredient is untouched
+          const before = original?.ingredients.find((o) => o.id === i.id)
+          const untouched = before && before.name === name && (before.quantity ?? '') === (quantity ?? '')
+          return { id: i.id, name, quantity, ...(untouched && before.measures ? { measures: before.measures } : {}) }
+        })
         .filter((i) => i.name)
       const originalIds = new Set(original?.imageIds ?? [])
       const currentIds = new Set(d.images.map((i) => i.id))
@@ -152,6 +159,7 @@ export function RecipeEditPage() {
         imageIds: d.images.map((i) => i.id),
         sourceUrl: safeHttpUrl(d.sourceUrl),
         aiGenerated: d.aiGenerated || undefined,
+        aiEdited: original?.aiEdited,
         isSample: original?.isSample,
         createdAt: original?.createdAt ?? now,
         updatedAt: now,
