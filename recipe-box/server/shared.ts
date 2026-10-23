@@ -148,7 +148,11 @@ export async function runRecipeModel(
     return json(502, { error: 'bad_model_output', message: 'The model returned an unreadable result. Try again.' })
   }
   const out = result.out
-  if (!out.is_recipe) return json(200, { recipe: null })
+  if (!out.is_recipe) {
+    const reason = (out.not_recipe_reason ?? '').trim().slice(0, 300)
+    console.log(`no recipe found (${provider}${result.model ? ' ' + result.model : ''}): ${reason || 'no reason given'}`)
+    return json(200, { recipe: null, ...(reason ? { reason } : {}) })
+  }
 
   const allowed = new Map(opts.categories.map((c) => [c.toLowerCase(), c]))
   return json(200, {

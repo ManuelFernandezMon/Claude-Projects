@@ -1,6 +1,6 @@
 import type { ImportedRecipe } from '../types'
 import { apiUrl } from './apiBase'
-import { ImportError, postAi } from './importApi'
+import { ImportError, postAi, postAiDetailed } from './importApi'
 
 export const MAX_VIDEO_MB = 100
 export const MAX_VIDEO_MINUTES = 5
@@ -227,8 +227,8 @@ export async function uploadVideo(
 export function extractVideo(
   input: { file: UploadedVideo; url?: string; categories: string[] },
   passcode: string,
-): Promise<ImportedRecipe | null> {
-  return postAi('/api/video-extract', input, passcode)
+): Promise<{ recipe: ImportedRecipe | null; reason?: string }> {
+  return postAiDetailed('/api/video-extract', input, passcode)
 }
 
 /** Deletes an uploaded video from Google right away (best effort; Google also deletes uploads after 48 hours). */

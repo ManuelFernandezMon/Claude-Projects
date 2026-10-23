@@ -26,11 +26,15 @@ const textBudget = () => ({
 const VIDEO = { timeout: 100_000, deadline: 170_000, hardLimit: 285_000, perModel: 1, passes: 2 }
 const PASS_GAP_MS = () => Number(process.env.GEMINI_PASS_GAP_MS ?? 4000)
 
-const models = () =>
-  (process.env.GEMINI_MODEL || DEFAULT_MODELS)
+const models = (video = false) => {
+  const all = (process.env.GEMINI_MODEL || DEFAULT_MODELS)
     .split(',')
     .map((m) => m.trim())
     .filter(Boolean)
+  // The "lite" models are the likeliest to misjudge a video (and then say "no recipe"), so videos skip them.
+  const full = all.filter((m) => !/lite/i.test(m))
+  return video && full.length ? full : all
+}
 const retryDelayMs = () => Number(process.env.GEMINI_RETRY_DELAY_MS ?? 1000)
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -95,13 +99,16 @@ export async function callGemini(req: ProviderRequest, started = Date.now()): Pr
   const budget = req.video ? VIDEO : textBudget()
   let lastError: unknown
   let sawTransient = false
+  // A video verdict of "not a recipe" is only believed after a second model agrees; one vote is kept in case no other model can answer.
+  const noVotes: { model: string; result: ProviderResult }[] = []
   for (let pass = 0; pass < budget.passes; pass++) {
     if (pass > 0) {
       if (!sawTransient) break // quota or missing-model errors will not change in a few seconds
       await sleep(PASS_GAP_MS()) // everything was busy: give the service a moment, then walk the chain again
     }
     sawTransient = false
-    for (const model of models()) {
+    for (const model of models(!!req.video)) {
+      if (noVotes.some((v) => v.model === model)) continue // already asked
       for (let attempt = 0; attempt < budget.perModel; attempt++) {
         const elapsed = Date.now() - started
         if (elapsed > budget.deadline) throw lastError ?? new Error('Gemini deadline exceeded')
@@ -110,7 +117,17 @@ export async function callGemini(req: ProviderRequest, started = Date.now()): Pr
         try {
           const first = await once(ai, model, req)
           // One retry for malformed JSON on the same model; nothing else is worth spending free-tier quota on.
-          return first.kind === 'bad_output' ? await once(ai, model, req) : first
+          const result = first.kind === 'bad_output' ? await once(ai, model, req) : first
+          if (result.kind === 'ok') {
+            console.log(`gemini ${model} answered (${req.video ? 'video' : 'text'}): is_recipe=${result.out.is_recipe} ingredients=${result.out.ingredients.length} steps=${result.out.steps.length}`)
+            if (req.video && !result.out.is_recipe) {
+              noVotes.push({ model, result: { ...result, model } })
+              if (noVotes.length < 2) break // ask the next model before telling the user there is no recipe
+              return noVotes[0]!.result
+            }
+            return { ...result, model }
+          }
+          return result
         } catch (e) {
           lastError = e
           if (!(e instanceof ApiError)) {
@@ -132,6 +149,7 @@ export async function callGemini(req: ProviderRequest, started = Date.now()): Pr
       }
     }
   }
+  if (noVotes.length) return noVotes[0]!.result // the only model that could answer said no
   throw lastError
 }
 

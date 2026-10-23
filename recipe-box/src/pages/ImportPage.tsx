@@ -107,10 +107,12 @@ export function ImportPage() {
   async function analyse(uploaded: UploadedVideo) {
     setVideo({ kind: 'reading' })
     try {
-      const r = await extractVideo({ file: uploaded, url: cleanUrl, categories: categories.map((c) => c.name) }, passcode)
+      const { recipe: r, reason } = await extractVideo({ file: uploaded, url: cleanUrl, categories: categories.map((c) => c.name) }, passcode)
       setPending(undefined)
       if (!r) {
-        setError('No recipe found in that video. Make sure it shows or explains the ingredients and steps.')
+        setError(
+          `No recipe found in that video. ${reason ? `Gemini saw: “${reason}” ` : ''}Make sure it shows or explains the ingredients and steps (with sound, if the recipe is spoken).`,
+        )
         return
       }
       openEditor(r)

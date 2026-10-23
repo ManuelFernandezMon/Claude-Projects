@@ -32,7 +32,8 @@ Rules:
 - title is a short dish name. description is one or two sentences of useful notes from the video (tips, serving ideas), or an empty string.
 - prep_minutes, cook_minutes and servings are numbers only when the video states them, otherwise null.
 - category_names: choose zero or more names from <existing_categories>, copied exactly. Never create new names.
-- If the video is not about cooking or contains no usable recipe, set is_recipe to false and leave the other fields empty.`
+- If the video shows or explains cooking, treat it as a recipe even when some amounts are missing; text overlays and captions inside the video count as content.
+- Only if the video is not about cooking, or contains no ingredients or steps at all, set is_recipe to false, leave the other fields empty, and put one short sentence in not_recipe_reason saying what you actually saw and heard (for example: "no speech and no text on screen", or "a person talking about a restaurant").`
 
 /**
  * POST /api/video-start: validates the file description and opens a resumable upload at Google. The browser then uploads

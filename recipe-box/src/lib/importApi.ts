@@ -49,11 +49,12 @@ export async function fetchTikTokCaption(url: string): Promise<string | undefine
   }
 }
 
-export async function postAi(
+/** Like postAi, but also returns the model's one-line reason when it found no recipe. */
+export async function postAiDetailed(
   endpoint: string,
   payload: unknown,
   passcode: string,
-): Promise<ImportedRecipe | null> {
+): Promise<{ recipe: ImportedRecipe | null; reason?: string }> {
   let res: Response
   try {
     res = await fetch(apiUrl(endpoint), {
@@ -64,7 +65,7 @@ export async function postAi(
   } catch {
     throw new ImportError('Could not reach the server. This feature needs an internet connection.', 'network')
   }
-  const body: { recipe?: ImportedRecipe | null; error?: string; message?: string } = await res
+  const body: { recipe?: ImportedRecipe | null; reason?: string; error?: string; message?: string } = await res
     .json()
     .catch(() => ({}))
   if (!res.ok) {
@@ -74,7 +75,11 @@ export async function postAi(
         : `Request failed (HTTP ${res.status}).`
     throw new ImportError(body.message ?? fallback, body.error ?? 'http')
   }
-  return body.recipe ?? null
+  return { recipe: body.recipe ?? null, ...(typeof body.reason === 'string' && body.reason ? { reason: body.reason } : {}) }
+}
+
+export async function postAi(endpoint: string, payload: unknown, passcode: string): Promise<ImportedRecipe | null> {
+  return (await postAiDetailed(endpoint, payload, passcode)).recipe
 }
 
 export function extractRecipe(
