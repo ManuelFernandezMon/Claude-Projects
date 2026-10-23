@@ -47,6 +47,11 @@ const emptyDraft = (prefill?: RecipePrefill): Draft => ({
   aiGenerated: prefill?.aiGenerated === true,
 })
 
+const creditsOf = (images: ImageItem[]): Recipe['photoCredits'] => {
+  const entries = images.flatMap((i) => (i.credit ? [[i.id, i.credit] as const] : []))
+  return entries.length ? Object.fromEntries(entries) : undefined
+}
+
 const toNum = (s: string): number | undefined => {
   const n = Number(s)
   return s.trim() !== '' && Number.isFinite(n) && n > 0 ? Math.round(n) : undefined
@@ -93,7 +98,7 @@ export function RecipeEditPage() {
           categoryIds: r.categoryIds,
           ingredients: r.ingredients.length ? r.ingredients : [{ id: newId(), name: '' }],
           steps: (r.steps.length ? r.steps : ['']).map((text) => ({ id: newId(), text })),
-          images: r.imageIds.flatMap((iid, i) => (blobs[i] ? [{ id: iid, blob: blobs[i] }] : [])),
+          images: r.imageIds.flatMap((iid, i) => (blobs[i] ? [{ id: iid, blob: blobs[i], ...(r.photoCredits?.[iid] ? { credit: r.photoCredits[iid] } : {}) }] : [])),
           sourceUrl: r.sourceUrl ?? '',
           aiGenerated: r.aiGenerated === true,
         })
@@ -158,6 +163,7 @@ export function RecipeEditPage() {
         cookMinutes: toNum(d.cook),
         servings: toNum(d.servings),
         imageIds: d.images.map((i) => i.id),
+        photoCredits: creditsOf(d.images),
         sourceUrl: safeHttpUrl(d.sourceUrl),
         aiGenerated: d.aiGenerated || undefined,
         aiEdited: original?.aiEdited,
@@ -295,7 +301,7 @@ export function RecipeEditPage() {
 
       <fieldset className="fieldset">
         <legend>Photos</legend>
-        <ImagePicker items={d.images} onChange={(images) => update({ images })} />
+        <ImagePicker items={d.images} onChange={(images) => update({ images })} title={d.title} />
       </fieldset>
 
       <fieldset className="fieldset">

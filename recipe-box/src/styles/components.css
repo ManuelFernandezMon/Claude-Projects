@@ -1360,3 +1360,47 @@ label.btn:focus-within {
 #proposal-h:focus {
   outline: none; /* focus is moved here to bring the result into view; it is a heading, not a control */
 }
+
+/* ---------- stock photo search ---------- */
+.stock {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 10px;
+}
+.stock__btn {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  padding: 0;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-ctl);
+  overflow: hidden;
+  background: var(--glass);
+  cursor: pointer;
+}
+.stock__btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.stock__btn:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+.stock__busy {
+  position: absolute;
+  inset: auto 6px 6px 6px;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  background: var(--glass-strong);
+  color: var(--text);
+  font-size: 0.75rem;
+  text-align: center;
+}
+.gallery__credit {
+  margin-top: 8px;
+}

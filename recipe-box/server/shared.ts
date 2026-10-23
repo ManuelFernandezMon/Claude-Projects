@@ -88,9 +88,10 @@ export function resolveProvider(): { provider: ProviderName } | { error: string 
 
 /**
  * Common gate for every AI endpoint: POST only, server configured, passcode correct.
- * `needs: 'gemini'` is for video, which only Gemini can read. Returns an error Response, or null when allowed.
+ * `needs: 'gemini'` is for video, which only Gemini can read; `needs: 'none'` is for endpoints that call no AI model
+ * (photo search). Returns an error Response, or null when allowed.
  */
-export function authorize(request: Request, needs?: 'gemini'): Response | null {
+export function authorize(request: Request, needs?: 'gemini' | 'none'): Response | null {
   if (request.method !== 'POST') return json(405, { error: 'method_not_allowed', message: 'Use POST.' })
   const passcode = process.env.RECIPE_IMPORT_PASSCODE
   if (!passcode) return json(503, { error: 'not_configured', message: 'RECIPE_IMPORT_PASSCODE is not set on the server.' })
@@ -98,7 +99,7 @@ export function authorize(request: Request, needs?: 'gemini'): Response | null {
     if (!hasGeminiKey()) {
       return json(503, { error: 'not_configured', message: 'GEMINI_API_KEY is not set on the server (video understanding uses Gemini).' })
     }
-  } else {
+  } else if (needs !== 'none') {
     const resolved = resolveProvider()
     if ('error' in resolved) return json(503, { error: 'not_configured', message: resolved.error })
   }
@@ -109,7 +110,7 @@ export function authorize(request: Request, needs?: 'gemini'): Response | null {
 }
 
 /** `authorize` plus a JSON body. Returns the parsed body, or a ready-made error Response. */
-export async function guard(request: Request, needs?: 'gemini'): Promise<{ body: unknown } | { response: Response }> {
+export async function guard(request: Request, needs?: 'gemini' | 'none'): Promise<{ body: unknown } | { response: Response }> {
   const denied = authorize(request, needs)
   if (denied) return { response: denied }
   try {

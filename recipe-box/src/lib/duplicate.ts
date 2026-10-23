@@ -7,9 +7,14 @@ export async function duplicateRecipe(source: Recipe): Promise<Recipe> {
   const now = Date.now()
   const id = newId()
   const images: StoredImage[] = []
+  const photoCredits: NonNullable<Recipe['photoCredits']> = {}
   for (const imageId of source.imageIds) {
     const blob = await recipeStore.getImageBlob(imageId)
-    if (blob) images.push({ id: newId(), recipeId: id, createdAt: now, blob })
+    if (!blob) continue
+    const copyId = newId()
+    images.push({ id: copyId, recipeId: id, createdAt: now, blob })
+    const credit = source.photoCredits?.[imageId]
+    if (credit) photoCredits[copyId] = credit
   }
   const copy: Recipe = {
     ...source,
@@ -20,6 +25,7 @@ export async function duplicateRecipe(source: Recipe): Promise<Recipe> {
     categoryIds: [...source.categoryIds],
     checked: [],
     imageIds: images.map((i) => i.id),
+    photoCredits: Object.keys(photoCredits).length ? photoCredits : undefined,
     isSample: undefined,
     createdAt: now,
     updatedAt: now,

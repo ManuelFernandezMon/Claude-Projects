@@ -29,6 +29,8 @@ export interface Recipe {
   imageIds: string[]
   /** Link to the original TikTok/Instagram/web post, if the recipe was imported from one. */
   sourceUrl?: string
+  /** Who took each stock photo, keyed by image ID. Only photos found through "Find a photo" have an entry. */
+  photoCredits?: Record<string, PhotoCredit>
   /** Written by the AI assistant and not tested by the user. */
   aiGenerated?: boolean
   /** An existing recipe the AI assistant changed (not tested). */
@@ -36,6 +38,12 @@ export interface Recipe {
   isSample?: boolean
   createdAt: number
   updatedAt: number
+}
+
+/** Attribution for a stock photo (Pexels asks for a link to the photo's page and the photographer's name). */
+export interface PhotoCredit {
+  name: string
+  url: string
 }
 
 export interface Category {

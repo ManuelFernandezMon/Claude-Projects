@@ -12,6 +12,9 @@
     "api/convert.ts": {
       "maxDuration": 120
     },
+    "api/photos.ts": {
+      "maxDuration": 30
+    },
     "api/video-start.ts": {
       "maxDuration": 60
     },

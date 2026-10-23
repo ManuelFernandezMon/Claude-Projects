@@ -111,7 +111,7 @@ export function RecipeDetailPage() {
         )}
       </header>
 
-      <ImageGallery imageIds={recipe.imageIds} title={recipe.title} recipeId={recipe.id} />
+      <ImageGallery imageIds={recipe.imageIds} title={recipe.title} recipeId={recipe.id} credits={recipe.photoCredits} />
 
       {recipe.aiGenerated && (
         <p className="notice notice--warn small" role="note">

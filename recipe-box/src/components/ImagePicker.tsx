@@ -3,15 +3,20 @@ import { compressImage } from '../lib/image'
 import { newId } from '../lib/id'
 import { useObjectUrl } from '../hooks/useImageUrl'
 import { errorMessage } from '../lib/format'
+import { PhotoSearch } from './PhotoSearch'
 
 export interface ImageItem {
   id: string
   blob: Blob
+  /** Set for stock photos: who took it and where it came from. */
+  credit?: { name: string; url: string }
 }
 
 interface Props {
   items: ImageItem[]
   onChange: (items: ImageItem[]) => void
+  /** Recipe title, used as the starting search for stock photos. */
+  title?: string
 }
 
 function PickerThumb({
@@ -46,7 +51,8 @@ function PickerThumb({
   )
 }
 
-export function ImagePicker({ items, onChange }: Props) {
+export function ImagePicker({ items, onChange, title = '' }: Props) {
+  const [finding, setFinding] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string>()
   const fileRef = useRef<HTMLInputElement>(null)
@@ -81,12 +87,26 @@ export function ImagePicker({ items, onChange }: Props) {
         <button type="button" className="btn" onClick={() => cameraRef.current?.click()} disabled={busy}>
           Take photo
         </button>
+        <button type="button" className="btn" onClick={() => setFinding((v) => !v)} aria-expanded={finding} disabled={busy}>
+          Find a photo
+        </button>
         {busy && (
           <span className="muted" role="status">
             Processing…
           </span>
         )}
       </div>
+      {finding && (
+        <PhotoSearch
+          initialQuery={title}
+          onClose={() => setFinding(false)}
+          onPick={async (file, credit) => {
+            const blob = await compressImage(file)
+            onChange([...items, { id: newId(), blob, credit }])
+            setFinding(false)
+          }}
+        />
+      )}
       <input
         ref={fileRef}
         type="file"

@@ -103,6 +103,17 @@ function parseBackup(text: string): StorageSnapshot {
   })
 
   const shortText = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim().slice(0, 60) : undefined)
+  const cleanCredits = (v: unknown, imageIds: unknown[]): Recipe['photoCredits'] => {
+    if (!isObj(v)) return undefined
+    const out: NonNullable<Recipe['photoCredits']> = {}
+    for (const [imageId, c] of Object.entries(v)) {
+      if (!imageIds.includes(imageId) || !isObj(c)) continue
+      const url = typeof c.url === 'string' ? safeHttpUrl(c.url) : undefined
+      const name = typeof c.name === 'string' && c.name.trim() ? c.name.trim().slice(0, 80) : undefined
+      if (url && name) out[imageId] = { name, url }
+    }
+    return Object.keys(out).length ? out : undefined
+  }
   const cleanMeasures = (v: unknown): Measures | undefined => {
     if (!isObj(v)) return undefined
     const metric = shortText(v.metric)
@@ -140,6 +151,7 @@ function parseBackup(text: string): StorageSnapshot {
       servings: num(r.servings),
       imageIds: arr(r.imageIds).filter((s): s is string => typeof s === 'string'),
       sourceUrl: typeof r.sourceUrl === 'string' ? safeHttpUrl(r.sourceUrl) : undefined,
+      photoCredits: cleanCredits(r.photoCredits, arr(r.imageIds)),
       aiGenerated: r.aiGenerated === true ? true : undefined,
       aiEdited: r.aiEdited === true ? true : undefined,
       isSample: r.isSample === true ? true : undefined,
