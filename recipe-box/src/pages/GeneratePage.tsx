@@ -106,7 +106,7 @@ export function GeneratePage() {
           </button>
           {busy && (
             <span className="muted" role="status">
-              This can take up to a minute.
+              Usually a few seconds. If Gemini is busy it keeps trying other models, up to two minutes.
             </span>
           )}
         </div>

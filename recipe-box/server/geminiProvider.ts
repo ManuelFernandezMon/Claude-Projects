@@ -9,13 +9,20 @@ import { RecipeOutputSchema, type ProviderRequest, type ProviderResult } from '.
  */
 const DEFAULT_MODELS =
   'gemini-3.8-flash,gemini-3.6-flash,gemini-3.5-flash-lite,gemini-2.5-flash,gemini-2.5-flash-lite'
-const REQUEST_TIMEOUT_MS = 25_000
+const REQUEST_TIMEOUT_MS = 20_000
 /**
- * Time budgets. Text endpoints run under a 60 s function limit; video-extract is configured for 300 s in vercel.json (Hobby
- * allows it with Fluid compute), because analysing a video can take tens of seconds per attempt and an overloaded model may
- * need that long just to answer 503.
+ * Time budgets. The text endpoints are configured for 120 s in vercel.json and video-extract for 300 s (Hobby allows it with
+ * Fluid compute). Overloaded models fail in two ways: a fast 503 (worth one quick retry) or a slow 504/hang (not worth waiting
+ * for again). So a text attempt is capped at 20 s, only a fast 503 is retried on the same model, and everything else moves on
+ * to the next model; the whole chain is walked twice before giving up.
  */
-const TEXT = { timeout: REQUEST_TIMEOUT_MS, deadline: 30_000, hardLimit: 55_000, perModel: 2, passes: 1 }
+const textBudget = () => ({
+  timeout: Number(process.env.GEMINI_TEXT_TIMEOUT_MS) || REQUEST_TIMEOUT_MS,
+  deadline: 90_000,
+  hardLimit: 108_000,
+  perModel: 2,
+  passes: 2,
+})
 const VIDEO = { timeout: 100_000, deadline: 170_000, hardLimit: 285_000, perModel: 1, passes: 2 }
 const PASS_GAP_MS = () => Number(process.env.GEMINI_PASS_GAP_MS ?? 4000)
 
@@ -68,6 +75,10 @@ async function once(ai: GoogleGenAI, model: string, req: ProviderRequest): Promi
 
 const isTransient = (status: number) => status === 500 || status === 503 || status === 504
 
+/** A request that hung or dropped (our own timeout, a reset connection): the model is too slow right now, so move on. */
+const isSlowFailure = (e: unknown): boolean =>
+  e instanceof Error && (e.name === 'AbortError' || e.name === 'TimeoutError' || /timeout|timed out|aborted|ECONNRESET|ETIMEDOUT|fetch failed|socket hang up/i.test(e.message))
+
 export function makeGeminiClient(timeoutMs = REQUEST_TIMEOUT_MS): GoogleGenAI {
   return new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY,
@@ -81,14 +92,20 @@ export function makeGeminiClient(timeoutMs = REQUEST_TIMEOUT_MS): GoogleGenAI {
 
 /** `started` lets a caller that already spent time (e.g. waiting for a video to process) share one overall deadline. */
 export async function callGemini(req: ProviderRequest, started = Date.now()): Promise<ProviderResult> {
-  const budget = req.video ? VIDEO : TEXT
+  const budget = req.video ? VIDEO : textBudget()
   let lastError: unknown
+  let sawTransient = false
   for (let pass = 0; pass < budget.passes; pass++) {
-    if (pass > 0) await sleep(PASS_GAP_MS()) // everything was busy: give the service a moment, then walk the chain again
+    if (pass > 0) {
+      if (!sawTransient) break // quota or missing-model errors will not change in a few seconds
+      await sleep(PASS_GAP_MS()) // everything was busy: give the service a moment, then walk the chain again
+    }
+    sawTransient = false
     for (const model of models()) {
       for (let attempt = 0; attempt < budget.perModel; attempt++) {
         const elapsed = Date.now() - started
         if (elapsed > budget.deadline) throw lastError ?? new Error('Gemini deadline exceeded')
+        const attemptStart = Date.now()
         const ai = makeGeminiClient(Math.max(5_000, Math.min(budget.timeout, budget.hardLimit - elapsed)))
         try {
           const first = await once(ai, model, req)
@@ -96,9 +113,16 @@ export async function callGemini(req: ProviderRequest, started = Date.now()): Pr
           return first.kind === 'bad_output' ? await once(ai, model, req) : first
         } catch (e) {
           lastError = e
-          if (!(e instanceof ApiError)) throw e
+          if (!(e instanceof ApiError)) {
+            if (!isSlowFailure(e)) throw e
+            sawTransient = true
+            console.warn(`gemini ${model} pass ${pass + 1} attempt ${attempt + 1} too slow: ${e instanceof Error ? e.message : e}`)
+            break // next model
+          }
           console.warn(`gemini ${model} pass ${pass + 1} attempt ${attempt + 1} failed: HTTP ${e.status}`)
-          if (isTransient(e.status) && attempt + 1 < budget.perModel) {
+          if (isTransient(e.status)) sawTransient = true
+          const quick = Date.now() - attemptStart < 4_000 // a 504 after 20 s is not a blip; a 503 after 1 s usually is
+          if ((e.status === 503 || e.status === 500) && quick && attempt + 1 < budget.perModel) {
             await sleep(retryDelayMs()) // brief pause, then one more try on the same model
             continue
           }
@@ -112,6 +136,13 @@ export async function callGemini(req: ProviderRequest, started = Date.now()): Pr
 }
 
 export function mapGeminiError(e: unknown): { status: number; error: string; message: string } {
+  if (isSlowFailure(e)) {
+    return {
+      status: 502,
+      error: 'provider_overloaded',
+      message: 'Gemini is overloaded right now (the free tier has no capacity guarantee). Try again in a minute.',
+    }
+  }
   if (e instanceof ApiError) {
     if (e.status === 429) {
       return {
