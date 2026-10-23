@@ -10,6 +10,7 @@ import { ImportPage } from './pages/ImportPage'
 import { RecipeDetailPage } from './pages/RecipeDetailPage'
 import { RecipeEditPage } from './pages/RecipeEditPage'
 import { EmptyState } from './components/EmptyState'
+import { ToastHost } from './components/ToastHost'
 
 function Shell() {
   return (
@@ -74,6 +75,7 @@ function Shell() {
           />
         </Routes>
       </main>
+      <ToastHost />
     </>
   )
 }

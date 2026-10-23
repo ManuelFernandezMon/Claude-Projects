@@ -14,6 +14,8 @@ Recipes, photos, categories and checklist state live in the browser's **IndexedD
 - Home grid with multi-select category filter (matches **any** selected), search (title + ingredients), sort (newest / A-Z).
 - **Ask AI for a recipe:** describe what you want ("gluten-free banana bread for 8"); the AI writes a full recipe, you can ask for changes ("make it vegan"), then open it in the editor to review and save. AI recipes are labeled as untested.
 - **Import from a video:** upload a video you saved from TikTok/Instagram (or a screen recording) and the AI watches and listens to it, so no caption is needed. Or paste the caption instead. Either way the AI turns it into a recipe (ingredients with quantities, steps, times, categories) that you review before saving. Imported ingredients become the interactive checklist.
+- Quick actions: press and hold a recipe (or right-click, or the Menu key / Shift+F10) for Open, Edit, Duplicate (photos are copied too),
+  Share, Copy ingredients and Delete. The recipe page has the same menu behind "More". Delete always asks first.
 - Backup page: export everything to one JSON file (photos embedded as base64); import with **merge** or **replace**.
 - Three clearly labeled **SAMPLE** recipes on first run. Delete them from the home page; they will not come back.
 

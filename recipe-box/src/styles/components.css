@@ -1037,3 +1037,211 @@ label.btn:focus-within {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ---------- press-and-hold actions ---------- */
+.card__link {
+  -webkit-touch-callout: none; /* no system link menu on a long press */
+  -webkit-user-select: none;
+  user-select: none;
+}
+.card__media img {
+  pointer-events: none; /* so the hold lands on the link, not on an image with its own menu */
+  -webkit-user-drag: none;
+}
+
+.sheet {
+  /* a bottom sheet, anchored like a phone action sheet and centered on wide screens */
+  width: min(100%, 520px);
+  max-width: 100%;
+  margin: auto auto 0;
+  padding: 10px 14px calc(14px + env(safe-area-inset-bottom));
+  color: var(--text);
+  background: var(--glass-strong);
+  border: 1px solid var(--glass-border);
+  border-bottom: 0;
+  border-radius: 28px 28px 0 0;
+  box-shadow:
+    inset 0 1px 0 var(--glass-hi),
+    0 -20px 60px rgba(0, 0, 0, 0.35);
+  -webkit-backdrop-filter: blur(28px) saturate(170%);
+  backdrop-filter: blur(28px) saturate(170%);
+}
+.sheet::backdrop {
+  background: var(--scrim);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sheet[open] {
+    animation: sheet-up 0.42s var(--ease) both;
+  }
+  @keyframes sheet-up {
+    from {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+  }
+}
+.sheet__grip {
+  width: 40px;
+  height: 5px;
+  margin: 2px auto 12px;
+  border-radius: var(--r-pill);
+  background: var(--control-border);
+  opacity: 0.55;
+}
+.sheet__head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 4px 6px 14px;
+}
+.sheet__thumb {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--accent-soft);
+  font-weight: 600;
+  font-size: 1.25rem;
+}
+.sheet__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.sheet__title {
+  min-width: 0;
+}
+.sheet__title h2 {
+  font-size: 1.125rem;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.sheet__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sheet__item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 54px;
+  padding: 0 14px;
+  font: 500 1rem var(--font-body);
+  color: var(--text);
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 18px;
+  cursor: pointer;
+  transition:
+    background-color 0.2s var(--ease),
+    transform 0.2s var(--ease);
+}
+@media (hover: hover) {
+  .sheet__item:hover {
+    background: var(--glass-raised);
+  }
+}
+.sheet__item:active {
+  transform: scale(0.985);
+  background: var(--glass-raised);
+}
+.sheet__icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+}
+.sheet__icon svg {
+  width: 20px;
+  height: 20px;
+}
+.sheet__item--danger {
+  color: var(--danger);
+}
+.sheet__list li:last-child {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+
+.tip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -6px 0;
+}
+.tip > svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+.tip__close {
+  display: grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  margin-left: auto;
+  padding: 0;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.tip__close svg {
+  width: 16px;
+  height: 16px;
+}
+
+.toast-host {
+  position: fixed;
+  z-index: 40;
+  left: 50%;
+  bottom: calc(var(--nav-space) + 4px);
+  transform: translateX(-50%);
+  width: min(calc(100% - 32px), 420px);
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+@media (min-width: 720px) {
+  .toast-host {
+    bottom: 28px;
+  }
+}
+.toast {
+  padding: 12px 20px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-align: center;
+  color: var(--text);
+  background: var(--glass-strong);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-pill);
+  box-shadow:
+    inset 0 1px 0 var(--glass-hi),
+    var(--glass-shadow);
+  -webkit-backdrop-filter: blur(20px) saturate(170%);
+  backdrop-filter: blur(20px) saturate(170%);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .toast {
+    animation: rise 0.4s var(--ease) both;
+  }
+}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ArrowUpRight, CaretLeft } from '@phosphor-icons/react'
+import { ArrowUpRight, CaretLeft, DotsThree } from '@phosphor-icons/react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { recipeStore } from '../storage/recipeStore'
 import type { Recipe } from '../types'
@@ -9,6 +9,7 @@ import { CategoryChip } from '../components/CategoryChip'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { EmptyState } from '../components/EmptyState'
 import { ImageGallery } from '../components/ImageGallery'
+import { RecipeActionsSheet } from '../components/RecipeActionsSheet'
 import { IngredientChecklist } from '../components/IngredientChecklist'
 import { Spinner } from '../components/Spinner'
 import { errorMessage, formatMinutes } from '../lib/format'
@@ -21,6 +22,7 @@ export function RecipeDetailPage() {
   const [recipe, setRecipe] = useState<Recipe | null | undefined>(undefined) // undefined=loading, null=missing
   const [error, setError] = useState<string>()
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   useDocumentTitle(recipe?.title)
 
   useEffect(() => {
@@ -148,7 +150,13 @@ export function RecipeDetailPage() {
         <button type="button" className="btn btn--danger-ghost" onClick={() => setConfirmDelete(true)}>
           Delete
         </button>
+        <button type="button" className="btn" onClick={() => setMenuOpen(true)}>
+          <DotsThree aria-hidden="true" weight="bold" />
+          More
+        </button>
       </div>
+
+      <RecipeActionsSheet recipe={menuOpen ? recipe : null} onClose={() => setMenuOpen(false)} showOpen={false} />
 
       <ConfirmDialog
         open={confirmDelete}

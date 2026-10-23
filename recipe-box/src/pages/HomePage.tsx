@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { LinkSimple, Sparkle } from '@phosphor-icons/react'
+import { HandTap, LinkSimple, Sparkle, X } from '@phosphor-icons/react'
 import { Link } from 'react-router-dom'
 import { useData } from '../hooks/useData'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
@@ -7,11 +7,29 @@ import { recipeStore } from '../storage/recipeStore'
 import { CategoryFilterBar } from '../components/CategoryFilterBar'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { EmptyState } from '../components/EmptyState'
+import { RecipeActionsSheet } from '../components/RecipeActionsSheet'
 import { RecipeCard } from '../components/RecipeCard'
 import { SearchBar } from '../components/SearchBar'
 import { SortSelect, type SortKey } from '../components/SortSelect'
 import { Spinner } from '../components/Spinner'
 import { errorMessage } from '../lib/format'
+import type { Recipe } from '../types'
+
+const TIP_KEY = 'recipe-box:hold-tip'
+function readTipSeen(): boolean {
+  try {
+    return localStorage.getItem(TIP_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+function markTipSeen(): void {
+  try {
+    localStorage.setItem(TIP_KEY, '1')
+  } catch {
+    /* the tip simply shows again next time */
+  }
+}
 
 export function HomePage() {
   useDocumentTitle()
@@ -21,6 +39,8 @@ export function HomePage() {
   const [selected, setSelected] = useState<string[]>([])
   const [confirmSamples, setConfirmSamples] = useState(false)
   const [actionError, setActionError] = useState<string>()
+  const [menuRecipe, setMenuRecipe] = useState<Recipe | null>(null)
+  const [tipSeen, setTipSeen] = useState(readTipSeen)
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -106,6 +126,24 @@ export function HomePage() {
         </p>
       )}
 
+      {recipes.length > 0 && !tipSeen && (
+        <p className="tip small muted">
+          <HandTap aria-hidden="true" />
+          <span>Press and hold a recipe for quick actions.</span>
+          <button
+            type="button"
+            className="tip__close"
+            aria-label="Dismiss tip"
+            onClick={() => {
+              markTipSeen()
+              setTipSeen(true)
+            }}
+          >
+            <X aria-hidden="true" />
+          </button>
+        </p>
+      )}
+
       {recipes.length === 0 ? (
         <EmptyState
           title="No recipes yet"
@@ -142,10 +180,17 @@ export function HomePage() {
               key={r.id}
               recipe={r}
               categories={r.categoryIds.flatMap((id) => categoryById.get(id) ?? [])}
+              onMenu={(rec) => {
+                setMenuRecipe(rec)
+                markTipSeen()
+                setTipSeen(true)
+              }}
             />
           ))}
         </ul>
       )}
+
+      <RecipeActionsSheet recipe={menuRecipe} onClose={() => setMenuRecipe(null)} />
 
       <ConfirmDialog
         open={confirmSamples}
