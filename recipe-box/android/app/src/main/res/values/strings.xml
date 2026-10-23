@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">recipe-box</string>
+    <string name="title_activity_main">recipe-box</string>
+    <string name="package_name">app.recipebox.personal</string>
+    <string name="custom_url_scheme">app.recipebox.personal</string>
+</resources>

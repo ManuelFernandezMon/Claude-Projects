@@ -149,10 +149,39 @@ Limits:
   (the Backup page shows whether it was granted). It is a mitigation, not a guarantee.
 - Different origins do not share data: `localhost`, a Vercel preview URL and your production URL are separate databases.
 - **Back up regularly** from the Backup page. Backup files embed photos, so they can be several MB.
-- Fonts are loaded from Google Fonts; offline, the app falls back to system monospace/sans-serif fonts.
+- Fonts are bundled with the app (JetBrains Mono, Space Grotesk), so the interface looks the same offline.
 
 Merge semantics on import: items with the same ID are overwritten by the backup (an imported recipe also replaces its
 photos); everything else is kept. Replace erases all current data first.
+
+## Android app
+
+The same code also ships as an installable Android app (Capacitor 8: the web bundle runs inside the system WebView, with
+its own icon, full-screen, no browser bar). It is **not** a Play Store app: you install the `.apk` yourself.
+
+- **Install:** open the site in Chrome on the phone, Backup page → "Download Android app", open the file and allow the
+  install. The file lives at `/downloads/recipe-box.apk`.
+- **Data is separate from the browser.** The app has its own storage. To move recipes: Export in the browser, Import in the app.
+  Uninstalling the app or clearing its storage deletes its recipes, so keep exporting backups. In the app, Export opens
+  Android's share sheet (save to Drive/Files, email) because a WebView cannot download blob files.
+- **The AI features still need the internet.** The app has no server of its own: it calls the deployed site's `/api/*`
+  endpoints (address in `.env.android`, `VITE_API_BASE`). The server allows those calls from the app's origin
+  (`https://localhost`) and nothing else (`CORS_ALLOWED_ORIGINS` adds more, for tests). If you move the site to another
+  domain, edit `.env.android` and rebuild the APK.
+- **Updating:** the app does not update itself. Build a new APK and install it over the old one (recipes are kept).
+
+### Building the APK
+
+Needs JDK 17+, the Android SDK (`ANDROID_HOME`, platform `android-36` and build-tools) and network access for Gradle.
+
+```bash
+ANDROID_HOME=/path/to/sdk npm run apk     # -> public/downloads/recipe-box.apk, then commit and deploy
+```
+
+The first run creates a signing key in `android/keystore/` (+ `android/keystore.properties`). Both are git-ignored on
+purpose, because this repository is public. **Back them up.** Android only installs an update over an existing install
+when the signing key is the same; with a new key you must uninstall first, and uninstalling deletes the app's recipes
+(export a backup first).
 
 ## Architecture
 

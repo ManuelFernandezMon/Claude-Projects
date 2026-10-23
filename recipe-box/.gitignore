@@ -7,3 +7,9 @@ playwright-report
 .env
 .env.local
 .env.*.local
+
+# Android signing and local build output
+android/keystore.properties
+android/keystore/
+*.jks
+*.keystore

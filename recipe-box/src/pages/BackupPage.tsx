@@ -4,7 +4,8 @@ import type { ImportMode } from '../types'
 import { useData } from '../hooks/useData'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { ConfirmDialog } from '../components/ConfirmDialog'
-import { downloadBlob } from '../lib/download'
+import { isNativeApp } from '../lib/apiBase'
+import { saveTextFile } from '../lib/download'
 import { errorMessage } from '../lib/format'
 
 type Status = { kind: 'ok' | 'error'; text: string } | null
@@ -18,6 +19,7 @@ export function BackupPage() {
   const [pending, setPending] = useState<File | null>(null)
   const [persisted, setPersisted] = useState<boolean | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  const native = isNativeApp()
 
   useEffect(() => {
     navigator.storage?.persisted?.().then(setPersisted, () => setPersisted(null))
@@ -28,8 +30,12 @@ export function BackupPage() {
     setStatus(null)
     try {
       const blob = await buildBackup()
-      downloadBlob(blob, backupFilename())
-      setStatus({ kind: 'ok', text: `Exported ${recipes.length} recipe(s) (${(blob.size / 1024 / 1024).toFixed(2)} MB).` })
+      const result = await saveTextFile(blob, backupFilename())
+      setStatus(
+        result === 'cancelled'
+          ? { kind: 'ok', text: 'Export cancelled. Nothing was saved.' }
+          : { kind: 'ok', text: `Exported ${recipes.length} recipe(s) (${(blob.size / 1024 / 1024).toFixed(2)} MB).` },
+      )
     } catch (e) {
       setStatus({ kind: 'error', text: `Export failed: ${errorMessage(e)}` })
     } finally {
@@ -66,15 +72,27 @@ export function BackupPage() {
       <h1 className="h1">Backup</h1>
 
       <p className="notice notice--warn" role="note">
-        <strong>Your data is stored only in this browser.</strong> There is no account and no cloud copy. Clearing site
-        data, uninstalling the browser or switching devices loses your recipes. Export a backup regularly.
+        {native ? (
+          <>
+            <strong>Your data is stored only in this app on this phone.</strong> There is no account and no cloud copy.
+            Uninstalling the app, clearing its storage or switching phones loses your recipes. Export a backup regularly.
+          </>
+        ) : (
+          <>
+            <strong>Your data is stored only in this browser.</strong> There is no account and no cloud copy. Clearing
+            site data, uninstalling the browser or switching devices loses your recipes. Export a backup regularly.
+          </>
+        )}
       </p>
 
       <section className="panel stack stack--tight" aria-labelledby="export-h">
         <h2 id="export-h" className="h2">
           Export
         </h2>
-        <p className="muted">Downloads one JSON file with all recipes, categories and photos (embedded as base64).</p>
+        <p className="muted">
+          {native ? 'Opens the share sheet' : 'Downloads'} with one JSON file holding all recipes, categories and photos
+          (embedded as base64).{native && ' Choose Drive, Files or email to keep a copy off the phone.'}
+        </p>
         <div>
           <button type="button" className="btn btn--primary" onClick={() => void doExport()} disabled={busy}>
             Export all data
@@ -116,6 +134,31 @@ export function BackupPage() {
           />
         </div>
       </section>
+
+      {!native && (
+        <section className="panel stack stack--tight" aria-labelledby="app-h">
+          <h2 id="app-h" className="h2">
+            Android app
+          </h2>
+          <p className="muted">
+            An installable app with its own icon that opens full screen. It keeps its own copy of your recipes on the phone,
+            separate from this browser.
+          </p>
+          <ol className="steps">
+            <li>On your Android phone, open this page in Chrome and tap the download button below.</li>
+            <li>
+              Open the downloaded file. Android will ask to allow Chrome to install apps: allow it for this one install.
+              Play Protect may call the app “unrecognized” because it does not come from the Play Store.
+            </li>
+            <li>To move your recipes: Export here, then Import in the app (Backup page).</li>
+          </ol>
+          <div>
+            <a className="btn" href="/downloads/recipe-box.apk" download>
+              Download Android app (.apk)
+            </a>
+          </div>
+        </section>
+      )}
 
       {status && (
         <p className={status.kind === 'ok' ? 'notice notice--ok' : 'error'} role={status.kind === 'ok' ? 'status' : 'alert'}>

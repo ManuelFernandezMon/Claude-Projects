@@ -1,4 +1,5 @@
 import type { ImportedRecipe } from '../types'
+import { apiUrl } from './apiBase'
 import { sourceKind } from './url'
 
 const PASSCODE_KEY = 'recipe-box:import-passcode'
@@ -55,7 +56,7 @@ export async function postAi(
 ): Promise<ImportedRecipe | null> {
   let res: Response
   try {
-    res = await fetch(endpoint, {
+    res = await fetch(apiUrl(endpoint), {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-import-passcode': passcode },
       body: JSON.stringify(payload),

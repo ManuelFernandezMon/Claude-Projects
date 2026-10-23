@@ -43,4 +43,6 @@ function apiDev(): Plugin {
 
 export default defineConfig({
   plugins: [react(), apiDev()],
+  // Vite's own permissive CORS would mask server/shared.ts withCors, which is what production runs.
+  server: { cors: false },
 })

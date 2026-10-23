@@ -9,6 +9,42 @@ export function json(status: number, body: Json): Response {
   return Response.json(body, { status, headers: { 'cache-control': 'no-store' } })
 }
 
+/**
+ * The Android app (a Capacitor WebView) calls these endpoints cross-origin from https://localhost. Only those origins are allowed,
+ * plus any listed in CORS_ALLOWED_ORIGINS (comma-separated; used by tests). Auth is the passcode header, not cookies.
+ */
+const APP_ORIGINS = ['https://localhost', 'capacitor://localhost', 'http://localhost']
+
+function allowedOrigin(request: Request): string | null {
+  const origin = request.headers.get('origin')
+  if (!origin) return null
+  const extra = (process.env.CORS_ALLOWED_ORIGINS ?? '').split(',').map((o) => o.trim()).filter(Boolean)
+  return [...APP_ORIGINS, ...extra].includes(origin) ? origin : null
+}
+
+/** Wraps an endpoint: answers CORS preflights and adds CORS headers to every response for allowed origins. */
+export function withCors(handler: (request: Request) => Promise<Response>): (request: Request) => Promise<Response> {
+  return async (request) => {
+    const origin = allowedOrigin(request)
+    if (request.method === 'OPTIONS') {
+      const headers = new Headers({ vary: 'Origin', 'cache-control': 'no-store' })
+      if (origin) {
+        headers.set('access-control-allow-origin', origin)
+        headers.set('access-control-allow-methods', 'POST, OPTIONS')
+        headers.set('access-control-allow-headers', 'content-type, x-import-passcode')
+        headers.set('access-control-max-age', '86400')
+      }
+      return new Response(null, { status: 204, headers })
+    }
+    const res = await handler(request)
+    if (!origin) return res
+    const headers = new Headers(res.headers)
+    headers.set('access-control-allow-origin', origin)
+    headers.append('vary', 'Origin')
+    return new Response(res.body, { status: res.status, statusText: res.statusText, headers })
+  }
+}
+
 function sameSecret(a: string, b: string): boolean {
   // Hash first so the comparison is constant-time regardless of length.
   const ha = createHash('sha256').update(a).digest()

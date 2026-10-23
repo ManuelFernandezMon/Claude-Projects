@@ -1,4 +1,5 @@
-import { BrowserRouter, Link, NavLink, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, HashRouter, Link, NavLink, Route, Routes } from 'react-router-dom'
+import { isNativeApp } from './lib/apiBase'
 import { DataProvider } from './hooks/useData'
 import { BackupPage } from './pages/BackupPage'
 import { CategoriesPage } from './pages/CategoriesPage'
@@ -12,7 +13,15 @@ import { EmptyState } from './components/EmptyState'
 function Shell() {
   return (
     <>
-      <a href="#main" className="skip">
+      <a
+        href="#main"
+        className="skip"
+        onClick={(e) => {
+          // A plain #main link would change the URL, which collides with hash routing inside the Android app.
+          e.preventDefault()
+          document.getElementById('main')?.focus()
+        }}
+      >
         Skip to content
       </a>
       <header className="topbar">
@@ -33,7 +42,7 @@ function Shell() {
           + New
         </Link>
       </header>
-      <main id="main" className="main">
+      <main id="main" className="main" tabIndex={-1}>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/import" element={<ImportPage />} />
@@ -63,11 +72,13 @@ function Shell() {
 }
 
 export default function App() {
+  // The app's local web server cannot be assumed to fall back to index.html for deep links, so it routes by hash instead.
+  const Router = isNativeApp() ? HashRouter : BrowserRouter
   return (
-    <BrowserRouter>
+    <Router>
       <DataProvider>
         <Shell />
       </DataProvider>
-    </BrowserRouter>
+    </Router>
   )
 }

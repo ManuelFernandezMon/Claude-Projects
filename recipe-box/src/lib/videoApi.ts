@@ -1,4 +1,5 @@
 import type { ImportedRecipe } from '../types'
+import { apiUrl } from './apiBase'
 import { ImportError, postAi } from './importApi'
 
 export const MAX_VIDEO_MB = 100
@@ -49,7 +50,7 @@ export function readDuration(file: Blob): Promise<number | undefined> {
 async function post<T>(endpoint: string, init: RequestInit, passcode: string, step: string): Promise<T> {
   let res: Response
   try {
-    res = await fetch(endpoint, { ...init, method: 'POST', headers: { 'x-import-passcode': passcode, ...init.headers } })
+    res = await fetch(apiUrl(endpoint), { ...init, method: 'POST', headers: { 'x-import-passcode': passcode, ...init.headers } })
   } catch (e) {
     const cause = e instanceof Error ? `${e.name}: ${e.message}` : String(e)
     throw new ImportError(`The connection dropped while ${step}. Check your signal and try again.`, 'network', `${step} · ${cause}`)
