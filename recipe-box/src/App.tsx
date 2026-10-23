@@ -1,4 +1,5 @@
 import { BrowserRouter, HashRouter, Link, NavLink, Route, Routes } from 'react-router-dom'
+import { FloppyDisk, House, Plus, Tag } from '@phosphor-icons/react'
 import { isNativeApp } from './lib/apiBase'
 import { DataProvider } from './hooks/useData'
 import { BackupPage } from './pages/BackupPage'
@@ -26,22 +27,28 @@ function Shell() {
       </a>
       <header className="topbar">
         <Link to="/" className="brand">
-          <span className="brand__prompt" aria-hidden="true">
-            &gt;_
-          </span>
+          <span className="brand__mark" aria-hidden="true" />
           recipe-box
         </Link>
-        <nav className="nav" aria-label="Main">
-          <NavLink to="/" end>
-            Recipes
-          </NavLink>
-          <NavLink to="/categories">Categories</NavLink>
-          <NavLink to="/backup">Backup</NavLink>
-        </nav>
         <Link to="/recipes/new" className="btn btn--primary topbar__new">
-          + New
+          <Plus aria-hidden="true" weight="bold" />
+          New
         </Link>
       </header>
+      <nav className="nav" aria-label="Main">
+        <NavLink to="/" end>
+          <House aria-hidden="true" />
+          Recipes
+        </NavLink>
+        <NavLink to="/categories">
+          <Tag aria-hidden="true" />
+          Categories
+        </NavLink>
+        <NavLink to="/backup">
+          <FloppyDisk aria-hidden="true" />
+          Backup
+        </NavLink>
+      </nav>
       <main id="main" className="main" tabIndex={-1}>
         <Routes>
           <Route path="/" element={<HomePage />} />

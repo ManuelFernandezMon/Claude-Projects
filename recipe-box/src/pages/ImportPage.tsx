@@ -1,4 +1,5 @@
 import { useRef, useState, type FormEvent } from 'react'
+import { CaretLeft } from '@phosphor-icons/react'
 import { Link, useNavigate } from 'react-router-dom'
 import { PasscodeField } from '../components/PasscodeField'
 import { useData } from '../hooks/useData'
@@ -173,7 +174,8 @@ export function ImportPage() {
   return (
     <div className="stack">
       <Link to="/" className="back">
-        ← Recipes
+        <CaretLeft aria-hidden="true" weight="bold" />
+        Recipes
       </Link>
       <h1 className="h1">Import a recipe</h1>
       <p className="muted">

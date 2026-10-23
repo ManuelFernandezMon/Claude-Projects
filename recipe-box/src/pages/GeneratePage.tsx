@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { CaretLeft } from '@phosphor-icons/react'
 import { Link, useNavigate } from 'react-router-dom'
 import type { ImportedRecipe } from '../types'
 import { PasscodeField } from '../components/PasscodeField'
@@ -71,7 +72,8 @@ export function GeneratePage() {
   return (
     <div className="stack">
       <Link to="/" className="back">
-        ← Recipes
+        <CaretLeft aria-hidden="true" weight="bold" />
+        Recipes
       </Link>
       <h1 className="h1">Ask AI for a recipe</h1>
 

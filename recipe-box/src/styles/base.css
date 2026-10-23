@@ -6,34 +6,56 @@
 
 html {
   -webkit-text-size-adjust: 100%;
-  color-scheme: dark;
+  color-scheme: dark light;
+  background: var(--bg);
 }
 
 body {
   margin: 0;
-  background: var(--bg);
+  min-height: 100dvh;
+  /* no body background: the page color lives on <html>, so the fixed backdrop below can show through */
   color: var(--text);
   font-family: var(--font-body);
   font-size: 1rem;
-  line-height: 1.5;
-  /* room for the fixed bottom nav on phones */
-  padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  line-height: 1.55;
+  font-feature-settings: 'ss01', 'cv11';
+  -webkit-font-smoothing: antialiased;
+  /* room for the floating bottom nav on phones */
+  padding-bottom: var(--nav-space);
+}
+
+/* Ambient backdrop. Fixed and pointer-less so it never repaints while scrolling; the glass blurs whatever passes over it. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(65% 42% at 12% -4%, var(--glow-a), transparent 72%),
+    radial-gradient(55% 40% at 108% 28%, var(--glow-b), transparent 72%),
+    radial-gradient(70% 45% at 30% 108%, var(--glow-c), transparent 72%);
 }
 
 h1,
 h2,
 h3 {
-  font-family: var(--font-head);
-  line-height: 1.2;
+  font-family: var(--font-body);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
   margin: 0;
+  text-wrap: balance;
 }
 
 p {
   margin: 0;
+  text-wrap: pretty;
 }
 
 a {
-  color: var(--accent);
+  color: var(--accent-text);
+  text-underline-offset: 3px;
 }
 
 img {
@@ -42,9 +64,9 @@ img {
 }
 
 :focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 2px;
-  border-radius: 4px;
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 8px;
 }
 
 .sr-only {
@@ -62,8 +84,8 @@ img {
   top: -100px;
   background: var(--accent);
   color: var(--accent-ink);
-  padding: 10px 14px;
-  border-radius: 8px;
+  padding: 10px 16px;
+  border-radius: var(--r-pill);
   z-index: 100;
 }
 .skip:focus {
@@ -71,7 +93,7 @@ img {
 }
 
 .mono {
-  font-family: var(--font-head);
+  font-variant-numeric: tabular-nums;
 }
 .muted {
   color: var(--muted);
@@ -80,11 +102,36 @@ img {
   font-size: 0.875rem;
 }
 
+/* Page content eases in once per navigation; the motion only carries hierarchy (content arrives after the chrome). */
+@media (prefers-reduced-motion: no-preference) {
+  .main > * {
+    animation: rise 0.55s var(--ease) both;
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* Frosted glass is decoration, never a requirement: without it, surfaces fall back to solid fills with the same text colors. */
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass: var(--glass-strong);
+    --glass-raised: var(--glass-strong);
+  }
+  * {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
 }

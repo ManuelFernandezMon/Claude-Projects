@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import type { Category, Recipe } from '../types'
 import { useImageUrl } from '../hooks/useImageUrl'
@@ -19,7 +20,7 @@ export function RecipeCard({ recipe, categories }: Props) {
   return (
     <li className="card">
       <Link to={`/recipes/${recipe.id}`} className="card__link">
-        <div className="card__media">
+        <div className="card__media" style={categories[0] ? ({ '--tint': categories[0].color } as CSSProperties) : undefined}>
           {cover ? (
             <img src={cover} alt="" loading="lazy" />
           ) : (

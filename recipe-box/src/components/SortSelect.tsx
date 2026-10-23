@@ -13,7 +13,7 @@ export function SortSelect({ value, onChange }: Props) {
       </label>
       <select id="sort" className="input" value={value} onChange={(e) => onChange(e.target.value as SortKey)}>
         <option value="newest">Newest</option>
-        <option value="az">A–Z</option>
+        <option value="az">A to Z</option>
       </select>
     </div>
   )

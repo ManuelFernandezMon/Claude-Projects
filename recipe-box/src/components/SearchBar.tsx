@@ -1,3 +1,5 @@
+import { MagnifyingGlass } from '@phosphor-icons/react'
+
 interface Props {
   value: string
   onChange: (v: string) => void
@@ -5,7 +7,8 @@ interface Props {
 
 export function SearchBar({ value, onChange }: Props) {
   return (
-    <div className="field field--grow">
+    <div className="field field--grow search">
+      <MagnifyingGlass aria-hidden="true" />
       <label htmlFor="search" className="sr-only">
         Search recipes by title or ingredient
       </label>

@@ -9,9 +9,7 @@ interface Props {
 export function EmptyState({ title, children, action }: Props) {
   return (
     <div className="state empty">
-      <p className="empty__glyph" aria-hidden="true">
-        &gt;_
-      </p>
+      <span className="plate" aria-hidden="true" />
       <h2 className="empty__title">{title}</h2>
       {children && <p className="muted">{children}</p>}
       {action}

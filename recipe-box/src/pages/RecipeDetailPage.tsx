@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ArrowUpRight, CaretLeft } from '@phosphor-icons/react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { recipeStore } from '../storage/recipeStore'
 import type { Recipe } from '../types'
@@ -76,7 +77,8 @@ export function RecipeDetailPage() {
   return (
     <article className="stack">
       <Link to="/" className="back">
-        ← Recipes
+        <CaretLeft aria-hidden="true" weight="bold" />
+        Recipes
       </Link>
       <header className="stack stack--tight">
         <h1 className="h1">
@@ -114,7 +116,8 @@ export function RecipeDetailPage() {
         <p className="small">
           Source:{' '}
           <a href={source} target="_blank" rel="noopener noreferrer">
-            {new URL(source).hostname.replace(/^www\./, '')} ↗
+            {new URL(source).hostname.replace(/^www\./, '')}
+            <ArrowUpRight aria-hidden="true" size={14} style={{ marginLeft: 4, verticalAlign: '-2px' }} />
           </a>
         </p>
       )}

@@ -140,6 +140,14 @@ Limits:
 - Captions and videos are untrusted input: captions are wrapped in delimiters and the model is told to treat everything as data.
   The output is only structured fields that you review, and saved links must be `http(s)`.
 
+## Look and feel
+
+Minimal frosted-glass design: translucent surfaces with a blurred, lit edge over a soft amber and slate backdrop, one amber
+accent, rounded shapes (containers 22px, controls 14px, buttons and chips fully round). It follows the system light or dark
+setting. Everything is plain CSS driven by tokens in `src/styles/tokens.css`; there is a solid-fill fallback for
+`prefers-reduced-transparency`, and animations stop under `prefers-reduced-motion`. Text and control-border contrast was
+measured on the rendered pixels (glass over the backdrop) in both themes, not just computed from the tokens.
+
 ## Where the data lives, and its limits
 
 **Your data exists only in the browser profile you used to create it.** There is no sync and no server copy.
@@ -149,7 +157,7 @@ Limits:
   (the Backup page shows whether it was granted). It is a mitigation, not a guarantee.
 - Different origins do not share data: `localhost`, a Vercel preview URL and your production URL are separate databases.
 - **Back up regularly** from the Backup page. Backup files embed photos, so they can be several MB.
-- Fonts are bundled with the app (JetBrains Mono, Space Grotesk), so the interface looks the same offline.
+- The font (Geist) is bundled with the app, so the interface looks the same offline.
 
 Merge semantics on import: items with the same ID are overwritten by the backup (an imported recipe also replaces its
 photos); everything else is kept. Replace erases all current data first.

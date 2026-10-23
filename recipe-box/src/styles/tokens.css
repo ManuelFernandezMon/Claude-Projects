@@ -1,21 +1,80 @@
+/*
+ * Visual language: quiet, minimal, frosted glass over a soft ambient backdrop.
+ * One accent (amber). One shape system: containers 22px, controls 14px, buttons/chips/nav fully round.
+ * Dark is the default; light follows the system setting. Every text/background pair is checked in both themes
+ * (see the contrast notes next to each token).
+ */
 :root {
-  --bg: #0b0b0c;
-  --surface: #141416;
-  --surface-2: #1d1d21;
-  --border: #34343a; /* decorative dividers */
-  --border-strong: #7a7a84; /* form controls: >= 3:1 against surfaces (WCAG 1.4.11) */
-  --text: #ededee;
-  --muted: #a6a6b0;
-  --accent: #f5b642;
-  --accent-ink: #0b0b0c;
-  --danger: #ff8a80;
+  color-scheme: dark light;
+
+  /* surfaces */
+  --bg: #0a0b0e;
+  --glow-a: rgba(245, 182, 66, 0.27); /* accent haze, top left */
+  --glow-b: rgba(96, 128, 176, 0.24); /* cool neutral haze, right */
+  --glow-c: rgba(245, 182, 66, 0.12);
+  --glass: rgba(255, 255, 255, 0.075);
+  --glass-raised: rgba(255, 255, 255, 0.11);
+  --glass-strong: rgba(22, 24, 30, 0.82); /* inputs, dialogs, bars: must stay readable over any photo */
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --glass-hi: rgba(255, 255, 255, 0.16); /* 1px inner top edge: the "lit glass" cue */
+  --glass-shadow: 0 10px 34px rgba(0, 0, 0, 0.38);
+  --scrim: rgba(4, 5, 8, 0.6);
+
+  /* lines */
+  --border: rgba(255, 255, 255, 0.12); /* decorative dividers */
+  --control-border: rgba(255, 255, 255, 0.5); /* form controls: >= 3:1 (WCAG 1.4.11) */
+
+  /* text */
+  --text: #f4f4f6;
+  --muted: #a9adb8;
+  --accent: #f5b642; /* fills and focus rings */
+  --accent-ink: #1a1203; /* text on an accent fill */
+  --accent-text: #f5b642; /* accent used as text */
+  --accent-soft: rgba(245, 182, 66, 0.16);
+  --focus: #f5b642; /* focus ring: >= 3:1 against the page in each theme */
+  --danger: #ff8f86;
+  --danger-ink: #1a0505;
   --ok: #6ee7a0;
 
-  --font-head: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-  --font-body: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: var(--font-body); /* numbers use tabular figures of the same family, not a second typeface */
 
-  --radius: 10px;
+  --r-card: 22px;
+  --r-ctl: 14px;
+  --r-pill: 999px;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+
   --tap: 44px;
   --gutter: 16px;
   --max: 1080px;
+  --nav-h: 64px;
+  --nav-space: calc(var(--nav-h) + 28px + env(safe-area-inset-bottom));
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #eceef2;
+    --glow-a: rgba(245, 182, 66, 0.42);
+    --glow-b: rgba(96, 128, 176, 0.3);
+    --glow-c: rgba(245, 182, 66, 0.2);
+    --glass: rgba(255, 255, 255, 0.58);
+    --glass-raised: rgba(255, 255, 255, 0.78);
+    --glass-strong: rgba(255, 255, 255, 0.86);
+    --glass-border: rgba(255, 255, 255, 0.8);
+    --glass-hi: rgba(255, 255, 255, 0.95);
+    --glass-shadow: 0 10px 30px rgba(30, 40, 70, 0.12);
+    --scrim: rgba(20, 24, 36, 0.4);
+
+    --border: rgba(20, 24, 36, 0.1);
+    --control-border: #7a8194;
+
+    --text: #14161c;
+    --muted: #4f586b;
+    --accent-text: #7d4a00;
+    --accent-soft: rgba(245, 182, 66, 0.3);
+    --focus: #7d4a00;
+    --danger: #b3261e;
+    --danger-ink: #ffffff;
+    --ok: #17703f;
+  }
 }

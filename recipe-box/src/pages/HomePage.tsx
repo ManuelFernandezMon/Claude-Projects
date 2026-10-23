@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { LinkSimple, Sparkle } from '@phosphor-icons/react'
 import { Link } from 'react-router-dom'
 import { useData } from '../hooks/useData'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
@@ -70,9 +71,11 @@ export function HomePage() {
 
       <div className="row">
         <Link to="/ai" className="btn">
+          <Sparkle aria-hidden="true" />
           Ask AI for a recipe
         </Link>
         <Link to="/import" className="btn">
+          <LinkSimple aria-hidden="true" />
           Import link
         </Link>
       </div>

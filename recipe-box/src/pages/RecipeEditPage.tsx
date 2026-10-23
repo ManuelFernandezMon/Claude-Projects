@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { CaretLeft } from '@phosphor-icons/react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { recipeStore } from '../storage/recipeStore'
 import type { Ingredient, Recipe, RecipePrefill } from '../types'
@@ -184,7 +185,8 @@ export function RecipeEditPage() {
   return (
     <form className="stack" onSubmit={save} noValidate>
       <Link to={isNew ? '/' : `/recipes/${id}`} className="back">
-        ← Cancel
+        <CaretLeft aria-hidden="true" weight="bold" />
+        Cancel
       </Link>
       <h1 className="h1">{isNew ? 'New recipe' : 'Edit recipe'}</h1>
       {isNew && prefill && (
