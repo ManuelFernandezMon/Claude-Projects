@@ -39,10 +39,12 @@ export function useAndroidBack() {
       const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0
       if (idx > 0) navigate(-1)
       else navigate('/', { replace: true })
-    }).then((h) => {
-      if (stopped) void h.remove()
-      else handle = h
     })
+      .then((h) => {
+        if (stopped) void h.remove()
+        else handle = h
+      })
+      .catch(() => undefined) // plugin missing from this build: Back just keeps its default behavior
     return () => {
       stopped = true
       void handle?.remove()
