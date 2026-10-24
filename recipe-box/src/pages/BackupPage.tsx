@@ -1,3 +1,4 @@
+import { version as APP_VERSION } from '../../package.json'
 import { useEffect, useRef, useState } from 'react'
 import { backupFilename, buildBackup, importBackup } from '../storage/backup'
 import type { ImportMode } from '../types'
@@ -156,6 +157,7 @@ export function BackupPage() {
             <a className="btn" href="/downloads/recipe-box.apk" download>
               Download Android app (.apk)
             </a>
+            <p className="muted small">Latest version: {APP_VERSION}. The installed app shows its own version on its Backup page.</p>
           </div>
         </section>
       )}
@@ -170,6 +172,10 @@ export function BackupPage() {
         Persistent storage:{' '}
         {persisted === null ? 'unknown in this browser' : persisted ? 'granted (less likely to be evicted)' : 'not granted (the browser may evict data under storage pressure)'}
         .
+      </p>
+
+      <p className="muted small" data-testid="app-version">
+        recipe-box {native ? 'Android app' : 'web'} · version {APP_VERSION}
       </p>
 
       <ConfirmDialog
