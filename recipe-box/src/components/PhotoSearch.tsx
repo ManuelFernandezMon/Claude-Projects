@@ -105,8 +105,8 @@ export function PhotoSearch({ initialQuery, onPick, onClose }: Props) {
       )}
       <p className="muted small">
         Photos provided by{' '}
-        <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer">
-          Pexels
+        <a href="https://pixabay.com" target="_blank" rel="noopener noreferrer">
+          Pixabay
         </a>
         . They are real stock photos, not pictures of your dish.
       </p>

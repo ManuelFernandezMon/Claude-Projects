@@ -34,8 +34,8 @@ export function ImageGallery({ imageIds, title, recipeId, credits }: { imageIds:
             {credits[current].name}
           </a>{' '}
           on{' '}
-          <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer">
-            Pexels
+          <a href="https://pixabay.com" target="_blank" rel="noopener noreferrer">
+            Pixabay
           </a>
         </p>
       )}

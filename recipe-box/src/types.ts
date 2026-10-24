@@ -40,7 +40,7 @@ export interface Recipe {
   updatedAt: number
 }
 
-/** Attribution for a stock photo (Pexels asks for a link to the photo's page and the photographer's name). */
+/** Attribution for a stock photo (Pixabay asks to show where photos come from). */
 export interface PhotoCredit {
   name: string
   url: string

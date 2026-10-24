@@ -24,11 +24,12 @@ Recipes, photos, categories and checklist state live in the browser's **IndexedD
   ounces to grams) are computed on the device. Volume to weight (cups of flour to grams) depends on the ingredient, so the AI
   estimates it once; the result is saved on the recipe, works offline afterwards and is marked "≈". Editing an ingredient's
   amount drops its saved conversion. Kitchen values are used (1 cup = 240 ml, 1 lb = 450 g).
-- Find a photo: on the recipe editor, "Find a photo" searches free stock photos on Pexels (starting from the recipe title),
-  and the chosen photo is downloaded and stored like any other, so it works offline. Every stock photo is credited on the recipe
-  page ("Stock photo by … on Pexels"). These are real photos, not pictures of your dish; AI image generation was left out because
-  Google's image models have no free tier. Needs `PEXELS_API_KEY` (free, instant, from pexels.com/api) on the server; the
-  limit is 200 searches per hour.
+- Find a photo: on the recipe editor, "Find a photo" searches free stock photos on Pixabay (starting from the recipe title),
+  and the chosen photo is downloaded and stored like any other, so it works offline (Pixabay forbids hotlinking, so the app keeps
+  its own copy). Every stock photo is credited on the recipe page ("Stock photo by … on Pixabay"). These are real photos, not
+  pictures of your dish; AI image generation was left out because Google's image models have no free tier. Needs
+  `PIXABAY_API_KEY` (free account at pixabay.com, key shown on pixabay.com/api/docs) on the server; the limit is 100 requests
+  per minute. Pexels was tried first but has paused new API keys.
 - Page transitions: navigation cross-fades and a recipe photo grows from its card into its page (View Transitions API; skipped
   when the phone asks for reduced motion or the WebView lacks support).
 - Backup page: export everything to one JSON file (photos embedded as base64); import with **merge** or **replace**.
@@ -102,7 +103,7 @@ request); check Anthropic's pricing page and set a spend limit in the Console.
 ### Endpoints
 
 `/api/extract` (caption to recipe), `/api/generate` (new recipe; with `mode: "edit"` it changes a saved recipe and offers no
-categories), `/api/convert` (metric and US amounts for a list of ingredients), `/api/photos` (Pexels stock-photo search; uses no AI key),
+categories), `/api/convert` (metric and US amounts for a list of ingredients), `/api/photos` (Pixabay stock-photo search; uses no AI key),
 and the three video endpoints. All need the
 passcode header; all answer CORS preflights for the Android app only.
 

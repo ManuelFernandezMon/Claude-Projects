@@ -10,7 +10,7 @@ export interface StockPhoto {
   alt: string
 }
 
-/** Searches Pexels through our server (the API key lives there). */
+/** Searches Pixabay through our server (the API key lives there). */
 export async function searchPhotos(query: string, passcode: string): Promise<StockPhoto[]> {
   let res: Response
   try {
@@ -30,7 +30,7 @@ export async function searchPhotos(query: string, passcode: string): Promise<Sto
   return Array.isArray(body.photos) ? body.photos : []
 }
 
-/** Downloads the chosen photo from Pexels' CDN so the recipe keeps its own copy (it keeps working offline). */
+/** Downloads the chosen photo from Pixabay's CDN so the recipe keeps its own copy (it keeps working offline). */
 export async function downloadPhoto(url: string): Promise<File> {
   let res: Response
   try {
