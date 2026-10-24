@@ -21,7 +21,7 @@ body {
   font-family: var(--font-body);
   font-size: 1rem;
   line-height: 1.55;
-  font-feature-settings: 'ss01', 'cv11';
+  font-feature-settings: 'calt', 'kern';
   -webkit-font-smoothing: antialiased;
   /* room for the floating bottom nav on phones */
   padding-bottom: var(--nav-space);
@@ -43,10 +43,10 @@ body::before {
 h1,
 h2,
 h3 {
-  font-family: var(--font-body);
+  font-family: var(--font-display);
   font-weight: 600;
   line-height: 1.15;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.015em;
   margin: 0;
   text-wrap: balance;
 }

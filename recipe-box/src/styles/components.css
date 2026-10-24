@@ -44,8 +44,10 @@
   align-items: center;
   gap: 10px;
   min-height: var(--tap);
+  font-family: var(--font-display);
+  font-size: 1.125rem;
   font-weight: 600;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   color: var(--text);
   text-decoration: none;
 }
@@ -632,8 +634,8 @@ button.chip:active {
   inset: 0;
   display: grid;
   place-items: center;
-  font: 600 3.5rem var(--font-body);
-  letter-spacing: -0.04em;
+  font: 600 3.5rem var(--font-display);
+  letter-spacing: -0.02em;
   color: color-mix(in srgb, var(--text) 78%, var(--tint));
 }
 .card__body {
@@ -782,10 +784,13 @@ button.chip:active {
 .check__text {
   display: flex;
   flex-wrap: wrap;
+  /* the amount and the name sit on one shared baseline, so they look centered on the row even in different sizes */
+  align-items: baseline;
   gap: 0 10px;
 }
 .check__qty {
   font: 600 0.9375rem var(--font-mono);
+  line-height: inherit;
   font-variant-numeric: tabular-nums;
   color: var(--accent-text);
 }

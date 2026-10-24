@@ -36,7 +36,8 @@
   --danger-ink: #1a0505;
   --ok: #6ee7a0;
 
-  --font-body: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Fraunces Variable', 'Iowan Old Style', Georgia, 'Times New Roman', serif; /* titles and headings */
   --font-mono: var(--font-body); /* numbers use tabular figures of the same family, not a second typeface */
 
   --r-card: 22px;
