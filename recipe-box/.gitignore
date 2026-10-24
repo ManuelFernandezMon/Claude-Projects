@@ -16,3 +16,4 @@ android/keystore/
 
 # stray output from test scripts run without an output folder
 undefined/
+.*.bundle.mjs
