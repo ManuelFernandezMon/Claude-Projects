@@ -178,7 +178,7 @@ export function RecipeEditPage() {
         removeIds: [...originalIds].filter((iid) => !currentIds.has(iid)),
       })
       await refresh()
-      navigate(`/recipes/${recipeId}`)
+      navigate(`/recipes/${recipeId}`, { replace: true }) // Back from the saved recipe must not land on the editor again
     } catch (err) {
       setSaveError(errorMessage(err))
       setSaving(false)

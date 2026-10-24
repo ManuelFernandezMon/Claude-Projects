@@ -9,6 +9,20 @@
     <meta name="description" content="Personal recipe box. Data stays in this browser." />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>recipe-box</title>
+    <script>
+      // Apply a saved light/dark choice before the first paint, so the page never flashes the other theme.
+      try {
+        var t = localStorage.getItem('recipe-box:theme')
+        if (t === 'light' || t === 'dark') {
+          document.documentElement.dataset.theme = t
+          var metas = document.querySelectorAll('meta[name="theme-color"]')
+          for (var i = 0; i < metas.length; i++) {
+            metas[i].removeAttribute('media')
+            metas[i].setAttribute('content', t === 'light' ? '#eceef2' : '#0a0b0e')
+          }
+        }
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

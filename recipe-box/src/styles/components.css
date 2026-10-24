@@ -306,6 +306,11 @@
   text-underline-offset: 3px;
   cursor: pointer;
 }
+.topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .topbar__new {
   padding: 0 18px;
 }

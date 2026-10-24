@@ -51,8 +51,12 @@
   --nav-space: calc(var(--nav-h) + 28px + env(safe-area-inset-bottom));
 }
 
+/*
+ * Light theme. It follows the system unless the person picked a theme with the toggle (html[data-theme], set by
+ * src/hooks/useTheme.ts and by the inline script in index.html before first paint). The two blocks below must stay identical.
+ */
 @media (prefers-color-scheme: light) {
-  :root {
+  :root:not([data-theme='dark']) {
     --bg: #eceef2;
     --glow-a: rgba(245, 182, 66, 0.42);
     --glow-b: rgba(96, 128, 176, 0.3);
@@ -77,4 +81,33 @@
     --danger-ink: #ffffff;
     --ok: #17703f;
   }
+}
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #eceef2;
+  --glow-a: rgba(245, 182, 66, 0.42);
+  --glow-b: rgba(96, 128, 176, 0.3);
+  --glow-c: rgba(245, 182, 66, 0.2);
+  --glass: rgba(255, 255, 255, 0.58);
+  --glass-raised: rgba(255, 255, 255, 0.78);
+  --glass-strong: rgba(255, 255, 255, 0.86);
+  --glass-border: rgba(255, 255, 255, 0.8);
+  --glass-hi: rgba(255, 255, 255, 0.95);
+  --glass-shadow: 0 10px 30px rgba(30, 40, 70, 0.12);
+  --scrim: rgba(20, 24, 36, 0.4);
+
+  --border: rgba(20, 24, 36, 0.1);
+  --control-border: #7a8194;
+
+  --text: #14161c;
+  --muted: #4f586b;
+  --accent-text: #7d4a00;
+  --accent-soft: rgba(245, 182, 66, 0.3);
+  --focus: #7d4a00;
+  --danger: #b3261e;
+  --danger-ink: #ffffff;
+  --ok: #17703f;
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
 }

@@ -67,7 +67,7 @@ export function RecipeActionsSheet({ recipe, onClose, showOpen = true }: Props) 
     await run(async () => {
       await recipeStore.deleteRecipe(r.id)
       await refresh()
-      if (pathname.includes(r.id)) navigate('/')
+      if (pathname.includes(r.id)) navigate('/', { replace: true })
       return 'Recipe deleted'
     })
   }

@@ -32,6 +32,10 @@ Recipes, photos, categories and checklist state live in the browser's **IndexedD
   per minute. Pexels was tried first but has paused new API keys.
 - Page transitions: navigation cross-fades and a recipe photo grows from its card into its page (View Transitions API; skipped
   when the phone asks for reduced motion or the WebView lacks support).
+- Light/dark: a sun/moon button in the top bar switches the theme (cross-fade). Until you press it the app follows the phone's
+  setting; after that your choice is remembered on this device.
+- Back button (Android): closes an open sheet or dialog first, then goes back one screen, and only leaves the app from the home
+  screen. Needs the `@capacitor/app` plugin, so it arrives with a rebuilt APK, not with a web deploy.
 - Backup page: export everything to one JSON file (photos embedded as base64); import with **merge** or **replace**.
 - Three clearly labeled **SAMPLE** recipes on first run. Delete them from the home page; they will not come back.
 

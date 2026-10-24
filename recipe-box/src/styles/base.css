@@ -194,6 +194,23 @@ img {
       transform: translateY(16px) scale(0.995);
     }
   }
+  /* switching light/dark: the whole page cross-fades, with no sliding */
+  html[data-vt-theme]::view-transition-old(root) {
+    animation: vt-theme-out 0.4s ease both;
+  }
+  html[data-vt-theme]::view-transition-new(root) {
+    animation: vt-theme-in 0.4s ease both;
+  }
+  @keyframes vt-theme-out {
+    to {
+      opacity: 0;
+    }
+  }
+  @keyframes vt-theme-in {
+    from {
+      opacity: 0;
+    }
+  }
   /* a recipe photo glides between its card and its page, rounding as it goes */
   ::view-transition-group(recipe-photo) {
     animation-duration: 0.45s;

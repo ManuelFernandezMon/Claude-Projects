@@ -76,7 +76,7 @@ export function RecipeDetailPage() {
     try {
       await recipeStore.deleteRecipe(recipe!.id)
       await refresh()
-      navigate('/')
+      navigate('/', { replace: true }) // the recipe is gone: Back must not return to it
     } catch (e) {
       setError(errorMessage(e))
     }

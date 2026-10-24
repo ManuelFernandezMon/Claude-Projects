@@ -3,6 +3,7 @@ import { Link, NavLink } from './lib/nav'
 import { FloppyDisk, House, Plus, Tag } from '@phosphor-icons/react'
 import { isNativeApp } from './lib/apiBase'
 import { DataProvider } from './hooks/useData'
+import { useAndroidBack } from './hooks/useAndroidBack'
 import { AiEditPage } from './pages/AiEditPage'
 import { BackupPage } from './pages/BackupPage'
 import { CategoriesPage } from './pages/CategoriesPage'
@@ -12,9 +13,11 @@ import { ImportPage } from './pages/ImportPage'
 import { RecipeDetailPage } from './pages/RecipeDetailPage'
 import { RecipeEditPage } from './pages/RecipeEditPage'
 import { EmptyState } from './components/EmptyState'
+import { ThemeToggle } from './components/ThemeToggle'
 import { ToastHost } from './components/ToastHost'
 
 function Shell() {
+  useAndroidBack()
   return (
     <>
       <a
@@ -33,10 +36,13 @@ function Shell() {
           <span className="brand__mark" aria-hidden="true" />
           recipe-box
         </Link>
-        <Link to="/recipes/new" className="btn btn--primary topbar__new">
-          <Plus aria-hidden="true" weight="bold" />
-          New
-        </Link>
+        <div className="topbar__actions">
+          <ThemeToggle />
+          <Link to="/recipes/new" className="btn btn--primary topbar__new">
+            <Plus aria-hidden="true" weight="bold" />
+            New
+          </Link>
+        </div>
       </header>
       <nav className="nav" aria-label="Main">
         <NavLink to="/" end>

@@ -117,7 +117,7 @@ export function AiEditPage() {
       await saveReplacement(original, proposal)
       await refresh()
       toast('Recipe updated')
-      navigate(`/recipes/${original.id}`)
+      navigate(`/recipes/${original.id}`, { replace: true })
     } catch (err) {
       setError(errorMessage(err))
       setSaving(false)
@@ -135,7 +135,7 @@ export function AiEditPage() {
       await recipeStore.saveRecipe(edited)
       await refresh()
       toast('Saved as a new recipe')
-      navigate(`/recipes/${copy.id}`)
+      navigate(`/recipes/${copy.id}`, { replace: true })
     } catch (err) {
       setError(errorMessage(err))
       setSaving(false)
