@@ -1,3 +1,4 @@
+import { UpdateNotice } from '../components/UpdateNotice'
 import { useMemo, useState } from 'react'
 import { HandTap, LinkSimple, Sparkle, X } from '@phosphor-icons/react'
 import { Link } from '../lib/nav'
@@ -81,6 +82,8 @@ export function HomePage() {
 
   return (
     <div className="stack">
+      <UpdateNotice />
+
       <div className="page-head">
         <h1 className="h1">Recipes</h1>
         <span className="muted mono">

@@ -36,6 +36,12 @@ Recipes, photos, categories and checklist state live in the browser's **IndexedD
   setting; after that your choice is remembered on this device.
 - Back button (Android): closes an open sheet or dialog first, then goes back one screen, and only leaves the app from the home
   screen. Needs the `@capacitor/app` plugin, so it arrives with a rebuilt APK, not with a web deploy.
+- Updates (Android app): the installed app is a copy, so it checks the site's `/version.json` and shows "Version X is available"
+  on the home screen and the Backup page, with a download button. Installing the new APK over the old one keeps the recipes. The
+  check is silent when offline.
+- iPhone: there is no iPhone app. In Safari, Share, "Add to Home Screen" installs the site as a full-screen app (it has a web app
+  manifest and an Apple touch icon). Recipes stay on that iPhone. Not tested on a real iPhone, and Apple may erase website data
+  after a while, so the Backup page asks iPhone users to export regularly. There is no offline cache, so it needs internet to open.
 - Backup page: export everything to one JSON file (photos embedded as base64); import with **merge** or **replace**.
 - Three clearly labeled **SAMPLE** recipes on first run. Delete them from the home page; they will not come back.
 

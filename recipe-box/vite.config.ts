@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
@@ -41,8 +42,27 @@ function apiDev(): Plugin {
   }
 }
 
+const version: string = (JSON.parse(readFileSync('package.json', 'utf8')) as { version: string }).version
+
+/** Publishes /version.json (the version of this build) so the Android app can tell when a newer one is available. */
+function versionFile(): Plugin {
+  const body = JSON.stringify({ version })
+  return {
+    name: 'recipe-box-version',
+    generateBundle() {
+      this.emitFile({ type: 'asset', fileName: 'version.json', source: body })
+    },
+    configureServer(server) {
+      server.middlewares.use('/version.json', (_req: IncomingMessage, res: ServerResponse) => {
+        res.setHeader('content-type', 'application/json')
+        res.end(body)
+      })
+    },
+  }
+}
+
 export default defineConfig({
-  plugins: [react(), apiDev()],
+  plugins: [react(), apiDev(), versionFile()],
   // Vite's own permissive CORS would mask server/shared.ts withCors, which is what production runs.
   server: { cors: false },
 })

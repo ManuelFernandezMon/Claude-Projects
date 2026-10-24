@@ -1,4 +1,3 @@
-import { version as APP_VERSION } from '../../package.json'
 import { useEffect, useRef, useState } from 'react'
 import { backupFilename, buildBackup, importBackup } from '../storage/backup'
 import type { ImportMode } from '../types'
@@ -7,6 +6,9 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { isNativeApp } from '../lib/apiBase'
 import { saveTextFile } from '../lib/download'
+import { INSTALLED_VERSION as APP_VERSION, apkUrl } from '../lib/update'
+import { useUpdateCheck } from '../hooks/useUpdateCheck'
+import { isIos, isStandalone } from '../lib/platform'
 import { errorMessage } from '../lib/format'
 
 type Status = { kind: 'ok' | 'error'; text: string } | null
@@ -21,6 +23,9 @@ export function BackupPage() {
   const [persisted, setPersisted] = useState<boolean | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const native = isNativeApp()
+  const update = useUpdateCheck()
+  const onIphone = !native && isIos()
+  const installed = native || isStandalone()
 
   useEffect(() => {
     navigator.storage?.persisted?.().then(setPersisted, () => setPersisted(null))
@@ -136,7 +141,40 @@ export function BackupPage() {
         </div>
       </section>
 
-      {!native && (
+      {onIphone && !installed && (
+        <section className="panel stack stack--tight" aria-labelledby="ios-h">
+          <h2 id="ios-h" className="h2">
+            Install on iPhone
+          </h2>
+          <p className="muted">
+            There is no iPhone app to download, but this page can live on your Home Screen with its own icon and open full screen.
+          </p>
+          <ol className="steps">
+            <li>
+              <span>
+                Open this page in <strong>Safari</strong>.
+              </span>
+            </li>
+            <li>
+              <span>Tap the Share button (the square with an arrow pointing up).</span>
+            </li>
+            <li>
+              <span>
+                Choose <strong>Add to Home Screen</strong>, then <strong>Add</strong>.
+              </span>
+            </li>
+            <li>
+              <span>Open recipe-box from the new icon. Recipes you save stay on this iPhone.</span>
+            </li>
+          </ol>
+          <p className="notice notice--warn">
+            Apple can erase a website's saved data after a while, and a Home Screen app needs internet to open. Use{' '}
+            <strong>Export all data</strong> now and then and keep the file (for example in Files or iCloud Drive).
+          </p>
+        </section>
+      )}
+
+      {!installed && !onIphone && (
         <section className="panel stack stack--tight" aria-labelledby="app-h">
           <h2 id="app-h" className="h2">
             Android app
@@ -174,9 +212,31 @@ export function BackupPage() {
         .
       </p>
 
-      <p className="muted small" data-testid="app-version">
-        recipe-box {native ? 'Android app' : 'web'} · version {APP_VERSION}
-      </p>
+      <div className="stack stack--tight">
+        <p className="muted small" data-testid="app-version">
+          recipe-box {native ? 'Android app' : installed ? 'Home Screen app' : 'web'} · version {APP_VERSION}
+        </p>
+        {native && (
+          <div className="row" data-testid="update-status">
+            {update.status === 'available' && (
+              <>
+                <p className="small">
+                  <strong>Version {update.latest} is available.</strong>
+                </p>
+                <a className="btn btn--primary btn--small" href={apkUrl()} target="_blank" rel="noopener noreferrer">
+                  Download update
+                </a>
+              </>
+            )}
+            {update.status === 'current' && <p className="muted small">You have the latest version.</p>}
+            {update.status === 'unknown' && <p className="muted small">Could not check for updates (no connection?).</p>}
+            {update.status === 'checking' && <p className="muted small">Checking for updates…</p>}
+            <button type="button" className="btn btn--ghost btn--small" onClick={update.recheck} disabled={update.status === 'checking'}>
+              Check for updates
+            </button>
+          </div>
+        )}
+      </div>
 
       <ConfirmDialog
         open={pending !== null}
