@@ -2,6 +2,9 @@ import { guard, json } from './shared.js'
 
 const PIXABAY_URL = 'https://pixabay.com/api/'
 const PER_PAGE = 12
+const MAX_PHOTO_BYTES = 8 * 1024 * 1024
+/** Pixabay serves its 640 and 1280 px photos from pixabay.com/get/ and its thumbnails from cdn.pixabay.com. */
+const IMAGE_HOSTS = ['pixabay.com', 'cdn.pixabay.com']
 
 interface PixabayHit {
   id?: unknown
@@ -33,12 +36,14 @@ export async function handlePhotoSearch(request: Request): Promise<Response> {
   const g = await guard(request, 'none')
   if ('response' in g) return g.response
 
+  const b = typeof g.body === 'object' && g.body !== null ? (g.body as Record<string, unknown>) : {}
+  if (typeof b.download === 'string') return downloadPhoto(b.download)
+
   const key = process.env.PIXABAY_API_KEY
   if (!key) {
     return json(503, { error: 'not_configured', message: 'PIXABAY_API_KEY is not set on the server. Get a free key at pixabay.com/api/docs.' })
   }
 
-  const b = typeof g.body === 'object' && g.body !== null ? (g.body as Record<string, unknown>) : {}
   const query = typeof b.query === 'string' ? b.query.trim() : ''
   if (query.length < 2 || query.length > 100) {
     return json(400, { error: 'bad_request', message: 'Search for 2 to 100 characters.' })
@@ -68,7 +73,7 @@ export async function handlePhotoSearch(request: Request): Promise<Response> {
       ? (data as { hits: PixabayHit[] }).hits
       : []
   const custom = Boolean(process.env.PIXABAY_BASE_URL)
-  const cdn = custom ? null : ['cdn.pixabay.com']
+  const cdn = custom ? null : IMAGE_HOSTS
   const photos = list.flatMap((p) => {
     const thumb = pixabayUrl(p.webformatURL, cdn)
     const image = pixabayUrl(p.largeImageURL, cdn)
@@ -77,4 +82,23 @@ export async function handlePhotoSearch(request: Request): Promise<Response> {
     return [{ id: String(p.id ?? ''), thumb, image, page, photographer: str(p.user).slice(0, 80), alt: str(p.tags).slice(0, 160) }]
   })
   return json(200, { photos })
+}
+
+/** Fallback for browsers that cannot download straight from Pixabay: the server fetches the photo and passes the bytes on. */
+async function downloadPhoto(raw: string): Promise<Response> {
+  const url = pixabayUrl(raw, process.env.PIXABAY_BASE_URL ? null : IMAGE_HOSTS)
+  if (!url) return json(400, { error: 'bad_request', message: 'That is not a Pixabay photo address.' })
+  let res: Response
+  try {
+    res = await fetch(url, { signal: AbortSignal.timeout(20_000), redirect: 'error' })
+  } catch {
+    return json(502, { error: 'provider_unavailable', message: 'Could not download that photo from Pixabay.' })
+  }
+  const type = res.headers.get('content-type') ?? ''
+  if (!res.ok || !type.startsWith('image/')) {
+    return json(502, { error: 'provider_unavailable', message: `Pixabay did not return a photo (HTTP ${res.status}).` })
+  }
+  const bytes = await res.arrayBuffer()
+  if (bytes.byteLength > MAX_PHOTO_BYTES) return json(502, { error: 'too_large', message: 'That photo is too large.' })
+  return new Response(bytes, { status: 200, headers: { 'content-type': type, 'cache-control': 'private, max-age=3600' } })
 }

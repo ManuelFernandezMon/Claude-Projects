@@ -42,7 +42,7 @@ export function PhotoSearch({ initialQuery, onPick, onClose }: Props) {
     setBusy(p.id)
     setError(undefined)
     try {
-      await onPick(await downloadPhoto(p.image), { name: p.photographer || 'Unknown', url: p.page })
+      await onPick(await downloadPhoto(p.image, pc.passcode), { name: p.photographer || 'Unknown', url: p.page })
     } catch (e) {
       setError(errorMessage(e))
       setBusy(undefined)
