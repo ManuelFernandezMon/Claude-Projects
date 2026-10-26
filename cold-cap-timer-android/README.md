@@ -23,6 +23,8 @@ Output: `android/app/build/outputs/apk/debug/app-debug.apk`. CI (`.github/workfl
 
 ## Install
 
+The latest debug APK is also served by the web deploy at `/cold-cap-timer.apk` (copied from `dist/` into `cold-cap-timer/` and committed), so it can be downloaded straight from Chrome on the phone. Rebuild with `npm run apk`, then copy `android/app/build/outputs/apk/debug/app-debug.apk` to `../cold-cap-timer/cold-cap-timer.apk`.
+
 The APK is signed with the Android debug key, which is fine for sideloading on your own phone:
 
 1. Copy the APK to the phone and open it. Android asks to allow installs from that source (Files / Chrome): allow it.

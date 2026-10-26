@@ -15,6 +15,7 @@ self.addEventListener('activate', (e) => {
 const NETWORK_TIMEOUT_MS = 4000;
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
+  if (new URL(e.request.url).pathname.endsWith('.apk')) return; // let the browser download it directly
   e.respondWith((async () => {
     try {
       const r = await Promise.race([
