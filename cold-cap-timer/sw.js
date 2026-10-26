@@ -1,4 +1,4 @@
-const CACHE = 'coldcap-v3';
+const CACHE = 'coldcap-v4';
 const SHELL = ['./', './index.html', './logic.js', './manifest.webmanifest',
   './fonts/geist-latin-wght-normal.woff2', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
 
