@@ -21,6 +21,12 @@ Four actions per cap, each with a timestamp: **sacar** del cooler, **poner** en 
 
 A countdown starts when a cap is put on and alerts (sound + vibration + banner) when the swap interval is reached.
 
+## Design
+
+Glassmorphism with a minimal layout: translucent cards (`backdrop-filter`, inner highlight, tinted shadow; solid fallback under `prefers-reduced-transparency`), one teal accent, amber and coral only as state colors, light and dark themes. Motion is functional (the swap ring drains and glides when a cap is re-placed, a notch marks when to pull the next cap, the sliding selectors, accordions and instruction changes ease out) and collapses under `prefers-reduced-motion`.
+
+Assets are self-hosted so the app works offline: [Geist](https://github.com/vercel/geist-font) variable font (SIL OFL 1.1, license in `fonts/`) and [Phosphor](https://phosphoricons.com) icons (MIT), inlined as an SVG sprite in `index.html`. The page deliberately has no `viewport-fit=cover` (see the comment in `<head>`).
+
 ## Timings are configurable on purpose
 
 The swap interval, number of caps and pre/post-cooling minutes are settings, not hardcoded. Public sources disagree (patient reports range from 15 to 30 minutes per cap, and post-cooling depends on the chemo regimen), so use the values in Penguin's written instructions and your oncology team's protocol. The default of 20 minutes is only a starting point.

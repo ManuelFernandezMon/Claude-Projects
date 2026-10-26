@@ -18,7 +18,7 @@ export function fmt(ms) {
   return neg ? `-${body}` : body;
 }
 
-export const clock = (ts) => new Date(ts).toLocaleTimeString('es-PA', { hour: '2-digit', minute: '2-digit' });
+export const clock = (ts) => new Date(ts).toLocaleTimeString('es-PA', { hour: 'numeric', minute: '2-digit' });
 
 // ---------------------------------------------------------------- state derived from the log
 
@@ -100,6 +100,7 @@ export function nextCap(events, numCaps) {
 }
 
 // Ordered list of things to do right now. items[0] is the most urgent.
+// Each item: { action, cap, text, sub?, urgent? }. `action` (when set) is the button to highlight.
 export function todo(events, s, now) {
   const items = [];
   const head = capOnHead(events);
@@ -108,22 +109,23 @@ export function todo(events, s, now) {
   const nextCap = ready[0] ?? (head ? (head.cap % s.numCaps) + 1 : inferCap(events, 'sacar', s.numCaps));
 
   if (!capEvents(events).length) {
-    items.push({ action: 'sacar', cap: nextCap, text: `Sacar el cap #${nextCap} del cooler y ponerlo en la cabeza (o cuéntame qué ya hiciste).` });
+    items.push({ action: 'sacar', cap: nextCap, text: `Saca el cap #${nextCap} del cooler`, sub: 'O cuéntame qué ya hiciste' });
     return items;
   }
 
   if (head) {
     const swapAt = head.since + s.interval * 60000;
+    const out = ready.includes(nextCap);
     if (now >= swapAt) {
-      if (!ready.includes(nextCap)) items.push({ action: 'sacar', cap: nextCap, urgent: true, text: `¡Ya toca cambiar! Saca el cap #${nextCap} del cooler` });
-      items.push({ action: 'quitar', cap: head.cap, urgent: true, text: `Quita el cap #${head.cap} de la cabeza` });
+      if (!out) items.push({ action: 'sacar', cap: nextCap, urgent: true, text: `Saca el cap #${nextCap} del cooler` });
+      items.push({ action: 'quitar', cap: head.cap, urgent: true, text: `Quita el cap #${head.cap}` });
       items.push({ action: 'poner', cap: nextCap, urgent: true, text: `Pon el cap #${nextCap}` });
-    } else if (s.lead > 0 && now >= swapAt - s.lead * 60000 && !ready.includes(nextCap)) {
-      items.push({ action: 'sacar', cap: nextCap, urgent: true, text: `Saca el cap #${nextCap} del cooler (cambio a las ${clock(swapAt)})` });
+    } else if (s.lead > 0 && now >= swapAt - s.lead * 60000 && !out) {
+      items.push({ action: 'sacar', cap: nextCap, urgent: true, text: `Saca el cap #${nextCap} del cooler`, sub: `Cambio a las ${clock(swapAt)}` });
+    } else if (s.lead > 0 && !out) {
+      items.push({ action: null, cap: nextCap, text: `Sacar el cap #${nextCap} a las ${clock(swapAt - s.lead * 60000)}`, sub: `Cambio a las ${clock(swapAt)}` });
     } else {
-      const leadTxt = s.lead > 0 && !ready.includes(nextCap) ? ` Saca el #${nextCap} del cooler a las ${clock(swapAt - s.lead * 60000)}.` : '';
-      items.push({ action: null, cap: head.cap, text: `Cap #${head.cap} en la cabeza. Próximo cambio a las ${clock(swapAt)}.${leadTxt}` });
-      if (ready.length) items.push({ action: 'quitar', cap: head.cap, text: `El cap #${ready[0]} ya está fuera del cooler, listo para el cambio` });
+      items.push({ action: null, cap: nextCap, text: `Cambio a las ${clock(swapAt)}`, sub: out ? `El cap #${nextCap} ya está fuera del cooler` : `Siguiente: cap #${nextCap}` });
     }
   } else if (ready.length) {
     items.push({ action: 'poner', cap: ready[0], urgent: true, text: `Pon el cap #${ready[0]} en la cabeza` });
@@ -132,7 +134,7 @@ export function todo(events, s, now) {
   if (store.length) items.push({ action: 'meter', cap: store[0], urgent: !head && !ready.length, text: `Mete el cap #${store[0]} al cooler` });
 
   if (!head && !ready.length && !store.length) {
-    items.push({ action: 'sacar', cap: nextCap, text: `Sin cap en la cabeza. Saca el cap #${nextCap} del cooler` });
+    items.push({ action: 'sacar', cap: nextCap, text: `Saca el cap #${nextCap} del cooler`, sub: 'No hay cap en la cabeza' });
   }
   return items;
 }

@@ -1,6 +1,6 @@
-const CACHE = 'coldcap-v2';
+const CACHE = 'coldcap-v3';
 const SHELL = ['./', './index.html', './logic.js', './manifest.webmanifest',
-  './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
+  './fonts/geist-latin-wght-normal.woff2', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

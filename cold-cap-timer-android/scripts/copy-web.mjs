@@ -8,6 +8,6 @@ const src = join(root, '..', 'cold-cap-timer');
 const dest = join(root, 'www');
 rmSync(dest, { recursive: true, force: true });
 mkdirSync(dest, { recursive: true });
-for (const f of ['index.html', 'logic.js', 'manifest.webmanifest', 'icons']) {
+for (const f of ['index.html', 'logic.js', 'manifest.webmanifest', 'icons', 'fonts']) {
   cpSync(join(src, f), join(dest, f), { recursive: true });
 }

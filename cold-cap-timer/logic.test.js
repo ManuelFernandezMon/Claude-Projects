@@ -91,7 +91,7 @@ test('todo: nothing logged, on head, due, after quitar', () => {
   const head = [ev('sacar', 1, -5), ev('poner', 1, -4)];
   const wait = todo(head, S, NOW);
   assert.equal(wait[0].action, null);
-  assert.match(wait[0].text, /Cap #1 en la cabeza/);
+  assert.match(wait[0].text, /Cambio a las/);
   const due = todo([ev('sacar', 1, -25), ev('poner', 1, -24)], S, NOW);
   assert.deepEqual(due.map((i) => [i.action, i.cap]), [['sacar', 2], ['quitar', 1], ['poner', 2]]);
   const mid = todo([ev('sacar', 1, -25), ev('poner', 1, -24), ev('sacar', 2, -1), ev('quitar', 1, 0)], S, NOW);

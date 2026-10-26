@@ -4,74 +4,296 @@
 <meta charset="utf-8">
 <!-- Do not add the cover viewport-fit option: the Android app would then draw under the status bar. -->
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#0f766e">
+<meta name="theme-color" content="#eef6f5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#07100f" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
+<link rel="preload" href="fonts/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <title>Cold Cap Timer</title>
 <style>
+  /* Geist (SIL OFL, see fonts/Geist-OFL-LICENSE.txt), self-hosted so it works offline. */
+  @font-face {
+    font-family: "Geist";
+    src: url("fonts/geist-latin-wght-normal.woff2") format("woff2");
+    font-weight: 100 900; font-style: normal; font-display: swap;
+  }
+  @property --tone { syntax: "<color>"; inherits: true; initial-value: transparent; }
+
+  /* Design tokens. One accent (teal). Amber and coral are state colors only (soon / overdue).
+     Radii: containers 28px, nested elements 20px, every control is a pill. */
   :root {
-    --bg: #f6f8f8; --card: #fff; --ink: #14201f; --muted: #5d6f6d; --line: #d8e2e1;
-    --accent: #0f766e; --accent-ink: #fff; --warn: #b45309; --danger: #b91c1c; --ok: #15803d;
+    --base: #eef6f5; --ink: #0c1a19; --muted: #4a625f;
+    --accent: #0f766e; --accent-ink: #ffffff;
+    --warn: #b45309; --danger: #be123c;
+    --glass: rgba(255,255,255,.56); --glass-line: rgba(255,255,255,.75); --glass-hi: rgba(255,255,255,.95);
+    --inset: rgba(12,26,25,.055); --edge: rgba(12,26,25,.07); --shadow: rgba(11,70,64,.13);
+    --track: rgba(12,26,25,.09);
+    --blob1: rgba(20,184,166,.26); --blob2: rgba(16,185,129,.16); --blob3: rgba(45,212,191,.2);
+    --r-card: 28px; --r-nest: 20px; --r-pill: 999px;
+    --ease-out: cubic-bezier(.22, 1, .36, 1);
+    --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
   }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #0d1514; --card: #16211f; --ink: #e8f0ef; --muted: #93a9a6; --line: #263735;
-      --accent: #2dd4bf; --accent-ink: #052e2a; --warn: #fbbf24; --danger: #f87171; --ok: #4ade80;
+    :root {
+      --base: #07100f; --ink: #e9f5f3; --muted: #93aaa6;
+      --accent: #5eead4; --accent-ink: #04201c;
+      --warn: #fbbf24; --danger: #fb7185;
+      --glass: rgba(255,255,255,.058); --glass-line: rgba(255,255,255,.11); --glass-hi: rgba(255,255,255,.17);
+      --inset: rgba(255,255,255,.06); --edge: rgba(255,255,255,.09); --shadow: rgba(0,0,0,.5);
+      --track: rgba(255,255,255,.09);
+      --blob1: rgba(20,184,166,.2); --blob2: rgba(16,185,129,.12); --blob3: rgba(45,212,191,.1);
     }
   }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.4 system-ui, sans-serif;
-         padding: 16px max(16px, env(safe-area-inset-right)) 32px max(16px, env(safe-area-inset-left)); }
-  main { max-width: 560px; margin: 0 auto; display: grid; gap: 14px; }
-  h1 { font-size: 1.15rem; margin: 0; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
-  .row { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
-  .muted { color: var(--muted); font-size: .9rem; }
-  .timer { font-size: 3.4rem; font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; line-height: 1.1; }
-  .timer.over { color: var(--danger); }
-  .timer.soon { color: var(--warn); }
-  .label { text-align: center; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  button { font: inherit; border-radius: 12px; border: 1px solid var(--line); background: var(--card);
-           color: var(--ink); padding: 16px 10px; min-height: 64px; font-weight: 600; cursor: pointer; }
-  button.action.next { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
-  button.small { min-height: 40px; padding: 8px 12px; font-weight: 500; }
-  button:active { transform: scale(.98); }
-  .chips { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-  .chips button { min-height: 40px; min-width: 44px; padding: 6px 12px; font-weight: 500; }
-  .chips button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
-  .chips .lbl { font-size: .85rem; color: var(--muted); min-width: 64px; }
-  table { width: 100%; border-collapse: collapse; font-size: .9rem; font-variant-numeric: tabular-nums; }
-  th, td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--line); }
-  th { color: var(--muted); font-weight: 500; }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  [hidden] { display: none !important; }
+  html { color-scheme: light dark; }
+  body {
+    margin: 0; background: var(--base); color: var(--ink);
+    font: 400 16px/1.45 "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-optical-sizing: auto; -webkit-font-smoothing: antialiased;
+    padding: 12px 16px max(40px, env(safe-area-inset-bottom));
+  }
+  /* Background: soft teal light fields. The top and bottom edges stay flat so they meet the system bars. */
+  .bg {
+    position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background:
+      radial-gradient(62% 34% at 14% 27%, var(--blob1), transparent 72%),
+      radial-gradient(52% 34% at 94% 52%, var(--blob2), transparent 72%),
+      radial-gradient(70% 30% at 26% 88%, var(--blob3), transparent 72%),
+      var(--base);
+  }
+  main { max-width: 520px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  button, input { font: inherit; color: inherit; }
+  button { touch-action: manipulation; -webkit-user-select: none; user-select: none; cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .ic { width: 1.25em; height: 1.25em; fill: currentColor; flex: none; }
+
+  /* Glass surface. Approximation with backdrop-filter, inner highlight and a tinted shadow. */
+  .card {
+    position: relative; border-radius: var(--r-card); padding: 20px;
+    background: var(--glass);
+    border: 1px solid var(--glass-line);
+    -webkit-backdrop-filter: blur(24px) saturate(160%); backdrop-filter: blur(24px) saturate(160%);
+    box-shadow: inset 0 1px 0 var(--glass-hi), 0 10px 36px -12px var(--shadow);
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .card { -webkit-backdrop-filter: none; backdrop-filter: none; background: color-mix(in srgb, var(--base) 94%, var(--ink)); }
+  }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .card { background: color-mix(in srgb, var(--base) 90%, var(--ink)); }
+  }
+
+  h2 { margin: 0; font-size: 1.0625rem; font-weight: 620; letter-spacing: -.012em; }
+  .muted { color: var(--muted); }
+  .small { font-size: .875rem; }
+
+  /* Entrance: cards rise in sequence. */
+  .rise { animation: rise .85s var(--ease-out) both; animation-delay: calc(var(--d, 0) * 70ms); }
+  @keyframes rise { from { opacity: 0; transform: translateY(18px) scale(.985); } to { opacity: 1; transform: none; } }
+
+  /* ---------- top bar ---------- */
+  .top { display: flex; align-items: center; justify-content: space-between; padding: 4px 6px 0; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 620; letter-spacing: -.01em; }
+  .brand .ic { color: var(--accent); width: 22px; height: 22px; }
+  .clock { font-size: .875rem; color: var(--muted); font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+
+  /* ---------- hero ---------- */
+  .hero { --tone: transparent; transition: --tone .7s var(--ease-out); padding-top: 22px; }
+  .hero[data-tone="run"] { --tone: var(--accent); }
+  .hero[data-tone="soon"] { --tone: var(--warn); }
+  .hero[data-tone="over"] { --tone: var(--danger); }
+  .due-pill {
+    margin: 0 auto; width: fit-content; max-height: 0; opacity: 0; overflow: hidden; transform: translateY(-8px);
+    padding: 0 16px; border-radius: var(--r-pill); font-weight: 600; font-size: .9rem;
+    background: color-mix(in srgb, var(--danger) 16%, transparent); color: var(--danger);
+    transition: max-height .6s var(--ease-out), opacity .5s var(--ease-out), transform .6s var(--ease-out), padding .6s var(--ease-out), margin .6s var(--ease-out);
+  }
+  .due-pill.show { max-height: 40px; opacity: 1; transform: none; padding: 8px 16px; margin-bottom: 8px; }
+  .ring-wrap { position: relative; width: min(78vw, 300px); aspect-ratio: 1; margin: 0 auto; }
+  .ring-wrap.pulse { animation: pulse .9s var(--ease-out); }
+  @keyframes pulse { 0% { transform: scale(1); } 35% { transform: scale(1.03); } 100% { transform: scale(1); } }
+  .ring { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .ring circle { fill: none; }
+  .ring .track { stroke: var(--track); stroke-width: 9; }
+  .ring .prog {
+    stroke: var(--tone); stroke-width: 9; stroke-linecap: round;
+    stroke-dasharray: 804.25; stroke-dashoffset: 804.25;
+    transform: rotate(-90deg); transform-origin: 150px 150px;
+    transition: stroke-dashoffset 1s linear;
+  }
+  .ring .prog.sweep { transition: stroke-dashoffset .95s var(--ease-out); }
+  .ring .prog.none { opacity: 0; }
+  .ring .notch { fill: var(--base); stroke: var(--ink); stroke-width: 2.5; opacity: 0; transition: opacity .5s var(--ease-out); }
+  .ring .notch.on { opacity: .85; }
+  .ring-center { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; gap: 2px; padding: 0 12%; }
+  .ring-label { font-size: .9rem; color: var(--muted); font-weight: 480; }
+  .timer {
+    font-size: clamp(3.6rem, 19vw, 4.9rem); line-height: 1; font-weight: 480; letter-spacing: -.05em;
+    font-variant-numeric: tabular-nums; font-feature-settings: "tnum";
+    transition: color .6s var(--ease-out);
+  }
+  .hero[data-tone="soon"] .timer { color: var(--warn); }
+  .hero[data-tone="over"] .timer { color: var(--danger); }
+  .ring-sub { font-size: .9rem; color: var(--muted); min-height: 1.3em; }
+
+  .todo { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 8px; text-align: center; }
+  .todo li { color: var(--muted); font-size: .95rem; }
+  .todo li.first { color: var(--ink); font-size: 1.3rem; font-weight: 600; letter-spacing: -.02em; line-height: 1.25; }
+  .todo li.first.urgent { color: var(--danger); }
+  .todo .s { display: block; margin-top: 4px; font-size: .95rem; font-weight: 420; letter-spacing: 0; color: var(--muted); }
+
+  /* ---------- say ---------- */
+  .say-bar {
+    display: flex; align-items: center; gap: 6px; margin-top: 14px; padding: 6px 6px 6px 18px;
+    border-radius: var(--r-pill); background: var(--inset); border: 1px solid var(--edge);
+    transition: border-color .35s var(--ease-out), background .35s var(--ease-out);
+  }
+  .say-bar:focus-within { border-color: color-mix(in srgb, var(--accent) 60%, transparent); background: color-mix(in srgb, var(--accent) 8%, var(--inset)); }
+  .say-bar input { flex: 1; min-width: 0; height: 44px; border: 0; background: none; font-size: 1rem; outline: none; }
+  .say-bar input::placeholder { color: var(--muted); opacity: .85; }
+  .icon-btn, .send {
+    flex: none; width: 44px; height: 44px; border-radius: 50%; border: 0; display: grid; place-items: center;
+    transition: transform .4s var(--ease-spring), background .3s var(--ease-out);
+  }
+  .icon-btn { background: transparent; color: var(--muted); }
+  .send { background: var(--accent); color: var(--accent-ink); }
+  .icon-btn:active, .send:active { transform: scale(.9); transition-duration: .1s; }
+  .icon-btn .ic, .send .ic { width: 22px; height: 22px; }
+  .preview { display: grid; gap: 8px; margin-top: 10px; }
+  .preview:empty { margin-top: 0; }
+  .pv {
+    display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: var(--r-nest);
+    background: var(--inset); font-size: .95rem; animation: pvIn .5s var(--ease-out) both;
+  }
+  .pv .ic { color: var(--accent); }
+  .pv.bad .ic { color: var(--warn); }
+  .pv.out { animation: pvOut .3s var(--ease-out) forwards; }
+  @keyframes pvIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @keyframes pvOut { to { opacity: 0; transform: translateY(-4px); } }
+
+  /* ---------- quick actions ---------- */
+  .ctl { display: grid; gap: 8px; margin-bottom: 14px; }
+  .ctl-l { font-size: .875rem; color: var(--muted); padding-left: 6px; }
+  .seg {
+    position: relative; flex: 1; min-width: 0; display: flex; padding: 4px; border-radius: var(--r-pill);
+    background: var(--inset); border: 1px solid var(--edge); overflow-x: auto; scrollbar-width: none;
+  }
+  .seg::-webkit-scrollbar { display: none; }
+  .seg .thumb {
+    position: absolute; top: 4px; bottom: 4px; left: 0; width: var(--w, 0); border-radius: var(--r-pill);
+    background: var(--accent); transform: translateX(var(--x, 0));
+    transition: transform .55s var(--ease-out), width .55s var(--ease-out);
+  }
+  .seg button {
+    position: relative; z-index: 1; flex: 1 0 auto; min-width: 42px; height: 38px; padding: 0 12px; border: 0; background: none;
+    border-radius: var(--r-pill); color: var(--muted); font-weight: 560; font-size: .95rem; transition: color .35s var(--ease-out);
+  }
+  .seg button[aria-pressed="true"] { color: var(--accent-ink); }
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .tile {
+    display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 18px; text-align: left;
+    min-height: 108px; padding: 16px; border-radius: var(--r-nest); border: 1px solid var(--edge);
+    background: var(--inset); font-weight: 580; font-size: 1rem; line-height: 1.2; letter-spacing: -.01em;
+    transition: transform .5s var(--ease-spring), background .5s var(--ease-out), color .4s var(--ease-out), border-color .4s var(--ease-out);
+  }
+  .tile .ic { width: 28px; height: 28px; color: var(--accent); transition: color .4s var(--ease-out); }
+  .tile:active { transform: scale(.965); transition-duration: .1s; }
+  .tile.next { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+  .tile.next .ic { color: var(--accent-ink); }
+  .row2 { display: flex; gap: 10px; margin-top: 10px; }
+  .pill {
+    flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 48px; padding: 0 16px;
+    border-radius: var(--r-pill); border: 1px solid var(--edge); background: var(--inset); font-weight: 560; font-size: .95rem;
+    transition: transform .45s var(--ease-spring), background .3s var(--ease-out);
+  }
+  .pill:active { transform: scale(.97); transition-duration: .1s; }
+  .pill.mini { flex: none; height: 38px; padding: 0 14px; font-size: .875rem; gap: 6px; }
+  .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .pill.danger { color: var(--danger); }
+
+  /* ---------- plan ---------- */
+  .plan { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 14px; }
+  .plan li { display: grid; grid-template-columns: 92px 1fr; align-items: baseline; gap: 12px; animation: pvIn .5s var(--ease-out) both; animation-delay: calc(var(--i, 0) * 50ms); }
+  .plan .when { font-weight: 600; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; letter-spacing: -.01em; }
+  .plan li:first-child .when { color: var(--accent); }
+  .plan .what b { display: inline-flex; align-items: center; gap: 6px; font-weight: 560; }
+  .plan .what b .ic { width: 1em; height: 1em; color: var(--muted); }
+  .plan .what small { display: block; color: var(--muted); font-size: .875rem; margin-top: 2px; }
+  .empty { margin: 12px 0 0; color: var(--muted); }
+
+  /* ---------- accordion ---------- */
+  .acc { padding: 0; }
+  .acc-head { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; border: 0; background: none; text-align: left; border-radius: var(--r-card); font-size: 1.0625rem; font-weight: 620; letter-spacing: -.012em; }
+  .acc-head .ic { color: var(--muted); transition: transform .55s var(--ease-out); }
+  .acc.open .acc-head .ic { transform: rotate(180deg); }
+  .acc-body { display: grid; grid-template-rows: 0fr; grid-template-columns: minmax(0, 1fr); opacity: 0; transition: grid-template-rows .6s var(--ease-out), opacity .45s var(--ease-out); }
+  .acc.open .acc-body { grid-template-rows: 1fr; opacity: 1; }
+  .acc-inner { overflow: hidden; min-height: 0; min-width: 0; padding: 0 20px; }
+  .acc.open .acc-inner { padding-bottom: 20px; }
+  .acc-inner > :first-child { margin-top: 0; }
   .scroll { overflow-x: auto; }
-  label { display: grid; gap: 4px; font-size: .9rem; }
-  input[type=text], input[type=number] { font: inherit; padding: 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); width: 100%; }
-  .settings { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  details summary { cursor: pointer; font-weight: 600; }
-  .banner { border-radius: 12px; padding: 12px; background: var(--warn); color: #fff; font-weight: 700; text-align: center; display: none; }
-  .banner.show { display: block; }
-  .banner.err { background: var(--danger); margin: 0 auto 14px; max-width: 560px; display: none; }
-  .banner.err.show { display: grid; gap: 8px; }
-  .banner.err button { background: #fff; color: var(--danger); }
-  #errLog { white-space: pre-wrap; font-size: .8rem; color: var(--muted); }
-  .todo { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 6px; }
-  .todo li { padding: 8px 10px; border-radius: 10px; background: var(--bg); color: var(--muted); }
-  .todo li.first { background: var(--accent); color: var(--accent-ink); font-size: 1.1rem; font-weight: 600; }
-  .todo li.first.urgent { background: var(--danger); color: #fff; }
-  .say { display: flex; gap: 8px; margin-top: 8px; }
-  .say input { flex: 1; }
-  .say button { min-height: 48px; padding: 8px 14px; }
-  .preview { margin-top: 8px; display: grid; gap: 4px; font-size: .95rem; }
-  .preview .ok { color: var(--ok); }
-  .preview .bad { color: var(--danger); }
-  .plan { display: grid; gap: 4px; margin-top: 8px; font-variant-numeric: tabular-nums; }
+  table { width: 100%; border-collapse: collapse; font-size: .875rem; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+  th, td { text-align: left; padding: 9px 6px 9px 0; white-space: nowrap; }
+  th { color: var(--muted); font-weight: 480; }
+  tbody tr + tr td { border-top: 1px solid var(--edge); }
+  .sub-acc { margin-top: 14px; }
+  .sub-acc summary { cursor: pointer; font-weight: 560; padding: 6px 0; }
+  .settings { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+  .field { display: grid; gap: 6px; align-content: start; font-size: .875rem; }
+  .field span { color: var(--ink); font-weight: 520; }
+  .field small { color: var(--muted); font-size: .8rem; margin-top: -2px; }
+  .field input[type=number] { height: 48px; padding: 0 16px; border-radius: var(--r-pill); border: 1px solid var(--edge); background: var(--inset); font-size: 1rem; width: 100%; outline: none; transition: border-color .3s var(--ease-out); }
+  .field input[type=number]:focus { border-color: color-mix(in srgb, var(--accent) 65%, transparent); }
+  .toggle { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: .95rem; }
+  .toggle small { display: block; color: var(--muted); font-size: .8rem; }
+  .switch { appearance: none; -webkit-appearance: none; flex: none; width: 54px; height: 32px; border-radius: var(--r-pill); background: var(--inset); border: 1px solid var(--edge); position: relative; cursor: pointer; transition: background .4s var(--ease-out); }
+  .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: var(--muted); transition: transform .5s var(--ease-spring), background .3s var(--ease-out); }
+  .switch:checked { background: var(--accent); }
+  .switch:checked::after { transform: translateX(22px); background: var(--accent-ink); }
+  .diag { white-space: pre-wrap; font-size: .8rem; color: var(--muted); margin: 6px 0 0; }
+  .foot { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .foot .pill { white-space: nowrap; }
+  .foot .danger { grid-column: 1 / -1; }
+
+  /* ---------- error banner ---------- */
+  .banner.err {
+    display: none; max-width: 520px; margin: 0 auto 14px; padding: 14px 16px; border-radius: var(--r-nest);
+    background: color-mix(in srgb, var(--danger) 18%, var(--base)); color: var(--ink); border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent); gap: 10px; font-size: .95rem;
+  }
+  .banner.err.show { display: grid; }
+  .banner.err button { height: 40px; border-radius: var(--r-pill); border: 0; background: var(--danger); color: #fff; font-weight: 600; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0ms !important; transition-duration: .01ms !important; }
+  }
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<symbol id="i-arrow-line-up" viewBox="0 0 256 256"><path d="M205.66,138.34a8,8,0,0,1-11.32,11.32L136,91.31V224a8,8,0,0,1-16,0V91.31L61.66,149.66a8,8,0,0,1-11.32-11.32l72-72a8,8,0,0,1,11.32,0ZM216,32H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/></symbol>
+<symbol id="i-arrow-line-down" viewBox="0 0 256 256"><path d="M50.34,117.66a8,8,0,0,1,11.32-11.32L120,164.69V32a8,8,0,0,1,16,0V164.69l58.34-58.35a8,8,0,0,1,11.32,11.32l-72,72a8,8,0,0,1-11.32,0ZM216,208H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/></symbol>
+<symbol id="i-baseball-cap" viewBox="0 0 256 256"><path d="M128,24h0A104.12,104.12,0,0,0,24,128v56a24,24,0,0,0,24,24,24.11,24.11,0,0,0,14.18-4.64C74.33,194.53,95.6,184,128,184s53.67,10.52,65.81,19.35A24,24,0,0,0,232,184V128A104.12,104.12,0,0,0,128,24Zm88,104v8.87a166,166,0,0,0-40.94-18.22A167,167,0,0,0,146.19,41.9,88.14,88.14,0,0,1,216,128ZM128,44.27a152.47,152.47,0,0,1,30.4,70.46,170.85,170.85,0,0,0-60.84,0A153.31,153.31,0,0,1,128,44.27ZM109.81,41.9a167,167,0,0,0-28.87,76.76A166,166,0,0,0,40,136.88V128A88.14,88.14,0,0,1,109.81,41.9ZM211.66,191.11a8,8,0,0,1-8.44-.69C189.16,180.2,164.7,168,128,168S66.84,180.2,52.78,190.42a8,8,0,0,1-8.44.69A7.77,7.77,0,0,1,40,184V156.07a152,152,0,0,1,176,0V184A7.77,7.77,0,0,1,211.66,191.11Z"/></symbol>
+<symbol id="i-hand-grabbing" viewBox="0 0 256 256"><path d="M188,80a27.79,27.79,0,0,0-13.36,3.4,28,28,0,0,0-46.64-11A28,28,0,0,0,80,92v20H68a28,28,0,0,0-28,28v12a88,88,0,0,0,176,0V108A28,28,0,0,0,188,80Zm12,72a72,72,0,0,1-144,0V140a12,12,0,0,1,12-12H80v24a8,8,0,0,0,16,0V92a12,12,0,0,1,24,0v28a8,8,0,0,0,16,0V92a12,12,0,0,1,24,0v28a8,8,0,0,0,16,0V108a12,12,0,0,1,24,0Z"/></symbol>
+<symbol id="i-flag-checkered" viewBox="0 0 256 256"><path d="M227.32,48.75A8,8,0,0,0,218.76,50c-28,24.22-51.72,12.48-79.21-1.13C111.07,34.76,78.78,18.79,42.76,50A8,8,0,0,0,40,56V224a8,8,0,0,0,16,0V179.77c26.79-21.16,49.87-9.75,76.45,3.41,28.49,14.09,60.77,30.06,96.79-1.13a8,8,0,0,0,2.76-6V56A8,8,0,0,0,227.32,48.75ZM216,71.6v40.65c-14,11.06-27,13.22-40,10.88V79.34A60.05,60.05,0,0,0,216,71.6Zm-56,3.76v43c-6.66-2.67-13.43-6-20.45-9.48-8.82-4.37-18-8.91-27.55-12.18v-43c6.66,2.66,13.43,6,20.45,9.48C141.27,67.55,150.46,72.09,160,75.36ZM96,48.91V92.69a60.06,60.06,0,0,0-40,7.75V59.78C70,48.72,83,46.57,96,48.91ZM86.58,152A60.06,60.06,0,0,0,56,160.43V119.78c14-11.06,27-13.22,40-10.88v43.8A65.61,65.61,0,0,0,86.58,152ZM112,156.67v-43c6.66,2.66,13.43,6,20.45,9.48,8.82,4.37,18,8.9,27.55,12.17v43c-6.66-2.67-13.43-6-20.45-9.48C130.73,164.47,121.54,159.94,112,156.67Zm64,26.45v-43.8a65.61,65.61,0,0,0,9.42.72A60.11,60.11,0,0,0,216,131.57v40.68C202,183.31,189,185.46,176,183.12Z"/></symbol>
+<symbol id="i-microphone" viewBox="0 0 256 256"><path d="M128,176a48.05,48.05,0,0,0,48-48V64a48,48,0,0,0-96,0v64A48.05,48.05,0,0,0,128,176ZM96,64a32,32,0,0,1,64,0v64a32,32,0,0,1-64,0Zm40,143.6V240a8,8,0,0,1-16,0V207.6A80.11,80.11,0,0,1,48,128a8,8,0,0,1,16,0,64,64,0,0,0,128,0,8,8,0,0,1,16,0A80.11,80.11,0,0,1,136,207.6Z"/></symbol>
+<symbol id="i-arrow-counter-clockwise" viewBox="0 0 256 256"><path d="M224,128a96,96,0,0,1-94.71,96H128A95.38,95.38,0,0,1,62.1,197.8a8,8,0,0,1,11-11.63A80,80,0,1,0,71.43,71.39a3.07,3.07,0,0,1-.26.25L44.59,96H72a8,8,0,0,1,0,16H24a8,8,0,0,1-8-8V56a8,8,0,0,1,16,0V85.8L60.25,60A96,96,0,0,1,224,128Z"/></symbol>
+<symbol id="i-paper-plane-tilt" viewBox="0 0 256 256"><path d="M227.32,28.68a16,16,0,0,0-15.66-4.08l-.15,0L19.57,82.84a16,16,0,0,0-2.49,29.8L102,154l41.3,84.87A15.86,15.86,0,0,0,157.74,248q.69,0,1.38-.06a15.88,15.88,0,0,0,14-11.51l58.2-191.94c0-.05,0-.1,0-.15A16,16,0,0,0,227.32,28.68ZM157.83,231.85l-.05.14,0-.07-40.06-82.3,48-48a8,8,0,0,0-11.31-11.31l-48,48L24.08,98.25l-.07,0,.14,0L216,40Z"/></symbol>
+<symbol id="i-caret-down" viewBox="0 0 256 256"><path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"/></symbol>
+<symbol id="i-check-circle" viewBox="0 0 256 256"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></symbol>
+<symbol id="i-warning-circle" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm-8-80V80a8,8,0,0,1,16,0v56a8,8,0,0,1-16,0Zm20,36a12,12,0,1,1-12-12A12,12,0,0,1,140,172Z"/></symbol>
+<symbol id="i-arrow-right" viewBox="0 0 256 256"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/></symbol>
+<symbol id="i-snowflake" viewBox="0 0 256 256"><path d="M223.77,150.09a8,8,0,0,1-5.86,9.68l-24.64,6,6.46,24.11a8,8,0,0,1-5.66,9.8A8.25,8.25,0,0,1,192,200a8,8,0,0,1-7.72-5.93l-7.72-28.8L136,141.86v46.83l21.66,21.65a8,8,0,0,1-11.32,11.32L128,203.31l-18.34,18.35a8,8,0,0,1-11.32-11.32L120,188.69V141.86L79.45,165.27l-7.72,28.8A8,8,0,0,1,64,200a8.25,8.25,0,0,1-2.08-.27,8,8,0,0,1-5.66-9.8l6.46-24.11-24.64-6a8,8,0,0,1,3.82-15.54l29.45,7.23L112,128,71.36,104.54l-29.45,7.23A7.85,7.85,0,0,1,40,112a8,8,0,0,1-1.91-15.77l24.64-6L56.27,66.07a8,8,0,0,1,15.46-4.14l7.72,28.8L120,114.14V67.31L98.34,45.66a8,8,0,0,1,11.32-11.32L128,52.69l18.34-18.35a8,8,0,0,1,11.32,11.32L136,67.31v46.83l40.55-23.41,7.72-28.8a8,8,0,0,1,15.46,4.14l-6.46,24.11,24.64,6A8,8,0,0,1,216,112a7.85,7.85,0,0,1-1.91-.23l-29.45-7.23L144,128l40.64,23.46,29.45-7.23A8,8,0,0,1,223.77,150.09Z"/></symbol>
+<symbol id="i-clock" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z"/></symbol>
+<symbol id="i-download-simple" viewBox="0 0 256 256"><path d="M224,144v64a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V144a8,8,0,0,1,16,0v56H208V144a8,8,0,0,1,16,0Zm-101.66,5.66a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,124.69V32a8,8,0,0,0-16,0v92.69L93.66,98.34a8,8,0,0,0-11.32,11.32Z"/></symbol>
+<symbol id="i-copy" viewBox="0 0 256 256"><path d="M216,32H88a8,8,0,0,0-8,8V80H40a8,8,0,0,0-8,8V216a8,8,0,0,0,8,8H168a8,8,0,0,0,8-8V176h40a8,8,0,0,0,8-8V40A8,8,0,0,0,216,32ZM160,208H48V96H160Zm48-48H176V88a8,8,0,0,0-8-8H96V48H208Z"/></symbol>
+<symbol id="i-trash" viewBox="0 0 256 256"><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192ZM112,104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z"/></symbol>
+</svg>
+<div class="bg" aria-hidden="true"></div>
+
 <div class="banner err" id="errBanner" role="alert">
   <div id="errText"></div>
-  <button class="small" id="errReload" type="button">Recargar</button>
+  <button type="button" id="errReload">Recargar</button>
 </div>
 <script>
 // Classic (non-module) script so problems are visible even when the app module fails to load.
@@ -109,89 +331,97 @@
   });
 })();
 </script>
+
 <main>
-  <div class="row">
-    <h1>🧊 Cold Cap Timer</h1>
-    <div class="muted" id="clock"></div>
-  </div>
+  <header class="top rise" style="--d:0">
+    <div class="brand"><svg class="ic"><use href="#i-snowflake"/></svg><span>Cold Cap Timer</span></div>
+    <div class="clock" id="clock"></div>
+  </header>
 
-  <div class="banner" id="banner">⏰ ¡Hora de cambiar el cap!</div>
-
-  <section class="card" aria-live="polite">
-    <div class="label muted" id="timerLabel">Sin cap en la cabeza</div>
-    <div class="timer" id="timer">--:--</div>
-    <div class="label muted" id="timerSub"></div>
+  <section class="card hero rise" id="hero" data-tone="idle" style="--d:1" aria-live="polite">
+    <div class="due-pill" id="banner">Hora de cambiar el cap</div>
+    <div class="ring-wrap" id="ringWrap">
+      <svg class="ring" viewBox="0 0 300 300" aria-hidden="true">
+        <circle class="track" cx="150" cy="150" r="128"/>
+        <circle class="prog none" id="ringProg" cx="150" cy="150" r="128"/>
+        <circle class="notch" id="ringNotch" cx="150" cy="22" r="5.5"/>
+      </svg>
+      <div class="ring-center">
+        <div class="ring-label" id="timerLabel">Sin cap en la cabeza</div>
+        <div class="timer" id="timer">--:--</div>
+        <div class="ring-sub" id="timerSub"></div>
+      </div>
+    </div>
     <ul class="todo" id="todo"></ul>
   </section>
 
-  <section class="card">
-    <strong>Cuéntame qué pasó</strong>
-    <div class="muted">Escríbelo (o dicta con el micrófono del teclado) como lo dirías: “hace 3 min le puse un cap”, “quité el cap hace 2 minutos”, “saqué el cap 3 del cooler”.</div>
-    <form class="say" id="sayForm" autocomplete="off">
-      <input type="text" id="say" placeholder="hace 3 min le puse un cap" enterkeyhint="send" aria-label="Qué pasó">
-      <button type="button" id="mic" class="small" aria-label="Dictar" hidden>🎤</button>
-      <button type="submit" class="action next" id="sayGo">Guardar</button>
+  <section class="card rise" style="--d:2">
+    <h2>Cuéntame qué pasó</h2>
+    <form class="say-bar" id="sayForm" autocomplete="off">
+      <input type="text" id="say" placeholder="hace 3 min puse un cap" enterkeyhint="send" aria-label="Qué pasó">
+      <button type="button" class="icon-btn" id="mic" aria-label="Dictar" hidden><svg class="ic"><use href="#i-microphone"/></svg></button>
+      <button type="submit" class="send" id="sayGo" aria-label="Guardar"><svg class="ic"><use href="#i-paper-plane-tilt"/></svg></button>
     </form>
     <div class="preview" id="preview" aria-live="polite"></div>
   </section>
 
-  <section class="card">
-    <strong>O toca el botón</strong>
-    <div class="chips" style="margin:8px 0" id="agoChips" role="group" aria-label="Cuándo pasó"></div>
-    <div class="chips" style="margin-bottom:10px" id="capChips" role="group" aria-label="Cuál cap"></div>
-    <div class="grid" id="actions"></div>
-    <button id="finBtn" style="width:100%;margin-top:10px">🏁 Terminó la infusión</button>
-    <div class="row" style="margin-top:10px">
-      <button class="small" id="undo">↩ Deshacer último</button>
+  <section class="card rise" style="--d:3">
+    <div class="card-head">
+      <h2>Registrar con un toque</h2>
+      <button class="pill mini" id="undo" type="button"><svg class="ic"><use href="#i-arrow-counter-clockwise"/></svg>Deshacer</button>
+    </div>
+    <div class="ctl" style="margin-top:14px"><span class="ctl-l">Minutos desde que pasó</span><div class="seg" id="agoChips" role="group" aria-label="Minutos desde que pasó"></div></div>
+    <div class="ctl"><span class="ctl-l">Cap</span><div class="seg" id="capChips" role="group" aria-label="Cuál cap"></div></div>
+    <div class="tiles" id="actions"></div>
+    <div class="row2">
+      <button class="pill" id="finBtn" type="button"><svg class="ic"><use href="#i-flag-checkered"/></svg>Terminó la infusión</button>
     </div>
   </section>
 
-  <section class="card">
-    <strong>Plan estimado</strong>
-    <div class="muted">Si cada cambio se hace puntual. Se recalcula con lo que registres.</div>
-    <div class="plan" id="plan"></div>
+  <section class="card rise" style="--d:4">
+    <h2>Plan estimado</h2>
+    <p class="small muted" style="margin:4px 0 0">Si cada cambio se hace puntual. Se recalcula con lo que registres.</p>
+    <ol class="plan" id="plan"></ol>
   </section>
 
-  <section class="card">
-    <strong>Registro</strong>
-    <div class="scroll"><table>
-      <thead><tr><th>Cap</th><th>Sacar→Poner</th><th>En cabeza</th><th>Quitar→Meter</th><th>Fuera del cooler</th></tr></thead>
-      <tbody id="summary"></tbody>
-    </table></div>
-    <details style="margin-top:10px">
-      <summary>Todos los eventos</summary>
-      <div class="scroll"><table><tbody id="log"></tbody></table></div>
-    </details>
+  <section class="card acc rise" style="--d:5" id="accLog">
+    <button class="acc-head" type="button" aria-expanded="false" aria-controls="bodyLog">Registro<svg class="ic"><use href="#i-caret-down"/></svg></button>
+    <div class="acc-body" id="bodyLog" inert><div class="acc-inner">
+      <div class="scroll"><table>
+        <thead><tr><th>Cap</th><th>Camino</th><th>En cabeza</th><th>Regreso</th><th>Total</th></tr></thead>
+        <tbody id="summary"></tbody>
+      </table></div>
+      <p class="small muted" style="margin:8px 0 0">Camino: del cooler a la cabeza. Regreso: de la cabeza al cooler. Total: tiempo fuera del cooler.</p>
+      <details class="sub-acc"><summary>Todos los eventos</summary>
+        <div class="scroll"><table><tbody id="log"></tbody></table></div>
+      </details>
+    </div></div>
   </section>
 
-  <section class="card">
-    <details>
-      <summary>Ajustes</summary>
-      <p class="muted">Los tiempos varían según el protocolo de Penguin y de tu oncólogo/a. Pon aquí los de ustedes; la app no asume ninguno.</p>
+  <section class="card acc rise" style="--d:6" id="accSet">
+    <button class="acc-head" type="button" aria-expanded="false" aria-controls="bodySet">Ajustes<svg class="ic"><use href="#i-caret-down"/></svg></button>
+    <div class="acc-body" id="bodySet" inert><div class="acc-inner">
+      <p class="small muted" style="margin:0">Los tiempos varían según el protocolo de Penguin y de tu oncólogo/a. Pon aquí los de ustedes, la app no asume ninguno.</p>
       <div class="settings">
-        <label>Minutos por cap en la cabeza <input id="interval" type="number" min="1" inputmode="numeric"></label>
-        <label>Cantidad de caps <input id="numCaps" type="number" min="1" max="12" inputmode="numeric"></label>
-        <label>Pre-enfriamiento (min, 0 = no usar) <input id="pre" type="number" min="0" inputmode="numeric"></label>
-        <label>Post-enfriamiento (min, 0 = no usar) <input id="post" type="number" min="0" inputmode="numeric"></label>
-        <label>Avisar con (seg) de anticipación <input id="warn" type="number" min="0" inputmode="numeric"></label>
-        <label>Sacar el siguiente cap del cooler (min antes del cambio, 0 = no avisar) <input id="lead" type="number" min="0" inputmode="numeric"></label>
-        <label>Sonido y vibración
-          <input id="sound" type="checkbox" style="width:auto;justify-self:start;transform:scale(1.4);margin:8px">
-        </label>
-        <label>Notificación fija con cuenta regresiva (solo app Android)
-          <input id="live" type="checkbox" style="width:auto;justify-self:start;transform:scale(1.4);margin:8px">
-        </label>
+        <label class="field"><span>Minutos por cap</span><input id="interval" type="number" min="1" inputmode="numeric"></label>
+        <label class="field"><span>Cantidad de caps</span><input id="numCaps" type="number" min="1" max="12" inputmode="numeric"></label>
+        <label class="field"><span>Pre-enfriamiento</span><input id="pre" type="number" min="0" inputmode="numeric"><small>Minutos. 0 = no usar</small></label>
+        <label class="field"><span>Post-enfriamiento</span><input id="post" type="number" min="0" inputmode="numeric"><small>Minutos. 0 = no usar</small></label>
+        <label class="field"><span>Aviso previo</span><input id="warn" type="number" min="0" inputmode="numeric"><small>Segundos antes del cambio</small></label>
+        <label class="field"><span>Sacar el siguiente cap</span><input id="lead" type="number" min="0" inputmode="numeric"><small>Minutos antes del cambio. 0 = no avisar</small></label>
+        <label class="toggle"><span>Sonido y vibración</span><input class="switch" id="sound" type="checkbox" role="switch"></label>
+        <label class="toggle"><span>Notificación fija con cuenta regresiva<small>Solo en la app Android</small></span><input class="switch" id="live" type="checkbox" role="switch"></label>
       </div>
-      <p class="muted" style="margin-top:12px">Diagnóstico (últimos errores):</p>
-      <pre id="errLog" style="margin:0"></pre>
-    </details>
+      <p class="small muted" style="margin:16px 0 0">Diagnóstico (últimos errores):</p>
+      <pre class="diag" id="errLog"></pre>
+    </div></div>
   </section>
 
-  <section class="card row">
-    <button class="small" id="copy">Copiar CSV</button>
-    <button class="small" id="download">Descargar CSV</button>
-    <button class="small" id="reset" style="color:var(--danger)">Nueva sesión</button>
-  </section>
+  <div class="foot rise" style="--d:7">
+    <button class="pill" id="copy" type="button"><svg class="ic"><use href="#i-copy"/></svg><span>Copiar CSV</span></button>
+    <button class="pill" id="download" type="button"><svg class="ic"><use href="#i-download-simple"/></svg>Descargar CSV</button>
+    <button class="pill danger" id="reset" type="button"><svg class="ic"><use href="#i-trash"/></svg>Nueva sesión</button>
+  </div>
 </main>
 
 <script type="module">
@@ -219,6 +449,8 @@ const $ = (id) => document.getElementById(id);
 const S = () => state.settings;
 // A failure in one part of the screen must not freeze the rest: run each part on its own and report errors.
 const safe = (fn) => (...args) => { try { return fn(...args); } catch (e) { window.__reportError?.(e); } };
+const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const icon = (name) => `<svg class="ic" aria-hidden="true"><use href="#i-${name}"/></svg>`;
 let alarmedFor = null; // `since` timestamp of the head cap we already alerted for
 let agoMin = 0;        // "hace N min" for the next button tap
 let capPick = null;    // explicit cap for the next button tap (null = automatic)
@@ -235,6 +467,7 @@ const logButton = safe(function logButton(action) {
   const prefix = state.events.filter((e) => e.ts <= ts);
   const cap = action === 'fin' ? 0 : capPick ?? inferCap(prefix, action, S().numCaps);
   agoMin = 0; capPick = null;
+  segs.forEach((s) => s.sync());
   addEvents([{ action, cap, ts }]);
   if (action === 'poner') { keepAwake(); askNotifications(); }
 });
@@ -248,22 +481,41 @@ $('undo').onclick = safe(() => {
 
 // ---- free-text input ----
 let pending = [];
+const pvNodes = new Map();
 function agoLabel(ts) {
   const d = Math.round((Date.now() - ts) / 60000);
   return d <= 0 ? 'ahora' : `hace ${d} min`;
 }
+// Keyed update so rows that stay the same don't replay their entrance animation while typing.
+function showPreview(rows) {
+  const box = $('preview');
+  const keys = new Set(rows.map((r) => `${r.cls}|${r.text}`));
+  for (const [k, node] of pvNodes) {
+    if (keys.has(k)) continue;
+    pvNodes.delete(k);
+    node.classList.add('out');
+    setTimeout(() => node.remove(), 320);
+  }
+  for (const r of rows) {
+    const k = `${r.cls}|${r.text}`;
+    if (pvNodes.has(k)) continue;
+    const el = document.createElement('div');
+    el.className = `pv ${r.cls}`;
+    el.innerHTML = icon(r.cls === 'bad' ? 'warning-circle' : 'check-circle');
+    const span = document.createElement('span'); span.textContent = r.text; el.append(span);
+    box.append(el); pvNodes.set(k, el);
+  }
+}
 const preview = safe(function preview() {
   const text = $('say').value.trim();
-  const box = $('preview'); box.innerHTML = '';
   pending = [];
-  if (!text) return;
+  if (!text) { showPreview([]); return; }
   const { entries, problems } = parseEntries(text, Date.now(), { events: state.events, numCaps: S().numCaps });
   pending = entries;
-  const add = (cls, msg) => { const d = document.createElement('div'); d.className = cls; d.textContent = msg; box.append(d); };
-  for (const e of entries) {
-    add('ok', `✓ ${ACTIONS[e.action]}${e.action === 'fin' ? '' : ` · cap #${e.cap}`} · ${clock(e.ts)} (${agoLabel(e.ts)})`);
-  }
-  for (const p of problems) add('bad', p);
+  showPreview([
+    ...entries.map((e) => ({ cls: 'ok', text: `${ACTIONS[e.action]}${e.action === 'fin' ? '' : `, cap #${e.cap}`}, ${clock(e.ts)} (${agoLabel(e.ts)})` })),
+    ...problems.map((p) => ({ cls: 'bad', text: p })),
+  ]);
 });
 $('say').addEventListener('input', preview);
 $('sayForm').addEventListener('submit', safe((ev) => {
@@ -271,7 +523,7 @@ $('sayForm').addEventListener('submit', safe((ev) => {
   preview();
   if (!pending.length) return;
   const toAdd = pending;
-  $('say').value = ''; $('preview').innerHTML = '';
+  $('say').value = ''; showPreview([]);
   addEvents(toAdd.map(({ action, cap, ts }) => ({ action, cap, ts })));
   if (toAdd.some((e) => e.action === 'poner')) { keepAwake(); askNotifications(); }
 }));
@@ -289,43 +541,75 @@ if (SR) {
   };
 }
 
-// ---- buttons / chips ----
-function renderChips() {
-  const ago = $('agoChips'); ago.innerHTML = '<span class="lbl">Pasó:</span>';
-  for (const m of [0, 1, 2, 3, 5, 10]) {
+// ---- segmented controls with a sliding thumb ----
+const segs = [];
+function makeSeg(box, options, isSelected, onPick) {
+  box.innerHTML = '<span class="thumb"></span>';
+  const thumb = box.firstChild;
+  const buttons = options.map((o) => {
     const b = document.createElement('button');
-    b.textContent = m === 0 ? 'Ahora' : `hace ${m} min`;
-    b.setAttribute('aria-pressed', agoMin === m);
-    b.onclick = () => { agoMin = m; renderChips(); };
-    ago.append(b);
-  }
-  const caps = $('capChips'); caps.innerHTML = '<span class="lbl">Cap:</span>';
-  for (const c of [null, ...Array.from({ length: S().numCaps }, (_, i) => i + 1)]) {
-    const b = document.createElement('button');
-    b.textContent = c ?? 'Auto';
-    b.setAttribute('aria-pressed', capPick === c);
-    b.onclick = () => { capPick = c; renderChips(); };
-    caps.append(b);
-  }
+    b.type = 'button'; b.textContent = o.label;
+    b.onclick = () => { onPick(o.value); seg.sync(); };
+    box.append(b);
+    return b;
+  });
+  const seg = {
+    place(animate = true) {
+      const b = buttons[options.findIndex((o) => isSelected(o.value))];
+      if (!b) return;
+      if (!animate) thumb.style.transition = 'none';
+      thumb.style.setProperty('--x', `${b.offsetLeft}px`);
+      thumb.style.setProperty('--w', `${b.offsetWidth}px`);
+      if (!animate) { void thumb.offsetWidth; thumb.style.transition = ''; }
+    },
+    sync(animate = true) {
+      buttons.forEach((b, i) => b.setAttribute('aria-pressed', isSelected(options[i].value)));
+      this.place(animate);
+    },
+  };
+  seg.sync(false);
+  return seg;
 }
+let agoSeg, capSeg;
+function buildSegs() {
+  segs.length = 0;
+  agoSeg = makeSeg($('agoChips'), [0, 1, 2, 3, 5, 10].map((m) => ({ value: m, label: m === 0 ? 'Ahora' : String(m) })), (v) => agoMin === v, (v) => { agoMin = v; });
+  capSeg = makeSeg($('capChips'), [null, ...Array.from({ length: S().numCaps }, (_, i) => i + 1)].map((c) => ({ value: c, label: c ?? 'Auto' })), (v) => capPick === v, (v) => { capPick = v; });
+  segs.push(agoSeg, capSeg);
+}
+const replaceThumbs = () => segs.forEach((s) => s.place(false));
+window.addEventListener('resize', replaceThumbs);
+document.fonts?.ready.then(replaceThumbs);
 
-const icons = { sacar: '📤', poner: '🧢', quitar: '🫳', meter: '📥' };
+// ---- action tiles ----
+const tileIcons = { sacar: 'arrow-line-up', poner: 'baseball-cap', quitar: 'hand-grabbing', meter: 'arrow-line-down' };
 function renderActions() {
   const box = $('actions'); box.innerHTML = '';
   for (const a of ['sacar', 'poner', 'quitar', 'meter']) {
     const b = document.createElement('button');
-    b.className = 'action'; b.dataset.action = a;
-    b.textContent = `${icons[a]} ${ACTIONS[a]}`;
+    b.type = 'button'; b.className = 'tile'; b.dataset.action = a;
+    b.innerHTML = `${icon(tileIcons[a])}<span>${ACTIONS[a]}</span>`;
     b.onclick = () => logButton(a);
     box.append(b);
   }
 }
 $('finBtn').onclick = () => logButton('fin');
 
+// ---- accordions ----
+document.querySelectorAll('.acc').forEach((acc) => {
+  const head = acc.querySelector('.acc-head'); const body = acc.querySelector('.acc-body');
+  head.onclick = () => {
+    const open = !acc.classList.contains('open');
+    acc.classList.toggle('open', open);
+    head.setAttribute('aria-expanded', String(open));
+    body.toggleAttribute('inert', !open);
+  };
+});
+
 // ---- tables / plan ----
 function renderTables() {
   const t0 = state.start;
-  const m = (ms) => (ms == null ? '—' : fmt(ms));
+  const m = (ms) => (ms == null ? '-' : fmt(ms));
   $('summary').innerHTML = summarize(state.events).map((u) =>
     `<tr><td>#${u.cap}</td><td>${m(u.transit)}</td><td>${m(u.onHead)}</td><td>${m(u.backToCooler)}</td><td>${m(u.outOfCooler)}</td></tr>`
   ).join('') || '<tr><td colspan="5" class="muted">Aún no hay registros</td></tr>';
@@ -334,50 +618,97 @@ function renderTables() {
   ).join('');
 }
 
+let planKey = '';
 function renderPlan() {
   const p = plan(state.events, S(), Date.now());
   const rows = [];
-  if (p.preDoneAt) rows.push(`Pre-enfriamiento listo a las ${clock(p.preDoneAt)}`);
-  p.swaps.forEach((w, i) => rows.push(
-    `${w.takeOutAt ? `Sacar #${w.to} del cooler: <b>${clock(w.takeOutAt)}</b> · ` : ''}Cambio ${i + 1}: <b>${clock(w.at)}</b> · #${w.from} → #${w.to}`));
-  if (p.postDoneAt) rows.push(`Fin del post-enfriamiento: ${clock(p.postDoneAt)}`);
-  $('plan').innerHTML = rows.length ? rows.map((r) => `<div>${r}</div>`).join('') : '<div class="muted">Aparece cuando pongas el primer cap.</div>';
+  if (p.preDoneAt) rows.push({ t: clock(p.preDoneAt), what: 'Pre-enfriamiento listo', sub: '' });
+  p.swaps.forEach((w) => rows.push({
+    t: clock(w.at), what: `Cap #${w.from} ${icon('arrow-right')} cap #${w.to}`,
+    sub: w.takeOutAt ? `Sacar el cap #${w.to} a las ${clock(w.takeOutAt)}` : '',
+  }));
+  if (p.postDoneAt) rows.push({ t: clock(p.postDoneAt), what: 'Fin del post-enfriamiento', sub: '' });
+  const html = rows.length
+    ? rows.map((r, i) => `<li style="--i:${i}"><span class="when">${r.t}</span><span class="what"><b>${r.what}</b>${r.sub ? `<small>${r.sub}</small>` : ''}</span></li>`).join('')
+    : '<li class="empty" style="display:block">Aparece cuando pongas el primer cap.</li>';
+  if (html === planKey) return;
+  planKey = html; $('plan').innerHTML = html;
 }
 
 function render() {
   for (const part of [renderTables, renderPlan, tick, syncNative, syncLive]) safe(part)();
 }
 
-// ---- every second ----
-let lastTodo = '';
+// ---- hero: ring, timer, instructions ----
+const RING = 2 * Math.PI * 128;
+let lastOffset = RING, lastTone = '', lastTodo = '', firstTodo = true;
+function setRing(frac, tone) {
+  const prog = $('ringProg');
+  const offset = RING * (1 - Math.min(1, Math.max(0, frac)));
+  prog.classList.toggle('none', tone === 'idle' || tone === 'rest');
+  prog.classList.toggle('sweep', Math.abs(offset - lastOffset) > RING * 0.04); // big jumps glide, ticks stay linear
+  prog.style.strokeDashoffset = offset;
+  lastOffset = offset;
+}
+function setNotch(frac) {
+  const n = $('ringNotch');
+  if (frac == null) { n.classList.remove('on'); return; }
+  const a = frac * 2 * Math.PI;
+  n.setAttribute('cx', (150 + 128 * Math.sin(a)).toFixed(2));
+  n.setAttribute('cy', (150 - 128 * Math.cos(a)).toFixed(2));
+  n.classList.add('on');
+}
+
 function tick() {
   const now = Date.now();
-  $('clock').textContent = new Date(now).toLocaleTimeString('es-PA');
+  $('clock').textContent = new Date(now).toLocaleTimeString('es-PA', { hour: 'numeric', minute: '2-digit', second: '2-digit' });
   const head = capOnHead(state.events);
-  const t = $('timer'); t.className = 'timer';
-  const banner = $('banner'); banner.classList.remove('show');
+  const hero = $('hero');
+  let tone; let frac = 0; let notch = null;
 
   if (!head) {
+    tone = state.events.length ? 'rest' : 'idle';
     $('timerLabel').textContent = 'Sin cap en la cabeza';
     const last = state.events[state.events.length - 1];
-    t.textContent = last ? fmt(now - last.ts) : '--:--';
-    $('timerSub').textContent = last ? `desde: ${ACTIONS[last.action].toLowerCase()}${last.action === 'fin' ? '' : ` (cap #${last.cap})`}` : '';
+    $('timer').textContent = last ? fmt(now - last.ts) : '--:--';
+    $('timerSub').textContent = last ? `Desde: ${ACTIONS[last.action].toLowerCase()}` : 'Empieza sacando el primer cap';
   } else {
-    const elapsed = now - head.since;
-    const swapAt = head.since + S().interval * 60000;
+    const total = S().interval * 60000;
+    const swapAt = head.since + total;
     const remaining = swapAt - now;
     $('timerLabel').textContent = `Cap #${head.cap} en la cabeza`;
-    $('timerSub').textContent = `${fmt(elapsed)} puesto · cambio a las ${clock(swapAt)}`;
-    t.textContent = fmt(remaining);
-    if (remaining <= 0) { t.classList.add('over'); banner.classList.add('show'); alarm(head.since); }
-    else if (remaining <= S().warn * 1000) t.classList.add('soon');
+    $('timerSub').textContent = `Cambio a las ${clock(swapAt)}`;
+    frac = remaining <= 0 ? 1 : remaining / total;
+    if (remaining <= 0) { tone = 'over'; $('timer').textContent = `+${fmt(-remaining)}`; $('timerSub').textContent = 'De retraso'; alarm(head.since); }
+    else { tone = remaining <= S().warn * 1000 ? 'soon' : 'run'; $('timer').textContent = fmt(remaining); }
+    if (tone !== 'over' && S().lead > 0 && S().lead < S().interval) notch = S().lead / S().interval;
   }
 
+  if (tone !== lastTone) {
+    hero.dataset.tone = tone;
+    $('banner').classList.toggle('show', tone === 'over');
+    if (tone === 'over' && !reduceMotion()) {
+      const w = $('ringWrap'); w.classList.remove('pulse'); void w.offsetWidth; w.classList.add('pulse');
+    }
+    lastTone = tone;
+  }
+  setRing(frac, tone);
+  setNotch(notch);
+
   const items = todo(state.events, S(), now);
-  const html = items.map((it, i) => `<li class="${i === 0 ? 'first' : ''}${it.urgent ? ' urgent' : ''}">${it.text}</li>`).join('');
-  if (html !== lastTodo) { $('todo').innerHTML = html; lastTodo = html; }
+  const html = items.map((it, i) =>
+    `<li class="${i === 0 ? 'first' : ''}${it.urgent ? ' urgent' : ''}">${it.text}${it.sub ? `<span class="s">${it.sub}</span>` : ''}</li>`).join('');
+  if (html !== lastTodo) {
+    $('todo').innerHTML = html; lastTodo = html;
+    if (!firstTodo && !reduceMotion()) {
+      $('todo').animate(
+        [{ opacity: 0, transform: 'translateY(10px)', filter: 'blur(4px)' }, { opacity: 1, transform: 'none', filter: 'blur(0)' }],
+        { duration: 520, easing: 'cubic-bezier(.22,1,.36,1)' });
+    }
+    firstTodo = false;
+  }
   const nextAct = items.find((it) => it.action)?.action;
-  document.querySelectorAll('#actions button').forEach((b) => b.classList.toggle('next', b.dataset.action === nextAct));
+  document.querySelectorAll('#actions .tile').forEach((b) => b.classList.toggle('next', b.dataset.action === nextAct));
 }
 
 // Alert once per cap placement.
@@ -425,7 +756,7 @@ async function syncNative() {
     const add = (id, at, title, body) => { if (at > now) list.push({ id, title, body, channelId: 'swap', schedule: { at: new Date(at), allowWhileIdle: true } }); };
     if (S().lead > 0) add(3, swapAt - S().lead * 60000, `Saca el cap #${next} del cooler`, `El cambio es a las ${clock(swapAt)}.`);
     if (S().warn > 0) add(2, swapAt - S().warn * 1000, `Cambio de cap en ${S().warn} s`, `Quita el #${head.cap} y pon el #${next}.`);
-    add(1, swapAt, '⏰ Hora de cambiar el cap', `Quita el #${head.cap} y pon el #${next}.`);
+    add(1, swapAt, 'Hora de cambiar el cap', `Quita el #${head.cap} y pon el #${next}.`);
     if (list.length) await ln.schedule({ notifications: list });
   } catch {}
 }
@@ -450,7 +781,7 @@ async function notify() {
     if (LN()) return; // native build already scheduled it with the OS
     if (Notification.permission !== 'granted') return;
     const reg = await navigator.serviceWorker.ready;
-    reg.showNotification('⏰ Hora de cambiar el cap', {
+    reg.showNotification('Hora de cambiar el cap', {
       body: 'Se cumplió el tiempo del cap en la cabeza.',
       icon: 'icons/icon-192.png', vibrate: [300, 150, 300], tag: 'coldcap-swap', renotify: true,
     });
@@ -483,7 +814,9 @@ for (const id of ['interval', 'numCaps', 'pre', 'post', 'warn', 'lead']) {
     const v = Math.max(id === 'interval' || id === 'numCaps' ? 1 : 0, Number($(id).value) || 0);
     S()[id] = v; $(id).value = v;
     if (capPick > S().numCaps) capPick = null;
-    save(); renderChips(); render();
+    save();
+    if (id === 'numCaps') buildSegs();
+    render();
   };
 }
 $('sound').checked = S().sound;
@@ -494,12 +827,13 @@ $('live').onchange = () => { S().live = $('live').checked; save(); syncLive(); }
 $('reset').onclick = () => {
   if (!confirm('¿Empezar una nueva sesión? Se borra el registro actual (copia el CSV antes si lo necesitas).')) return;
   const settings = S();
-  state = { ...defaults(), settings }; alarmedFor = null; save(); render();
+  state = { ...defaults(), settings }; alarmedFor = null; lastTodo = ''; save(); render();
 };
 $('copy').onclick = async () => {
-  try { await navigator.clipboard.writeText(toCSV(state.events, state.start)); $('copy').textContent = '✓ Copiado'; }
-  catch { $('copy').textContent = 'No se pudo copiar'; }
-  setTimeout(() => ($('copy').textContent = 'Copiar CSV'), 1500);
+  const label = $('copy').querySelector('span');
+  try { await navigator.clipboard.writeText(toCSV(state.events, state.start)); label.textContent = 'Copiado'; }
+  catch { label.textContent = 'No se pudo copiar'; }
+  setTimeout(() => (label.textContent = 'Copiar CSV'), 1500);
 };
 $('download').onclick = () => {
   const a = document.createElement('a');
@@ -508,7 +842,7 @@ $('download').onclick = () => {
   a.click(); URL.revokeObjectURL(a.href);
 };
 
-safe(renderChips)(); safe(renderActions)();
+safe(buildSegs)(); safe(renderActions)();
 initNative().finally(render);
 setInterval(safe(tick), 1000);
 try { $('errLog').textContent = JSON.parse(localStorage.getItem('coldcap.errors') || '[]').join('\n'); } catch {}
