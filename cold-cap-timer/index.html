@@ -36,19 +36,31 @@
   button.action.next { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
   button.small { min-height: 40px; padding: 8px 12px; font-weight: 500; }
   button:active { transform: scale(.98); }
-  .caps { display: flex; gap: 8px; flex-wrap: wrap; }
-  .caps button { min-height: 44px; min-width: 44px; padding: 8px 12px; }
-  .caps button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .chips button { min-height: 40px; min-width: 44px; padding: 6px 12px; font-weight: 500; }
+  .chips button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .chips .lbl { font-size: .85rem; color: var(--muted); min-width: 64px; }
   table { width: 100%; border-collapse: collapse; font-size: .9rem; font-variant-numeric: tabular-nums; }
   th, td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--line); }
   th { color: var(--muted); font-weight: 500; }
   .scroll { overflow-x: auto; }
   label { display: grid; gap: 4px; font-size: .9rem; }
-  input { font: inherit; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); width: 100%; }
+  input[type=text], input[type=number] { font: inherit; padding: 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); width: 100%; }
   .settings { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   details summary { cursor: pointer; font-weight: 600; }
   .banner { border-radius: 12px; padding: 12px; background: var(--warn); color: #fff; font-weight: 700; text-align: center; display: none; }
   .banner.show { display: block; }
+  .todo { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 6px; }
+  .todo li { padding: 8px 10px; border-radius: 10px; background: var(--bg); color: var(--muted); }
+  .todo li.first { background: var(--accent); color: var(--accent-ink); font-size: 1.1rem; font-weight: 600; }
+  .todo li.first.urgent { background: var(--danger); color: #fff; }
+  .say { display: flex; gap: 8px; margin-top: 8px; }
+  .say input { flex: 1; }
+  .say button { min-height: 48px; padding: 8px 14px; }
+  .preview { margin-top: 8px; display: grid; gap: 4px; font-size: .95rem; }
+  .preview .ok { color: var(--ok); }
+  .preview .bad { color: var(--danger); }
+  .plan { display: grid; gap: 4px; margin-top: 8px; font-variant-numeric: tabular-nums; }
 </style>
 </head>
 <body>
@@ -64,21 +76,36 @@
     <div class="label muted" id="timerLabel">Sin cap en la cabeza</div>
     <div class="timer" id="timer">--:--</div>
     <div class="label muted" id="timerSub"></div>
+    <ul class="todo" id="todo"></ul>
   </section>
 
   <section class="card">
-    <div class="row" style="margin-bottom:10px">
-      <strong>Cap en uso</strong>
-      <span class="muted" id="sessionInfo"></span>
-    </div>
-    <div class="caps" id="caps" role="group" aria-label="Seleccionar cap"></div>
+    <strong>Cuéntame qué pasó</strong>
+    <div class="muted">Escríbelo (o dicta con el micrófono del teclado) como lo dirías: “hace 3 min le puse un cap”, “quité el cap hace 2 minutos”, “saqué el cap 3 del cooler”.</div>
+    <form class="say" id="sayForm" autocomplete="off">
+      <input type="text" id="say" placeholder="hace 3 min le puse un cap" enterkeyhint="send" aria-label="Qué pasó">
+      <button type="button" id="mic" class="small" aria-label="Dictar" hidden>🎤</button>
+      <button type="submit" class="action next" id="sayGo">Guardar</button>
+    </form>
+    <div class="preview" id="preview" aria-live="polite"></div>
   </section>
 
-  <section class="grid" id="actions"></section>
-  <div class="row">
-    <button class="small" id="undo">↩ Deshacer último</button>
-    <span class="muted" id="hint"></span>
-  </div>
+  <section class="card">
+    <strong>O toca el botón</strong>
+    <div class="chips" style="margin:8px 0" id="agoChips" role="group" aria-label="Cuándo pasó"></div>
+    <div class="chips" style="margin-bottom:10px" id="capChips" role="group" aria-label="Cuál cap"></div>
+    <div class="grid" id="actions"></div>
+    <button id="finBtn" style="width:100%;margin-top:10px">🏁 Terminó la infusión</button>
+    <div class="row" style="margin-top:10px">
+      <button class="small" id="undo">↩ Deshacer último</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <strong>Plan estimado</strong>
+    <div class="muted">Si cada cambio se hace puntual. Se recalcula con lo que registres.</div>
+    <div class="plan" id="plan"></div>
+  </section>
 
   <section class="card">
     <strong>Registro</strong>
@@ -99,9 +126,10 @@
       <div class="settings">
         <label>Minutos por cap en la cabeza <input id="interval" type="number" min="1" inputmode="numeric"></label>
         <label>Cantidad de caps <input id="numCaps" type="number" min="1" max="12" inputmode="numeric"></label>
-        <label>Pre-enfriamiento (min, opcional) <input id="pre" type="number" min="0" inputmode="numeric"></label>
-        <label>Post-enfriamiento (min, opcional) <input id="post" type="number" min="0" inputmode="numeric"></label>
+        <label>Pre-enfriamiento (min, 0 = no usar) <input id="pre" type="number" min="0" inputmode="numeric"></label>
+        <label>Post-enfriamiento (min, 0 = no usar) <input id="post" type="number" min="0" inputmode="numeric"></label>
         <label>Avisar con (seg) de anticipación <input id="warn" type="number" min="0" inputmode="numeric"></label>
+        <label>Avisar para sacar el siguiente cap del cooler (min antes del cambio, 0 = no avisar) <input id="lead" type="number" min="0" inputmode="numeric"></label>
         <label>Sonido y vibración
           <input id="sound" type="checkbox" style="width:auto;justify-self:start;transform:scale(1.4);margin:8px">
         </label>
@@ -117,53 +145,130 @@
 </main>
 
 <script type="module">
-import { ACTIONS, fmt, capOnHead, summarize, nextAction, toCSV } from './logic.js';
+import { ACTIONS, fmt, clock, capOnHead, summarize, inferCap, nextCap, todo, plan, parseEntries, toCSV } from './logic.js';
 
-const KEY = 'coldcap.v1';
+const KEY = 'coldcap.v2';
 const defaults = () => ({
-  start: Date.now(), events: [], selected: 1,
-  settings: { interval: 20, numCaps: 4, pre: 0, post: 0, warn: 60, sound: true },
+  start: Date.now(), events: [], seq: 0,
+  settings: { interval: 20, numCaps: 4, pre: 0, post: 0, warn: 60, lead: 0, sound: true },
 });
 let state = load();
 function load() {
-  try { return { ...defaults(), ...JSON.parse(localStorage.getItem(KEY)) }; } catch { return defaults(); }
+  const d = defaults();
+  try {
+    const st = JSON.parse(localStorage.getItem(KEY) ?? localStorage.getItem('coldcap.v1'));
+    if (!st) return d;
+    return { ...d, ...st, settings: { ...d.settings, ...st.settings } };
+  } catch { return d; }
 }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} }
 
 const $ = (id) => document.getElementById(id);
 const S = () => state.settings;
 let alarmedFor = null; // `since` timestamp of the head cap we already alerted for
+let agoMin = 0;        // "hace N min" for the next button tap
+let capPick = null;    // explicit cap for the next button tap (null = automatic)
 
-function log(action) {
-  state.events.push({ action, cap: state.selected, ts: Date.now() });
-  if (action === 'meter') state.selected = state.selected % S().numCaps + 1;
+// ---- log ----
+function addEvents(list) {
+  for (const e of list) state.events.push({ ...e, n: state.seq++ });
+  state.events.sort((a, b) => a.ts - b.ts); // stable: ties keep entry order
   save(); render();
+}
+
+function logButton(action) {
+  const ts = Date.now() - agoMin * 60000;
+  const prefix = state.events.filter((e) => e.ts <= ts);
+  const cap = action === 'fin' ? 0 : capPick ?? inferCap(prefix, action, S().numCaps);
+  agoMin = 0; capPick = null;
+  addEvents([{ action, cap, ts }]);
   if (action === 'poner') { keepAwake(); askNotifications(); }
 }
 
-function renderCaps() {
-  const box = $('caps'); box.innerHTML = '';
-  for (let i = 1; i <= S().numCaps; i++) {
+$('undo').onclick = () => {
+  if (!state.events.length) return;
+  const last = state.events.reduce((a, b) => ((b.n ?? 0) >= (a.n ?? 0) ? b : a));
+  state.events.splice(state.events.indexOf(last), 1);
+  alarmedFor = null; save(); render();
+};
+
+// ---- free-text input ----
+let pending = [];
+function agoLabel(ts) {
+  const d = Math.round((Date.now() - ts) / 60000);
+  return d <= 0 ? 'ahora' : `hace ${d} min`;
+}
+function preview() {
+  const text = $('say').value.trim();
+  const box = $('preview'); box.innerHTML = '';
+  pending = [];
+  if (!text) return;
+  const { entries, problems } = parseEntries(text, Date.now(), { events: state.events, numCaps: S().numCaps });
+  pending = entries;
+  const add = (cls, msg) => { const d = document.createElement('div'); d.className = cls; d.textContent = msg; box.append(d); };
+  for (const e of entries) {
+    add('ok', `✓ ${ACTIONS[e.action]}${e.action === 'fin' ? '' : ` · cap #${e.cap}`} · ${clock(e.ts)} (${agoLabel(e.ts)})`);
+  }
+  for (const p of problems) add('bad', p);
+}
+$('say').addEventListener('input', preview);
+$('sayForm').addEventListener('submit', (ev) => {
+  ev.preventDefault();
+  preview();
+  if (!pending.length) return;
+  const toAdd = pending;
+  $('say').value = ''; $('preview').innerHTML = '';
+  addEvents(toAdd.map(({ action, cap, ts }) => ({ action, cap, ts })));
+  if (toAdd.some((e) => e.action === 'poner')) { keepAwake(); askNotifications(); }
+});
+
+// Voice dictation where the browser supports it (Chrome); the Android keyboard mic works everywhere.
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (SR) {
+  $('mic').hidden = false;
+  $('mic').onclick = () => {
+    try {
+      const r = new SR(); r.lang = 'es-PA'; r.interimResults = false;
+      r.onresult = (e) => { $('say').value = e.results[0][0].transcript; preview(); };
+      r.start();
+    } catch {}
+  };
+}
+
+// ---- buttons / chips ----
+function renderChips() {
+  const ago = $('agoChips'); ago.innerHTML = '<span class="lbl">Pasó:</span>';
+  for (const m of [0, 1, 2, 3, 5, 10]) {
     const b = document.createElement('button');
-    b.textContent = i; b.setAttribute('aria-pressed', i === state.selected);
-    b.onclick = () => { state.selected = i; save(); render(); };
-    box.append(b);
+    b.textContent = m === 0 ? 'Ahora' : `hace ${m} min`;
+    b.setAttribute('aria-pressed', agoMin === m);
+    b.onclick = () => { agoMin = m; renderChips(); };
+    ago.append(b);
+  }
+  const caps = $('capChips'); caps.innerHTML = '<span class="lbl">Cap:</span>';
+  for (const c of [null, ...Array.from({ length: S().numCaps }, (_, i) => i + 1)]) {
+    const b = document.createElement('button');
+    b.textContent = c ?? 'Auto';
+    b.setAttribute('aria-pressed', capPick === c);
+    b.onclick = () => { capPick = c; renderChips(); };
+    caps.append(b);
   }
 }
 
+const icons = { sacar: '📤', poner: '🧢', quitar: '🫳', meter: '📥' };
 function renderActions() {
-  const next = nextAction(state.events);
   const box = $('actions'); box.innerHTML = '';
-  const icons = { sacar: '📤', poner: '🧢', quitar: '🫳', meter: '📥' };
   for (const a of ['sacar', 'poner', 'quitar', 'meter']) {
     const b = document.createElement('button');
-    b.className = 'action' + (a === next ? ' next' : '');
+    b.className = 'action'; b.dataset.action = a;
     b.textContent = `${icons[a]} ${ACTIONS[a]}`;
-    b.onclick = () => log(a);
+    b.onclick = () => logButton(a);
     box.append(b);
   }
 }
+$('finBtn').onclick = () => logButton('fin');
 
+// ---- tables / plan ----
 function renderTables() {
   const t0 = state.start;
   const m = (ms) => (ms == null ? '—' : fmt(ms));
@@ -171,38 +276,55 @@ function renderTables() {
     `<tr><td>#${u.cap}</td><td>${m(u.transit)}</td><td>${m(u.onHead)}</td><td>${m(u.backToCooler)}</td><td>${m(u.outOfCooler)}</td></tr>`
   ).join('') || '<tr><td colspan="5" class="muted">Aún no hay registros</td></tr>';
   $('log').innerHTML = [...state.events].reverse().map((e) =>
-    `<tr><td>${new Date(e.ts).toLocaleTimeString('es-PA')}</td><td>#${e.cap}</td><td>${ACTIONS[e.action]}</td><td class="muted">+${fmt(e.ts - t0)}</td></tr>`
+    `<tr><td>${new Date(e.ts).toLocaleTimeString('es-PA')}</td><td>${e.action === 'fin' ? '' : '#' + e.cap}</td><td>${ACTIONS[e.action]}</td><td class="muted">+${fmt(e.ts - t0)}</td></tr>`
   ).join('');
 }
 
+function renderPlan() {
+  const p = plan(state.events, S(), Date.now());
+  const rows = [];
+  if (p.preDoneAt) rows.push(`Pre-enfriamiento listo a las ${clock(p.preDoneAt)}`);
+  p.swaps.forEach((w, i) => rows.push(`Cambio ${i + 1}: ${clock(w.at)} · cap #${w.from} → #${w.to}`));
+  if (p.postDoneAt) rows.push(`Fin del post-enfriamiento: ${clock(p.postDoneAt)}`);
+  $('plan').innerHTML = rows.length ? rows.map((r) => `<div>${r}</div>`).join('') : '<div class="muted">Aparece cuando pongas el primer cap.</div>';
+}
+
 function render() {
-  renderCaps(); renderActions(); renderTables();
-  $('sessionInfo').textContent = `Sesión iniciada ${new Date(state.start).toLocaleTimeString('es-PA', { hour: '2-digit', minute: '2-digit' })}`;
-  const n = nextAction(state.events);
-  $('hint').textContent = `Siguiente: ${ACTIONS[n].toLowerCase()}`;
+  renderTables(); renderPlan();
   tick();
   syncNative();
 }
 
+// ---- every second ----
+let lastTodo = '';
 function tick() {
-  $('clock').textContent = new Date().toLocaleTimeString('es-PA');
+  const now = Date.now();
+  $('clock').textContent = new Date(now).toLocaleTimeString('es-PA');
   const head = capOnHead(state.events);
   const t = $('timer'); t.className = 'timer';
   const banner = $('banner'); banner.classList.remove('show');
+
   if (!head) {
     $('timerLabel').textContent = 'Sin cap en la cabeza';
     const last = state.events[state.events.length - 1];
-    t.textContent = last ? fmt(Date.now() - last.ts) : '--:--';
-    $('timerSub').textContent = last ? `desde: ${ACTIONS[last.action].toLowerCase()} (cap #${last.cap})` : 'Empieza con “Sacar del cooler”';
-    return;
+    t.textContent = last ? fmt(now - last.ts) : '--:--';
+    $('timerSub').textContent = last ? `desde: ${ACTIONS[last.action].toLowerCase()}${last.action === 'fin' ? '' : ` (cap #${last.cap})`}` : '';
+  } else {
+    const elapsed = now - head.since;
+    const swapAt = head.since + S().interval * 60000;
+    const remaining = swapAt - now;
+    $('timerLabel').textContent = `Cap #${head.cap} en la cabeza`;
+    $('timerSub').textContent = `${fmt(elapsed)} puesto · cambio a las ${clock(swapAt)}`;
+    t.textContent = fmt(remaining);
+    if (remaining <= 0) { t.classList.add('over'); banner.classList.add('show'); alarm(head.since); }
+    else if (remaining <= S().warn * 1000) t.classList.add('soon');
   }
-  const elapsed = Date.now() - head.since;
-  const remaining = S().interval * 60000 - elapsed;
-  $('timerLabel').textContent = `Cap #${head.cap} en la cabeza`;
-  $('timerSub').textContent = `${fmt(elapsed)} puesto · cambio a los ${S().interval} min`;
-  t.textContent = fmt(remaining);
-  if (remaining <= 0) { t.classList.add('over'); banner.classList.add('show'); alarm(head.since); }
-  else if (remaining <= S().warn * 1000) t.classList.add('soon');
+
+  const items = todo(state.events, S(), now);
+  const html = items.map((it, i) => `<li class="${i === 0 ? 'first' : ''}${it.urgent ? ' urgent' : ''}">${it.text}</li>`).join('');
+  if (html !== lastTodo) { $('todo').innerHTML = html; lastTodo = html; }
+  const nextAct = items.find((it) => it.action)?.action;
+  document.querySelectorAll('#actions button').forEach((b) => b.classList.toggle('next', b.dataset.action === nextAct));
 }
 
 // Alert once per cap placement.
@@ -224,29 +346,26 @@ function alarm(since) {
   } catch {}
 }
 
-// Native Android app (Capacitor): the swap alarm is scheduled with the OS, so it rings even with the screen off.
+// Native Android app (Capacitor): alarms are scheduled with the OS, so they ring even with the screen off.
 const LN = () => (window.Capacitor?.isNativePlatform?.() ? window.Capacitor.Plugins?.LocalNotifications : null);
 let nativeKey = null;
 async function syncNative() {
   const ln = LN(); if (!ln) return;
   const head = capOnHead(state.events);
-  const key = head ? `${head.since}|${S().interval}|${S().warn}|${S().sound}` : '';
+  const next = head ? nextCap(state.events, S().numCaps) : 0;
+  const key = head ? `${head.since}|${head.cap}|${next}|${S().interval}|${S().warn}|${S().lead}|${S().sound}` : '';
   if (key === nativeKey) return;
   nativeKey = key;
   try {
-    await ln.cancel({ notifications: [{ id: 1 }, { id: 2 }] });
+    await ln.cancel({ notifications: [{ id: 1 }, { id: 2 }, { id: 3 }] });
     if (!head || !S().sound) return;
+    const now = Date.now();
     const swapAt = head.since + S().interval * 60000;
-    const warnAt = swapAt - S().warn * 1000;
     const list = [];
-    if (S().warn > 0 && warnAt > Date.now()) {
-      list.push({ id: 2, title: `Cambio de cap en ${S().warn} s`, body: 'Prepara el siguiente cap.', channelId: 'swap',
-        schedule: { at: new Date(warnAt), allowWhileIdle: true } });
-    }
-    if (swapAt > Date.now()) {
-      list.push({ id: 1, title: '⏰ Hora de cambiar el cap', body: `Cap #${head.cap}: se cumplieron ${S().interval} min.`, channelId: 'swap',
-        schedule: { at: new Date(swapAt), allowWhileIdle: true } });
-    }
+    const add = (id, at, title, body) => { if (at > now) list.push({ id, title, body, channelId: 'swap', schedule: { at: new Date(at), allowWhileIdle: true } }); };
+    if (S().lead > 0) add(3, swapAt - S().lead * 60000, `Saca el cap #${next} del cooler`, `El cambio es a las ${clock(swapAt)}.`);
+    if (S().warn > 0) add(2, swapAt - S().warn * 1000, `Cambio de cap en ${S().warn} s`, `Quita el #${head.cap} y pon el #${next}.`);
+    add(1, swapAt, '⏰ Hora de cambiar el cap', `Quita el #${head.cap} y pon el #${next}.`);
     if (list.length) await ln.schedule({ notifications: list });
   } catch {}
 }
@@ -255,7 +374,7 @@ async function initNative() {
   try { await ln.createChannel({ id: 'swap', name: 'Cambio de cap', importance: 5, vibration: true, visibility: 1 }); } catch {}
 }
 
-// System notification (shows even if the app is in the background, as long as the page is still running).
+// System notification (PWA: shows even if the app is in the background, as long as the page is still running).
 async function notify() {
   try {
     if (LN()) return; // native build already scheduled it with the OS
@@ -279,24 +398,23 @@ let wake;
 async function keepAwake() { try { wake = await navigator.wakeLock?.request('screen'); } catch {} }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && capOnHead(state.events)) keepAwake(); });
 
-// Settings
-const fields = { interval: 'interval', numCaps: 'numCaps', pre: 'pre', post: 'post', warn: 'warn' };
-for (const [id, key] of Object.entries(fields)) {
-  $(id).value = S()[key];
+// ---- settings ----
+for (const id of ['interval', 'numCaps', 'pre', 'post', 'warn', 'lead']) {
+  $(id).value = S()[id];
   $(id).onchange = () => {
     const v = Math.max(id === 'interval' || id === 'numCaps' ? 1 : 0, Number($(id).value) || 0);
-    S()[key] = v; $(id).value = v;
-    if (state.selected > S().numCaps) state.selected = 1;
-    save(); render();
+    S()[id] = v; $(id).value = v;
+    if (capPick > S().numCaps) capPick = null;
+    save(); renderChips(); render();
   };
 }
 $('sound').checked = S().sound;
-$('sound').onchange = () => { S().sound = $('sound').checked; save(); };
+$('sound').onchange = () => { S().sound = $('sound').checked; save(); nativeKey = null; syncNative(); };
 
-$('undo').onclick = () => { state.events.pop(); alarmedFor = null; save(); render(); };
 $('reset').onclick = () => {
   if (!confirm('¿Empezar una nueva sesión? Se borra el registro actual (copia el CSV antes si lo necesitas).')) return;
-  state = { ...defaults(), settings: S() }; alarmedFor = null; save(); render();
+  const settings = S();
+  state = { ...defaults(), settings }; alarmedFor = null; save(); render();
 };
 $('copy').onclick = async () => {
   try { await navigator.clipboard.writeText(toCSV(state.events, state.start)); $('copy').textContent = '✓ Copiado'; }
@@ -310,6 +428,7 @@ $('download').onclick = () => {
   a.click(); URL.revokeObjectURL(a.href);
 };
 
+renderChips(); renderActions();
 initNative().then(render);
 setInterval(tick, 1000);
 </script>

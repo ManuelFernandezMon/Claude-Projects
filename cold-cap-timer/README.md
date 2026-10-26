@@ -2,6 +2,19 @@
 
 Mobile-first web app to time the Penguin Cold Cap cycle during chemo. No build step, no dependencies: plain HTML + ES modules, data kept in the browser's `localStorage`.
 
+## Tell it what happened
+
+The app does the math. Type (or dictate with the keyboard mic) what happened, in Spanish, and it works out the action, the cap number and the real time, shows what it understood, and saves on **Guardar**:
+
+- `hace 3 min le puse un cap`
+- `quité el cap hace 2 minutos y puse el 2`
+- `saqué el cap 3 del cooler hace 1 minuto`
+- `terminó la quimio hace 5 minutos` / `a las 10:15 puse el cap 2`
+
+When no cap number is said it follows the rotation (next cap out of the cooler, the one already taken out gets put on, etc.). An action without its own time shares the time of the previous one, so "hace 3 min quité el cap y puse el 2" logs both 3 minutes ago. The parser is plain rules in `logic.js` (no AI service, works offline).
+
+From the log it always shows what to do now (take out cap N, remove cap M, put on cap N, put cap M back), when the next swap is, and an estimated plan with the following swaps plus the pre/post-cooling milestones when those are set.
+
 ## What it logs
 
 Four actions per cap, each with a timestamp: **sacar** del cooler, **poner** en la cabeza, **quitar** de la cabeza, **meter** al cooler. From those it derives, per cap use: time in transit before reaching the head, time on the head, time back to the cooler, and total time out of the cooler.
