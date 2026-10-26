@@ -1,0 +1,6 @@
+{
+  "appId": "com.coldcaptimer.app",
+  "appName": "Cold Cap Timer",
+  "webDir": "www",
+  "android": { "backgroundColor": "#0f766e" }
+}

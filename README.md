@@ -5,8 +5,8 @@ A monorepo holding independent projects, one per top-level folder.
 ## Projects
 
 - [`panama-pets-website/`](panama-pets-website/README.md) — marketing site for the Panama Pets veterinary clinic (React + Vite + TypeScript + Tailwind).
-
 - [`cold-cap-timer/`](cold-cap-timer/README.md) — mobile web app to time the Penguin Cold Cap swap cycle during chemo (vanilla HTML/JS, no build).
+- [`cold-cap-timer-android/`](cold-cap-timer-android/README.md) — Android (Capacitor) wrapper for `cold-cap-timer` that produces the installable APK with OS-scheduled alarms.
 
 ## Plans
 

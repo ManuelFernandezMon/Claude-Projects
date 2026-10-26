@@ -181,6 +181,7 @@ function render() {
   const n = nextAction(state.events);
   $('hint').textContent = `Siguiente: ${ACTIONS[n].toLowerCase()}`;
   tick();
+  syncNative();
 }
 
 function tick() {
@@ -223,9 +224,41 @@ function alarm(since) {
   } catch {}
 }
 
+// Native Android app (Capacitor): the swap alarm is scheduled with the OS, so it rings even with the screen off.
+const LN = () => (window.Capacitor?.isNativePlatform?.() ? window.Capacitor.Plugins?.LocalNotifications : null);
+let nativeKey = null;
+async function syncNative() {
+  const ln = LN(); if (!ln) return;
+  const head = capOnHead(state.events);
+  const key = head ? `${head.since}|${S().interval}|${S().warn}|${S().sound}` : '';
+  if (key === nativeKey) return;
+  nativeKey = key;
+  try {
+    await ln.cancel({ notifications: [{ id: 1 }, { id: 2 }] });
+    if (!head || !S().sound) return;
+    const swapAt = head.since + S().interval * 60000;
+    const warnAt = swapAt - S().warn * 1000;
+    const list = [];
+    if (S().warn > 0 && warnAt > Date.now()) {
+      list.push({ id: 2, title: `Cambio de cap en ${S().warn} s`, body: 'Prepara el siguiente cap.', channelId: 'swap',
+        schedule: { at: new Date(warnAt), allowWhileIdle: true } });
+    }
+    if (swapAt > Date.now()) {
+      list.push({ id: 1, title: '⏰ Hora de cambiar el cap', body: `Cap #${head.cap}: se cumplieron ${S().interval} min.`, channelId: 'swap',
+        schedule: { at: new Date(swapAt), allowWhileIdle: true } });
+    }
+    if (list.length) await ln.schedule({ notifications: list });
+  } catch {}
+}
+async function initNative() {
+  const ln = LN(); if (!ln) return;
+  try { await ln.createChannel({ id: 'swap', name: 'Cambio de cap', importance: 5, vibration: true, visibility: 1 }); } catch {}
+}
+
 // System notification (shows even if the app is in the background, as long as the page is still running).
 async function notify() {
   try {
+    if (LN()) return; // native build already scheduled it with the OS
     if (Notification.permission !== 'granted') return;
     const reg = await navigator.serviceWorker.ready;
     reg.showNotification('⏰ Hora de cambiar el cap', {
@@ -235,6 +268,8 @@ async function notify() {
   } catch {}
 }
 function askNotifications() {
+  const ln = LN();
+  if (ln) { ln.requestPermissions().catch(() => {}); return; }
   try { if (Notification.permission === 'default') Notification.requestPermission(); } catch {}
 }
 
@@ -275,7 +310,7 @@ $('download').onclick = () => {
   a.click(); URL.revokeObjectURL(a.href);
 };
 
-render();
+initNative().then(render);
 setInterval(tick, 1000);
 </script>
 </body>

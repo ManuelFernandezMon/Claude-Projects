@@ -1,0 +1,30 @@
+name: cold-cap-timer-android CI
+on:
+  pull_request:
+    paths: ['cold-cap-timer-android/**', 'cold-cap-timer/**']
+  push:
+    branches: [main]
+    paths: ['cold-cap-timer-android/**', 'cold-cap-timer/**']
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cold-cap-timer-android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: cold-cap-timer-android/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - run: npm run apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cold-cap-timer-debug-apk
+          path: cold-cap-timer-android/android/app/build/outputs/apk/debug/app-debug.apk
