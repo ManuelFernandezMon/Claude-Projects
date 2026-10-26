@@ -4,6 +4,12 @@ Android wrapper (Capacitor) for [`cold-cap-timer`](../cold-cap-timer/README.md).
 
 What the native build adds over the PWA: the swap alarm is scheduled with Android's `AlarmManager` through `@capacitor/local-notifications`, so it fires with the screen off or the app closed. A "warning" notification fires `warn` seconds before the swap, and the swap notification at the configured interval.
 
+## Persistent live notification
+
+While a session is active the app keeps one ongoing notification (foreground service `LiveStatusService`, Android notification chronometer) with a countdown that Android draws by itself, plus the next step. It moves through phases without the app being open: "Cap #1 en la cabeza" (countdown to taking the next cap out) → "Saca el cap #2 del cooler" (countdown to the swap) → "¡Cambiar ya!" (counts up the delay). Expanding it shows the plan for the next swaps. The web app computes the phases (`liveTimeline` in `cold-cap-timer/logic.js`) and hands them to the native plugin `LiveStatus`; it can be turned off in Ajustes. It is silent: the audible alarms are the scheduled notifications described above.
+
+Notes: on Android 14+ the user can swipe this notification away (the service keeps running). Phase switches use a handler plus an `AlarmManager` backup, so with the phone in deep sleep a text change can arrive a few seconds late; the countdown itself never drifts.
+
 ## Build
 
 Requirements: Node 22+, JDK 21, Android SDK (platform 35+, build-tools) with `ANDROID_HOME` set.

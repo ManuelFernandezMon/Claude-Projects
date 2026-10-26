@@ -160,6 +160,51 @@ export function plan(events, s, now) {
   return out;
 }
 
+// ---------------------------------------------------------------- live status (Android persistent notification)
+
+/**
+ * Timeline for the always-on Android notification. The native service shows the last phase whose `at`
+ * has passed and switches by itself at each `at`, so it keeps working while the app is closed.
+ * A phase has: at, title, text, big, sub, and either countdownTo (ms) or countUpFrom (ms).
+ * Returns [] when there is nothing to show.
+ */
+export function liveTimeline(events, s, now) {
+  const evs = capEvents(events);
+  const head = capOnHead(events);
+  if (!evs.length || (!head && events.some((e) => e.action === 'fin'))) return [];
+
+  const p = plan(events, s, now);
+  const planLines = [
+    ...(p.preDoneAt ? [`Pre-enfriamiento listo: ${clock(p.preDoneAt)}`] : []),
+    ...p.swaps.slice(0, 3).map((w) => `${w.takeOutAt ? `Sacar #${w.to}: ${clock(w.takeOutAt)} · ` : ''}Cambio: ${clock(w.at)} (#${w.from} → #${w.to})`),
+    ...(p.postDoneAt ? [`Fin del post-enfriamiento: ${clock(p.postDoneAt)}`] : []),
+  ];
+  const withBig = (phase) => ({ ...phase, big: [phase.text, ...(planLines.length ? ['', ...planLines] : [])].join('\n') });
+
+  if (!head) {
+    const last = evs[evs.length - 1];
+    const first = todo(events, s, now)[0];
+    return [withBig({ at: last.ts, title: 'Sin cap en la cabeza', text: first.text, sub: 'desde el último paso', countUpFrom: last.ts, urgent: !!first.urgent })];
+  }
+
+  const nxt = nextCap(events, s.numCaps);
+  const swapAt = head.since + s.interval * 60000;
+  const alreadyOut = capsWhere(events, 'sacar').includes(nxt);
+  const leadAt = s.lead > 0 && !alreadyOut ? Math.max(head.since, swapAt - s.lead * 60000) : null;
+  const title = `Cap #${head.cap} en la cabeza`;
+  const phases = [];
+  if (alreadyOut) {
+    phases.push({ at: head.since, title, text: `El #${nxt} ya está fuera · cambio a las ${clock(swapAt)}`, sub: 'para el cambio', countdownTo: swapAt });
+  } else if (leadAt) {
+    phases.push({ at: head.since, title, text: `Sacar el #${nxt} a las ${clock(leadAt)} · cambio ${clock(swapAt)}`, sub: `para sacar el #${nxt}`, countdownTo: leadAt });
+    phases.push({ at: leadAt, title: `Saca el cap #${nxt} del cooler`, text: `Cambio a las ${clock(swapAt)}: quita el #${head.cap}, pon el #${nxt}`, sub: 'para el cambio', countdownTo: swapAt, urgent: true });
+  } else {
+    phases.push({ at: head.since, title, text: `Siguiente: cap #${nxt} · cambio a las ${clock(swapAt)}`, sub: 'para el cambio', countdownTo: swapAt });
+  }
+  phases.push({ at: swapAt, title: '¡Cambiar ya!', text: `Quita el #${head.cap} y pon el #${nxt}`, sub: 'de retraso', countUpFrom: swapAt, urgent: true });
+  return phases.map(withBig);
+}
+
 // ---------------------------------------------------------------- natural language input (Spanish)
 
 const norm = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');

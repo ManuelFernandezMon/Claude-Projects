@@ -33,7 +33,9 @@ It is an installable PWA (manifest, service worker, icons; works offline after t
 2. Menu (⋮) → **Install app** / **Add to Home screen**.
 3. Open it from the home-screen icon (full screen, no browser bar). Allow notifications when asked.
 
-Limitation: a web app cannot guarantee an alarm while the phone is locked, because Android may pause background pages. The app requests a screen wake lock when a cap is put on, so keep it open and the screen on during the session. If locked-screen alarms matter, a native wrapper (e.g. Capacitor) with scheduled local notifications would be needed.
+The Android APK (see `../cold-cap-timer-android`) adds OS-scheduled alarms and a persistent live-countdown notification, which the PWA cannot do.
+
+Limitation of the PWA: a web app cannot guarantee an alarm while the phone is locked, because Android may pause background pages. The app requests a screen wake lock when a cap is put on, so keep it open and the screen on during the session. If locked-screen alarms matter, a native wrapper (e.g. Capacitor) with scheduled local notifications would be needed.
 
 ## Run
 

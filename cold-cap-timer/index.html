@@ -133,6 +133,9 @@
         <label>Sonido y vibración
           <input id="sound" type="checkbox" style="width:auto;justify-self:start;transform:scale(1.4);margin:8px">
         </label>
+        <label>Notificación fija con cuenta regresiva (solo app Android)
+          <input id="live" type="checkbox" style="width:auto;justify-self:start;transform:scale(1.4);margin:8px">
+        </label>
       </div>
     </details>
   </section>
@@ -145,12 +148,12 @@
 </main>
 
 <script type="module">
-import { ACTIONS, fmt, clock, capOnHead, summarize, inferCap, nextCap, todo, plan, parseEntries, toCSV } from './logic.js';
+import { ACTIONS, fmt, clock, capOnHead, summarize, inferCap, nextCap, todo, plan, parseEntries, liveTimeline, toCSV } from './logic.js';
 
 const KEY = 'coldcap.v2';
 const defaults = () => ({
   start: Date.now(), events: [], seq: 0,
-  settings: { v: 3, interval: 20, numCaps: 4, pre: 0, post: 0, warn: 60, lead: 5, sound: true },
+  settings: { v: 3, interval: 20, numCaps: 4, pre: 0, post: 0, warn: 60, lead: 5, sound: true, live: true },
 });
 let state = load();
 function load() {
@@ -296,6 +299,7 @@ function render() {
   renderTables(); renderPlan();
   tick();
   syncNative();
+  syncLive();
 }
 
 // ---- every second ----
@@ -350,7 +354,14 @@ function alarm(since) {
 }
 
 // Native Android app (Capacitor): alarms are scheduled with the OS, so they ring even with the screen off.
-const LN = () => (window.Capacitor?.isNativePlatform?.() ? window.Capacitor.Plugins?.LocalNotifications : null);
+// Capacitor only exposes a plugin on `Capacitor.Plugins` after registerPlugin() ran; with no bundler we do it here.
+function nativePlugin(name) {
+  const cap = window.Capacitor;
+  if (!cap?.isNativePlatform?.()) return null;
+  return cap.Plugins?.[name] ?? cap.registerPlugin(name);
+}
+const LN = () => nativePlugin('LocalNotifications');
+const LS = () => nativePlugin('LiveStatus');
 let nativeKey = null;
 async function syncNative() {
   const ln = LN(); if (!ln) return;
@@ -372,6 +383,16 @@ async function syncNative() {
     if (list.length) await ln.schedule({ notifications: list });
   } catch {}
 }
+// Persistent notification with the live countdown; the native service switches phases by itself.
+let liveKey = null;
+async function syncLive() {
+  const ls = LS(); if (!ls) return;
+  const phases = S().live ? liveTimeline(state.events, S(), Date.now()) : [];
+  const key = JSON.stringify(phases);
+  if (key === liveKey) return;
+  liveKey = key;
+  try { if (phases.length) await ls.start({ phases }); else await ls.stop(); } catch {}
+}
 async function initNative() {
   const ln = LN(); if (!ln) return;
   try { await ln.createChannel({ id: 'swap', name: 'Cambio de cap', importance: 5, vibration: true, visibility: 1 }); } catch {}
@@ -391,7 +412,11 @@ async function notify() {
 }
 function askNotifications() {
   const ln = LN();
-  if (ln) { ln.requestPermissions().catch(() => {}); return; }
+  if (ln) {
+    // Alarms and the live notification may have been created before the permission was granted: redo them.
+    ln.requestPermissions().then(() => { nativeKey = null; liveKey = null; render(); }).catch(() => {});
+    return;
+  }
   try { if (Notification.permission === 'default') Notification.requestPermission(); } catch {}
 }
 
@@ -413,6 +438,8 @@ for (const id of ['interval', 'numCaps', 'pre', 'post', 'warn', 'lead']) {
 }
 $('sound').checked = S().sound;
 $('sound').onchange = () => { S().sound = $('sound').checked; save(); nativeKey = null; syncNative(); };
+$('live').checked = S().live;
+$('live').onchange = () => { S().live = $('live').checked; save(); syncLive(); };
 
 $('reset').onclick = () => {
   if (!confirm('¿Empezar una nueva sesión? Se borra el registro actual (copia el CSV antes si lo necesitas).')) return;

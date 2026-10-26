@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fmt, capOnHead, capStates, inferCap, summarize, todo, plan, parseEntries } from './logic.js';
+import { fmt, capOnHead, capStates, inferCap, summarize, todo, plan, parseEntries, liveTimeline } from './logic.js';
 
 const MIN = 60000;
 const NOW = new Date('2026-01-15T10:30:00').getTime();
@@ -124,4 +124,29 @@ test('parse: "saqué el cap" with a cap on the head takes the next one', () => {
 
 test('capStates', () => {
   assert.deepEqual([...capStates([ev('sacar', 1, 0), ev('poner', 1, 1), ev('sacar', 2, 2)])], [[1, 'poner'], [2, 'sacar']]);
+});
+
+test('liveTimeline: lead window, then swap due', () => {
+  const ph = liveTimeline([ev('poner', 1, -5)], { ...S, lead: 5 }, NOW);
+  assert.deepEqual(ph.map((p) => p.at), [at(-5), at(10), at(15)]);
+  assert.deepEqual(ph.map((p) => p.countdownTo ?? null), [at(10), at(15), null]);
+  assert.equal(ph[2].countUpFrom, at(15));
+  assert.match(ph[1].title, /Saca el cap #2/);
+  assert.match(ph[2].text, /Quita el #1 y pon el #2/);
+  assert.match(ph[0].big, /Cambio: .*\(#1 → #2\)/);
+});
+
+test('liveTimeline: no lead phase when lead is 0 or next cap already out', () => {
+  assert.equal(liveTimeline([ev('poner', 1, -5)], { ...S, lead: 0 }, NOW).length, 2);
+  const out = liveTimeline([ev('poner', 1, -5), ev('sacar', 2, -1)], { ...S, lead: 5 }, NOW);
+  assert.equal(out.length, 2);
+  assert.match(out[0].text, /El #2 ya está fuera/);
+});
+
+test('liveTimeline: no cap on head counts up from the last step; nothing to show otherwise', () => {
+  const ph = liveTimeline([ev('sacar', 1, -30), ev('poner', 1, -29), ev('quitar', 1, -2)], { ...S, lead: 5 }, NOW);
+  assert.equal(ph.length, 1);
+  assert.equal(ph[0].countUpFrom, at(-2));
+  assert.deepEqual(liveTimeline([], S, NOW), []);
+  assert.deepEqual(liveTimeline([ev('poner', 1, -5), ev('quitar', 1, -1), ev('fin', 0, 0)], S, NOW), []);
 });
