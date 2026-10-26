@@ -43,19 +43,16 @@ function setTheme(theme: Theme) {
   } catch {
     /* not saved: the choice lasts until the app is closed */
   }
-  const run = () => {
-    apply(theme)
-    listeners.forEach((l) => l())
-  }
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  if (typeof document.startViewTransition === 'function' && !reduce) {
-    // a plain cross-fade of the whole page (see the data-vt-theme rules in base.css)
-    document.documentElement.dataset.vtTheme = '1'
-    const t = document.startViewTransition(run)
-    void t.finished.finally(() => delete document.documentElement.dataset.vtTheme)
-  } else {
-    run()
+  // A short color fade. The page is NOT cross-faded with a view transition here: that takes a snapshot of the whole screen,
+  // and Android's WebView draws it incompletely (blank blocks over the glass panels).
+  const root = document.documentElement
+  if (!reduce) {
+    root.classList.add('theme-fade')
+    window.setTimeout(() => root.classList.remove('theme-fade'), 400)
   }
+  apply(theme)
+  listeners.forEach((l) => l())
 }
 
 export function useTheme(): { theme: Theme; toggle: () => void } {
