@@ -50,6 +50,10 @@
   details summary { cursor: pointer; font-weight: 600; }
   .banner { border-radius: 12px; padding: 12px; background: var(--warn); color: #fff; font-weight: 700; text-align: center; display: none; }
   .banner.show { display: block; }
+  .banner.err { background: var(--danger); margin: 0 auto 14px; max-width: 560px; display: none; }
+  .banner.err.show { display: grid; gap: 8px; }
+  .banner.err button { background: #fff; color: var(--danger); }
+  #errLog { white-space: pre-wrap; font-size: .8rem; color: var(--muted); }
   .todo { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 6px; }
   .todo li { padding: 8px 10px; border-radius: 10px; background: var(--bg); color: var(--muted); }
   .todo li.first { background: var(--accent); color: var(--accent-ink); font-size: 1.1rem; font-weight: 600; }
@@ -64,6 +68,46 @@
 </style>
 </head>
 <body>
+<div class="banner err" id="errBanner" role="alert">
+  <div id="errText"></div>
+  <button class="small" id="errReload" type="button">Recargar</button>
+</div>
+<script>
+// Classic (non-module) script so problems are visible even when the app module fails to load.
+(function () {
+  var KEY = 'coldcap.errors';
+  function show(msg) {
+    try {
+      var list = JSON.parse(localStorage.getItem(KEY) || '[]');
+      list.push(new Date().toLocaleTimeString('es-PA') + ' ' + msg);
+      localStorage.setItem(KEY, JSON.stringify(list.slice(-8)));
+    } catch (e) {}
+    var b = document.getElementById('errBanner');
+    if (!b) return;
+    document.getElementById('errText').textContent = 'Algo falló: ' + msg;
+    b.classList.add('show');
+    var log = document.getElementById('errLog');
+    if (log) log.textContent = (JSON.parse(localStorage.getItem(KEY) || '[]')).join('\n');
+  }
+  window.__reportError = function (e) { show(String((e && (e.stack || e.message)) || e).split('\n')[0].slice(0, 200)); };
+  window.addEventListener('error', function (ev) { window.__reportError(ev.error || ev.message); });
+  window.addEventListener('unhandledrejection', function (ev) { window.__reportError(ev.reason); });
+  setTimeout(function () { if (!window.__booted) show('la app no terminó de cargar'); }, 5000);
+  document.addEventListener('DOMContentLoaded', function () {
+    // Reload also clears the offline cache and service worker, so a stale copy can't keep breaking the app.
+    document.getElementById('errReload').onclick = function () {
+      var done = function () { location.reload(); };
+      try {
+        Promise.resolve(navigator.serviceWorker && navigator.serviceWorker.getRegistrations())
+          .then(function (rs) { return Promise.all((rs || []).map(function (r) { return r.unregister(); })); })
+          .then(function () { return window.caches ? caches.keys() : []; })
+          .then(function (ks) { return Promise.all(ks.map(function (k) { return caches.delete(k); })); })
+          .then(done, done);
+      } catch (e) { done(); }
+    };
+  });
+})();
+</script>
 <main>
   <div class="row">
     <h1>🧊 Cold Cap Timer</h1>
@@ -137,6 +181,8 @@
           <input id="live" type="checkbox" style="width:auto;justify-self:start;transform:scale(1.4);margin:8px">
         </label>
       </div>
+      <p class="muted" style="margin-top:12px">Diagnóstico (últimos errores):</p>
+      <pre id="errLog" style="margin:0"></pre>
     </details>
   </section>
 
@@ -170,6 +216,8 @@ function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catc
 
 const $ = (id) => document.getElementById(id);
 const S = () => state.settings;
+// A failure in one part of the screen must not freeze the rest: run each part on its own and report errors.
+const safe = (fn) => (...args) => { try { return fn(...args); } catch (e) { window.__reportError?.(e); } };
 let alarmedFor = null; // `since` timestamp of the head cap we already alerted for
 let agoMin = 0;        // "hace N min" for the next button tap
 let capPick = null;    // explicit cap for the next button tap (null = automatic)
@@ -181,21 +229,21 @@ function addEvents(list) {
   save(); render();
 }
 
-function logButton(action) {
+const logButton = safe(function logButton(action) {
   const ts = Date.now() - agoMin * 60000;
   const prefix = state.events.filter((e) => e.ts <= ts);
   const cap = action === 'fin' ? 0 : capPick ?? inferCap(prefix, action, S().numCaps);
   agoMin = 0; capPick = null;
   addEvents([{ action, cap, ts }]);
   if (action === 'poner') { keepAwake(); askNotifications(); }
-}
+});
 
-$('undo').onclick = () => {
+$('undo').onclick = safe(() => {
   if (!state.events.length) return;
   const last = state.events.reduce((a, b) => ((b.n ?? 0) >= (a.n ?? 0) ? b : a));
   state.events.splice(state.events.indexOf(last), 1);
   alarmedFor = null; save(); render();
-};
+});
 
 // ---- free-text input ----
 let pending = [];
@@ -203,7 +251,7 @@ function agoLabel(ts) {
   const d = Math.round((Date.now() - ts) / 60000);
   return d <= 0 ? 'ahora' : `hace ${d} min`;
 }
-function preview() {
+const preview = safe(function preview() {
   const text = $('say').value.trim();
   const box = $('preview'); box.innerHTML = '';
   pending = [];
@@ -215,9 +263,9 @@ function preview() {
     add('ok', `✓ ${ACTIONS[e.action]}${e.action === 'fin' ? '' : ` · cap #${e.cap}`} · ${clock(e.ts)} (${agoLabel(e.ts)})`);
   }
   for (const p of problems) add('bad', p);
-}
+});
 $('say').addEventListener('input', preview);
-$('sayForm').addEventListener('submit', (ev) => {
+$('sayForm').addEventListener('submit', safe((ev) => {
   ev.preventDefault();
   preview();
   if (!pending.length) return;
@@ -225,7 +273,7 @@ $('sayForm').addEventListener('submit', (ev) => {
   $('say').value = ''; $('preview').innerHTML = '';
   addEvents(toAdd.map(({ action, cap, ts }) => ({ action, cap, ts })));
   if (toAdd.some((e) => e.action === 'poner')) { keepAwake(); askNotifications(); }
-});
+}));
 
 // Voice dictation where the browser supports it (Chrome); the Android keyboard mic works everywhere.
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -296,10 +344,7 @@ function renderPlan() {
 }
 
 function render() {
-  renderTables(); renderPlan();
-  tick();
-  syncNative();
-  syncLive();
+  for (const part of [renderTables, renderPlan, tick, syncNative, syncLive]) safe(part)();
 }
 
 // ---- every second ----
@@ -424,7 +469,11 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catc
 
 let wake;
 async function keepAwake() { try { wake = await navigator.wakeLock?.request('screen'); } catch {} }
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && capOnHead(state.events)) keepAwake(); });
+// Coming back from a locked screen or another app: redraw right away instead of waiting for the next timer.
+const refreshNow = () => { render(); if (capOnHead(state.events)) keepAwake(); };
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshNow(); });
+window.addEventListener('pageshow', refreshNow);
+window.addEventListener('focus', refreshNow);
 
 // ---- settings ----
 for (const id of ['interval', 'numCaps', 'pre', 'post', 'warn', 'lead']) {
@@ -458,9 +507,11 @@ $('download').onclick = () => {
   a.click(); URL.revokeObjectURL(a.href);
 };
 
-renderChips(); renderActions();
-initNative().then(render);
-setInterval(tick, 1000);
+safe(renderChips)(); safe(renderActions)();
+initNative().finally(render);
+setInterval(safe(tick), 1000);
+try { $('errLog').textContent = JSON.parse(localStorage.getItem('coldcap.errors') || '[]').join('\n'); } catch {}
+window.__booted = true;
 </script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-const CACHE = 'coldcap-v1';
+const CACHE = 'coldcap-v2';
 const SHELL = ['./', './index.html', './logic.js', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
 
@@ -10,12 +10,24 @@ self.addEventListener('activate', (e) => {
     .then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
     .then(() => self.clients.claim()));
 });
-// Network first so updates arrive, cache fallback so it works offline in the infusion room.
+// Network first (with a timeout so a flaky hospital network can't hang the app), cache fallback for offline.
+// Only good responses are cached, so an error page never gets served later.
+const NETWORK_TIMEOUT_MS = 4000;
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
-  e.respondWith(fetch(e.request).then((r) => {
-    const copy = r.clone();
-    caches.open(CACHE).then((c) => c.put(e.request, copy));
-    return r;
-  }).catch(() => caches.match(e.request)));
+  e.respondWith((async () => {
+    try {
+      const r = await Promise.race([
+        fetch(e.request),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), NETWORK_TIMEOUT_MS)),
+      ]);
+      if (r.ok) {
+        const copy = r.clone();
+        caches.open(CACHE).then((c) => c.put(e.request, copy));
+      }
+      return r;
+    } catch {
+      return (await caches.match(e.request)) || Response.error();
+    }
+  })());
 });
