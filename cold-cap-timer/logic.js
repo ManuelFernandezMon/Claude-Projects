@@ -49,6 +49,8 @@ const capsWhere = (events, action) => [...capStates(events)].filter(([, a]) => a
 export function inferCap(events, action, numCaps, selected = 1) {
   const evs = capEvents(events);
   const rotation = () => {
+    const head = capOnHead(events);
+    if (head) return (head.cap % numCaps) + 1; // the cap after the one on the head
     const last = [...evs].reverse().find((e) => e.action === 'sacar');
     return last ? (last.cap % numCaps) + 1 : selected;
   };
@@ -151,7 +153,7 @@ export function plan(events, s, now) {
       const at = head.since + k * s.interval * 60000;
       if (out.postDoneAt && at >= out.postDoneAt) break;
       const to = (cap % s.numCaps) + 1;
-      out.swaps.push({ at, from: cap, to });
+      out.swaps.push({ at, from: cap, to, takeOutAt: s.lead > 0 ? at - s.lead * 60000 : null });
       cap = to;
     }
   }

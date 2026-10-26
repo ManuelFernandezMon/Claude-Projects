@@ -129,7 +129,7 @@
         <label>Pre-enfriamiento (min, 0 = no usar) <input id="pre" type="number" min="0" inputmode="numeric"></label>
         <label>Post-enfriamiento (min, 0 = no usar) <input id="post" type="number" min="0" inputmode="numeric"></label>
         <label>Avisar con (seg) de anticipación <input id="warn" type="number" min="0" inputmode="numeric"></label>
-        <label>Avisar para sacar el siguiente cap del cooler (min antes del cambio, 0 = no avisar) <input id="lead" type="number" min="0" inputmode="numeric"></label>
+        <label>Sacar el siguiente cap del cooler (min antes del cambio, 0 = no avisar) <input id="lead" type="number" min="0" inputmode="numeric"></label>
         <label>Sonido y vibración
           <input id="sound" type="checkbox" style="width:auto;justify-self:start;transform:scale(1.4);margin:8px">
         </label>
@@ -150,7 +150,7 @@ import { ACTIONS, fmt, clock, capOnHead, summarize, inferCap, nextCap, todo, pla
 const KEY = 'coldcap.v2';
 const defaults = () => ({
   start: Date.now(), events: [], seq: 0,
-  settings: { interval: 20, numCaps: 4, pre: 0, post: 0, warn: 60, lead: 0, sound: true },
+  settings: { v: 3, interval: 20, numCaps: 4, pre: 0, post: 0, warn: 60, lead: 5, sound: true },
 });
 let state = load();
 function load() {
@@ -158,7 +158,9 @@ function load() {
   try {
     const st = JSON.parse(localStorage.getItem(KEY) ?? localStorage.getItem('coldcap.v1'));
     if (!st) return d;
-    return { ...d, ...st, settings: { ...d.settings, ...st.settings } };
+    const settings = { ...d.settings, ...st.settings };
+    if ((st.settings?.v ?? 0) < 3) { settings.lead = 5; settings.v = 3; } // cap goes out of the cooler 5 min before each swap
+    return { ...d, ...st, settings };
   } catch { return d; }
 }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} }
@@ -284,7 +286,8 @@ function renderPlan() {
   const p = plan(state.events, S(), Date.now());
   const rows = [];
   if (p.preDoneAt) rows.push(`Pre-enfriamiento listo a las ${clock(p.preDoneAt)}`);
-  p.swaps.forEach((w, i) => rows.push(`Cambio ${i + 1}: ${clock(w.at)} · cap #${w.from} → #${w.to}`));
+  p.swaps.forEach((w, i) => rows.push(
+    `${w.takeOutAt ? `Sacar #${w.to} del cooler: <b>${clock(w.takeOutAt)}</b> · ` : ''}Cambio ${i + 1}: <b>${clock(w.at)}</b> · #${w.from} → #${w.to}`));
   if (p.postDoneAt) rows.push(`Fin del post-enfriamiento: ${clock(p.postDoneAt)}`);
   $('plan').innerHTML = rows.length ? rows.map((r) => `<div>${r}</div>`).join('') : '<div class="muted">Aparece cuando pongas el primer cap.</div>';
 }

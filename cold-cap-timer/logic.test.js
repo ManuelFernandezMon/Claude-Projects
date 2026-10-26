@@ -39,7 +39,7 @@ test('summarize starts a new use after meter + sacar', () => {
 
 test('inferCap follows the swap flow', () => {
   assert.equal(inferCap([], 'poner', 4), 1);
-  assert.equal(inferCap([ev('poner', 1, 0)], 'sacar', 4), 1); // no sacar logged yet: starts at 1
+  assert.equal(inferCap([ev('poner', 1, 0)], 'sacar', 4), 2); // cap 1 on head: next out is 2
   const e = [ev('sacar', 1, 0), ev('poner', 1, 1)];
   assert.equal(inferCap(e, 'sacar', 4), 2);
   assert.equal(inferCap(e, 'quitar', 4), 1);
@@ -108,10 +108,18 @@ test('plan: swaps projected from the cap on head, clipped by post-cooling', () =
   const events = [ev('poner', 1, -5)];
   const p = plan(events, S, NOW);
   assert.deepEqual(p.swaps.map((x) => [x.from, x.to, x.at]), [[1, 2, at(15)], [2, 3, at(35)], [3, 4, at(55)], [4, 1, at(75)]]);
+  assert.equal(p.swaps[0].takeOutAt, null);
+  const withLead = plan(events, { ...S, lead: 5 }, NOW);
+  assert.deepEqual(withLead.swaps.slice(0, 2).map((x) => x.takeOutAt), [at(10), at(30)]);
   const withFin = plan([...events, ev('fin', 0, 0)], { ...S, post: 30 }, NOW);
   assert.equal(withFin.postDoneAt, at(30));
   assert.deepEqual(withFin.swaps.map((x) => x.at), [at(15)]);
   assert.equal(plan(events, { ...S, pre: 50 }, NOW).preDoneAt, at(45));
+});
+
+test('parse: "saqué el cap" with a cap on the head takes the next one', () => {
+  const r = parseEntries('hace 1 min saqué el cap', NOW, ctx([ev('poner', 1, -16)]));
+  assert.deepEqual(r.entries, [{ action: 'sacar', cap: 2, ts: NOW - MIN }]);
 });
 
 test('capStates', () => {
