@@ -12,6 +12,16 @@ A countdown starts when a cap is put on and alerts (sound + vibration + banner) 
 
 The swap interval, number of caps and pre/post-cooling minutes are settings, not hardcoded. Public sources disagree (patient reports range from 15 to 30 minutes per cap, and post-cooling depends on the chemo regimen), so use the values in Penguin's written instructions and your oncology team's protocol. The default of 20 minutes is only a starting point.
 
+## Install on Android
+
+It is an installable PWA (manifest, service worker, icons; works offline after the first load). It needs to be served over **HTTPS** (or `localhost`) for Chrome to offer installation:
+
+1. Open the deployed URL in Chrome on the Android phone.
+2. Menu (⋮) → **Install app** / **Add to Home screen**.
+3. Open it from the home-screen icon (full screen, no browser bar). Allow notifications when asked.
+
+Limitation: a web app cannot guarantee an alarm while the phone is locked, because Android may pause background pages. The app requests a screen wake lock when a cap is put on, so keep it open and the screen on during the session. If locked-screen alarms matter, a native wrapper (e.g. Capacitor) with scheduled local notifications would be needed.
+
 ## Run
 
 ```
