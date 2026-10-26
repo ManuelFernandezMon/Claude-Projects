@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<title>Cold Cap Timer</title>
+<style>
+  :root {
+    --bg: #f6f8f8; --card: #fff; --ink: #14201f; --muted: #5d6f6d; --line: #d8e2e1;
+    --accent: #0f766e; --accent-ink: #fff; --warn: #b45309; --danger: #b91c1c; --ok: #15803d;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d1514; --card: #16211f; --ink: #e8f0ef; --muted: #93a9a6; --line: #263735;
+      --accent: #2dd4bf; --accent-ink: #052e2a; --warn: #fbbf24; --danger: #f87171; --ok: #4ade80;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.4 system-ui, sans-serif;
+         padding: 16px max(16px, env(safe-area-inset-right)) 32px max(16px, env(safe-area-inset-left)); }
+  main { max-width: 560px; margin: 0 auto; display: grid; gap: 14px; }
+  h1 { font-size: 1.15rem; margin: 0; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+  .row { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  .muted { color: var(--muted); font-size: .9rem; }
+  .timer { font-size: 3.4rem; font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; line-height: 1.1; }
+  .timer.over { color: var(--danger); }
+  .timer.soon { color: var(--warn); }
+  .label { text-align: center; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  button { font: inherit; border-radius: 12px; border: 1px solid var(--line); background: var(--card);
+           color: var(--ink); padding: 16px 10px; min-height: 64px; font-weight: 600; cursor: pointer; }
+  button.action.next { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  button.small { min-height: 40px; padding: 8px 12px; font-weight: 500; }
+  button:active { transform: scale(.98); }
+  .caps { display: flex; gap: 8px; flex-wrap: wrap; }
+  .caps button { min-height: 44px; min-width: 44px; padding: 8px 12px; }
+  .caps button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 500; }
+  .scroll { overflow-x: auto; }
+  label { display: grid; gap: 4px; font-size: .9rem; }
+  input { font: inherit; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); width: 100%; }
+  .settings { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  details summary { cursor: pointer; font-weight: 600; }
+  .banner { border-radius: 12px; padding: 12px; background: var(--warn); color: #fff; font-weight: 700; text-align: center; display: none; }
+  .banner.show { display: block; }
+</style>
+</head>
+<body>
+<main>
+  <div class="row">
+    <h1>🧊 Cold Cap Timer</h1>
+    <div class="muted" id="clock"></div>
+  </div>
+
+  <div class="banner" id="banner">⏰ ¡Hora de cambiar el cap!</div>
+
+  <section class="card" aria-live="polite">
+    <div class="label muted" id="timerLabel">Sin cap en la cabeza</div>
+    <div class="timer" id="timer">--:--</div>
+    <div class="label muted" id="timerSub"></div>
+  </section>
+
+  <section class="card">
+    <div class="row" style="margin-bottom:10px">
+      <strong>Cap en uso</strong>
+      <span class="muted" id="sessionInfo"></span>
+    </div>
+    <div class="caps" id="caps" role="group" aria-label="Seleccionar cap"></div>
+  </section>
+
+  <section class="grid" id="actions"></section>
+  <div class="row">
+    <button class="small" id="undo">↩ Deshacer último</button>
+    <span class="muted" id="hint"></span>
+  </div>
+
+  <section class="card">
+    <strong>Registro</strong>
+    <div class="scroll"><table>
+      <thead><tr><th>Cap</th><th>Sacar→Poner</th><th>En cabeza</th><th>Quitar→Meter</th><th>Fuera del cooler</th></tr></thead>
+      <tbody id="summary"></tbody>
+    </table></div>
+    <details style="margin-top:10px">
+      <summary>Todos los eventos</summary>
+      <div class="scroll"><table><tbody id="log"></tbody></table></div>
+    </details>
+  </section>
+
+  <section class="card">
+    <details>
+      <summary>Ajustes</summary>
+      <p class="muted">Los tiempos varían según el protocolo de Penguin y de tu oncólogo/a. Pon aquí los de ustedes; la app no asume ninguno.</p>
+      <div class="settings">
+        <label>Minutos por cap en la cabeza <input id="interval" type="number" min="1" inputmode="numeric"></label>
+        <label>Cantidad de caps <input id="numCaps" type="number" min="1" max="12" inputmode="numeric"></label>
+        <label>Pre-enfriamiento (min, opcional) <input id="pre" type="number" min="0" inputmode="numeric"></label>
+        <label>Post-enfriamiento (min, opcional) <input id="post" type="number" min="0" inputmode="numeric"></label>
+        <label>Avisar con (seg) de anticipación <input id="warn" type="number" min="0" inputmode="numeric"></label>
+        <label>Sonido y vibración
+          <input id="sound" type="checkbox" style="width:auto;justify-self:start;transform:scale(1.4);margin:8px">
+        </label>
+      </div>
+    </details>
+  </section>
+
+  <section class="card row">
+    <button class="small" id="copy">Copiar CSV</button>
+    <button class="small" id="download">Descargar CSV</button>
+    <button class="small" id="reset" style="color:var(--danger)">Nueva sesión</button>
+  </section>
+</main>
+
+<script type="module">
+import { ACTIONS, fmt, capOnHead, summarize, nextAction, toCSV } from './logic.js';
+
+const KEY = 'coldcap.v1';
+const defaults = () => ({
+  start: Date.now(), events: [], selected: 1,
+  settings: { interval: 20, numCaps: 4, pre: 0, post: 0, warn: 60, sound: true },
+});
+let state = load();
+function load() {
+  try { return { ...defaults(), ...JSON.parse(localStorage.getItem(KEY)) }; } catch { return defaults(); }
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} }
+
+const $ = (id) => document.getElementById(id);
+const S = () => state.settings;
+let alarmedFor = null; // `since` timestamp of the head cap we already alerted for
+
+function log(action) {
+  state.events.push({ action, cap: state.selected, ts: Date.now() });
+  if (action === 'meter') state.selected = state.selected % S().numCaps + 1;
+  save(); render();
+  if (action === 'poner') keepAwake();
+}
+
+function renderCaps() {
+  const box = $('caps'); box.innerHTML = '';
+  for (let i = 1; i <= S().numCaps; i++) {
+    const b = document.createElement('button');
+    b.textContent = i; b.setAttribute('aria-pressed', i === state.selected);
+    b.onclick = () => { state.selected = i; save(); render(); };
+    box.append(b);
+  }
+}
+
+function renderActions() {
+  const next = nextAction(state.events);
+  const box = $('actions'); box.innerHTML = '';
+  const icons = { sacar: '📤', poner: '🧢', quitar: '🫳', meter: '📥' };
+  for (const a of ['sacar', 'poner', 'quitar', 'meter']) {
+    const b = document.createElement('button');
+    b.className = 'action' + (a === next ? ' next' : '');
+    b.textContent = `${icons[a]} ${ACTIONS[a]}`;
+    b.onclick = () => log(a);
+    box.append(b);
+  }
+}
+
+function renderTables() {
+  const t0 = state.start;
+  const m = (ms) => (ms == null ? '—' : fmt(ms));
+  $('summary').innerHTML = summarize(state.events).map((u) =>
+    `<tr><td>#${u.cap}</td><td>${m(u.transit)}</td><td>${m(u.onHead)}</td><td>${m(u.backToCooler)}</td><td>${m(u.outOfCooler)}</td></tr>`
+  ).join('') || '<tr><td colspan="5" class="muted">Aún no hay registros</td></tr>';
+  $('log').innerHTML = [...state.events].reverse().map((e) =>
+    `<tr><td>${new Date(e.ts).toLocaleTimeString('es-PA')}</td><td>#${e.cap}</td><td>${ACTIONS[e.action]}</td><td class="muted">+${fmt(e.ts - t0)}</td></tr>`
+  ).join('');
+}
+
+function render() {
+  renderCaps(); renderActions(); renderTables();
+  $('sessionInfo').textContent = `Sesión iniciada ${new Date(state.start).toLocaleTimeString('es-PA', { hour: '2-digit', minute: '2-digit' })}`;
+  const n = nextAction(state.events);
+  $('hint').textContent = `Siguiente: ${ACTIONS[n].toLowerCase()}`;
+  tick();
+}
+
+function tick() {
+  $('clock').textContent = new Date().toLocaleTimeString('es-PA');
+  const head = capOnHead(state.events);
+  const t = $('timer'); t.className = 'timer';
+  const banner = $('banner'); banner.classList.remove('show');
+  if (!head) {
+    $('timerLabel').textContent = 'Sin cap en la cabeza';
+    const last = state.events[state.events.length - 1];
+    t.textContent = last ? fmt(Date.now() - last.ts) : '--:--';
+    $('timerSub').textContent = last ? `desde: ${ACTIONS[last.action].toLowerCase()} (cap #${last.cap})` : 'Empieza con “Sacar del cooler”';
+    return;
+  }
+  const elapsed = Date.now() - head.since;
+  const remaining = S().interval * 60000 - elapsed;
+  $('timerLabel').textContent = `Cap #${head.cap} en la cabeza`;
+  $('timerSub').textContent = `${fmt(elapsed)} puesto · cambio a los ${S().interval} min`;
+  t.textContent = fmt(remaining);
+  if (remaining <= 0) { t.classList.add('over'); banner.classList.add('show'); alarm(head.since); }
+  else if (remaining <= S().warn * 1000) t.classList.add('soon');
+}
+
+// Alert once per cap placement.
+function alarm(since) {
+  if (alarmedFor === since) return;
+  alarmedFor = since;
+  if (!S().sound) return;
+  try { navigator.vibrate?.([300, 150, 300, 150, 300]); } catch {}
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [0, 0.35, 0.7].forEach((d) => {
+      const o = ctx.createOscillator(); const g = ctx.createGain();
+      o.frequency.value = 880; o.connect(g); g.connect(ctx.destination);
+      g.gain.setValueAtTime(0.3, ctx.currentTime + d);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + d + 0.3);
+      o.start(ctx.currentTime + d); o.stop(ctx.currentTime + d + 0.3);
+    });
+  } catch {}
+}
+
+let wake;
+async function keepAwake() { try { wake = await navigator.wakeLock?.request('screen'); } catch {} }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && capOnHead(state.events)) keepAwake(); });
+
+// Settings
+const fields = { interval: 'interval', numCaps: 'numCaps', pre: 'pre', post: 'post', warn: 'warn' };
+for (const [id, key] of Object.entries(fields)) {
+  $(id).value = S()[key];
+  $(id).onchange = () => {
+    const v = Math.max(id === 'interval' || id === 'numCaps' ? 1 : 0, Number($(id).value) || 0);
+    S()[key] = v; $(id).value = v;
+    if (state.selected > S().numCaps) state.selected = 1;
+    save(); render();
+  };
+}
+$('sound').checked = S().sound;
+$('sound').onchange = () => { S().sound = $('sound').checked; save(); };
+
+$('undo').onclick = () => { state.events.pop(); alarmedFor = null; save(); render(); };
+$('reset').onclick = () => {
+  if (!confirm('¿Empezar una nueva sesión? Se borra el registro actual (copia el CSV antes si lo necesitas).')) return;
+  state = { ...defaults(), settings: S() }; alarmedFor = null; save(); render();
+};
+$('copy').onclick = async () => {
+  try { await navigator.clipboard.writeText(toCSV(state.events, state.start)); $('copy').textContent = '✓ Copiado'; }
+  catch { $('copy').textContent = 'No se pudo copiar'; }
+  setTimeout(() => ($('copy').textContent = 'Copiar CSV'), 1500);
+};
+$('download').onclick = () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([toCSV(state.events, state.start)], { type: 'text/csv' }));
+  a.download = `cold-cap-${new Date(state.start).toISOString().slice(0, 10)}.csv`;
+  a.click(); URL.revokeObjectURL(a.href);
+};
+
+render();
+setInterval(tick, 1000);
+</script>
+</body>
+</html>

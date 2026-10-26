@@ -6,6 +6,8 @@ A monorepo holding independent projects, one per top-level folder.
 
 - [`panama-pets-website/`](panama-pets-website/README.md) — marketing site for the Panama Pets veterinary clinic (React + Vite + TypeScript + Tailwind).
 
+- [`cold-cap-timer/`](cold-cap-timer/README.md) — mobile web app to time the Penguin Cold Cap swap cycle during chemo (vanilla HTML/JS, no build).
+
 ## Plans
 
 [`plans/`](plans/) holds Claude Code planning documents written while working on this repo, kept for historical reference.
