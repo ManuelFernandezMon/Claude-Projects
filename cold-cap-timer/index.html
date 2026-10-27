@@ -410,6 +410,9 @@
         <label class="field"><span>Aviso previo</span><input id="warn" type="number" min="0" inputmode="numeric"><small>Segundos antes del cambio</small></label>
         <label class="field"><span>Sacar el siguiente cap</span><input id="lead" type="number" min="0" inputmode="numeric"><small>Minutos antes del cambio. 0 = no avisar</small></label>
         <label class="toggle"><span>Sonido y vibración</span><input class="switch" id="sound" type="checkbox" role="switch"></label>
+        <label class="toggle native-only" hidden><span>Alarma fuerte<small>Suena aunque el teléfono esté en silencio, hasta que la silencies</small></span><input class="switch" id="alarm" type="checkbox" role="switch"></label>
+        <label class="toggle native-only" hidden><span>Volumen al máximo mientras suena<small>Después devuelve tu volumen de alarma</small></span><input class="switch" id="maxVol" type="checkbox" role="switch"></label>
+        <div class="toggle native-only" hidden><span>Probar la alarma<small id="alarmStatus">Revisa el volumen antes de la sesión</small></span><button class="pill" id="testAlarm" type="button" style="flex:0 0 auto">Probar</button></div>
         <label class="toggle"><span>Notificación fija con cuenta regresiva<small>Solo en la app Android</small></span><input class="switch" id="live" type="checkbox" role="switch"></label>
       </div>
       <p class="small muted" style="margin:16px 0 0">Diagnóstico (últimos errores):</p>
@@ -430,7 +433,7 @@ import { ACTIONS, fmt, clock, capOnHead, summarize, inferCap, nextCap, todo, pla
 const KEY = 'coldcap.v2';
 const defaults = () => ({
   start: Date.now(), events: [], seq: 0,
-  settings: { v: 3, interval: 20, numCaps: 4, pre: 0, post: 0, warn: 60, lead: 5, sound: true, live: true },
+  settings: { v: 3, interval: 20, numCaps: 4, pre: 0, post: 0, warn: 60, lead: 5, sound: true, live: true, alarm: true, maxVol: true },
 });
 let state = load();
 function load() {
@@ -457,6 +460,7 @@ let capPick = null;    // explicit cap for the next button tap (null = automatic
 
 // ---- log ----
 function addEvents(list) {
+  AL()?.stopRinging().catch(() => {}); // the user acted: silence a ringing alarm
   for (const e of list) state.events.push({ ...e, n: state.seq++ });
   state.events.sort((a, b) => a.ts - b.ts); // stable: ties keep entry order
   save(); render();
@@ -474,6 +478,7 @@ const logButton = safe(function logButton(action) {
 
 $('undo').onclick = safe(() => {
   if (!state.events.length) return;
+  AL()?.stopRinging().catch(() => {});
   const last = state.events.reduce((a, b) => ((b.n ?? 0) >= (a.n ?? 0) ? b : a));
   state.events.splice(state.events.indexOf(last), 1);
   alarmedFor = null; save(); render();
@@ -715,7 +720,7 @@ function tick() {
 function alarm(since) {
   if (alarmedFor === since) return;
   alarmedFor = since;
-  if (!S().sound) return;
+  if (!S().sound || AL()) return; // the Android app rings a real alarm instead
   try { navigator.vibrate?.([300, 150, 300, 150, 300]); } catch {}
   notify();
   try {
@@ -739,19 +744,33 @@ function nativePlugin(name) {
 }
 const LN = () => nativePlugin('LocalNotifications');
 const LS = () => nativePlugin('LiveStatus');
+const AL = () => nativePlugin('Alarms');
 let nativeKey = null;
 async function syncNative() {
-  const ln = LN(); if (!ln) return;
+  const al = AL(); const ln = LN();
+  if (!al && !ln) return;
   const head = capOnHead(state.events);
   const next = head ? nextCap(state.events, S().numCaps) : 0;
-  const key = head ? `${head.since}|${head.cap}|${next}|${S().interval}|${S().warn}|${S().lead}|${S().sound}` : '';
+  const key = head ? `${head.since}|${head.cap}|${next}|${S().interval}|${S().warn}|${S().lead}|${S().sound}|${S().alarm}|${S().maxVol}` : '';
   if (key === nativeKey) return;
   nativeKey = key;
+  const swapAt = head ? head.since + S().interval * 60000 : 0;
   try {
+    if (al) {
+      // Real alarms (AlarmManager.setAlarmClock): exact, loud, ring even in silent mode.
+      await al.cancel();
+      if (!head || !S().sound) return;
+      const kind = S().alarm ? 'alarm' : 'soft';
+      const list = [];
+      if (S().lead > 0) list.push({ id: 3, at: swapAt - S().lead * 60000, kind, title: `Saca el cap #${next} del cooler`, text: `Cambio a las ${clock(swapAt)}` });
+      if (S().warn > 0) list.push({ id: 2, at: swapAt - S().warn * 1000, kind: 'soft', title: `Cambio de cap en ${S().warn} s`, text: `Quita el #${head.cap} y pon el #${next}` });
+      list.push({ id: 1, at: swapAt, kind, title: 'Hora de cambiar el cap', text: `Quita el #${head.cap} y pon el #${next}` });
+      await al.schedule({ alarms: list.filter((a) => a.at > Date.now()), maxVolume: S().maxVol });
+      return;
+    }
     await ln.cancel({ notifications: [{ id: 1 }, { id: 2 }, { id: 3 }] });
     if (!head || !S().sound) return;
     const now = Date.now();
-    const swapAt = head.since + S().interval * 60000;
     const list = [];
     const add = (id, at, title, body) => { if (at > now) list.push({ id, title, body, channelId: 'swap', schedule: { at: new Date(at), allowWhileIdle: true } }); };
     if (S().lead > 0) add(3, swapAt - S().lead * 60000, `Saca el cap #${next} del cooler`, `El cambio es a las ${clock(swapAt)}.`);
@@ -802,7 +821,7 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catc
 let wake;
 async function keepAwake() { try { wake = await navigator.wakeLock?.request('screen'); } catch {} }
 // Coming back from a locked screen or another app: redraw right away instead of waiting for the next timer.
-const refreshNow = () => { render(); if (capOnHead(state.events)) keepAwake(); };
+const refreshNow = () => { AL()?.stopRinging().catch(() => {}); render(); if (capOnHead(state.events)) keepAwake(); };
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshNow(); });
 window.addEventListener('pageshow', refreshNow);
 window.addEventListener('focus', refreshNow);
@@ -821,6 +840,19 @@ for (const id of ['interval', 'numCaps', 'pre', 'post', 'warn', 'lead']) {
 }
 $('sound').checked = S().sound;
 $('sound').onchange = () => { S().sound = $('sound').checked; save(); nativeKey = null; syncNative(); };
+for (const id of ['alarm', 'maxVol']) {
+  $(id).checked = S()[id];
+  $(id).onchange = () => { S()[id] = $(id).checked; save(); nativeKey = null; syncNative(); };
+}
+$('testAlarm').onclick = safe(async () => {
+  const al = AL(); if (!al) return;
+  await al.test({ maxVolume: S().maxVol });
+  const st = await al.status();
+  $('alarmStatus').textContent = !st.notificationsEnabled ? 'Las notificaciones están desactivadas para la app: actívalas en los ajustes de Android'
+    : !st.fullScreen ? 'Sonó. Para que se abra sola con la pantalla bloqueada, permite "pantalla completa" en los ajustes de la app'
+    : 'Sonó. Toca Silenciar en la notificación o abre la app';
+});
+if (AL()) document.querySelectorAll('.native-only').forEach((el) => { el.hidden = false; });
 $('live').checked = S().live;
 $('live').onchange = () => { S().live = $('live').checked; save(); syncLive(); };
 
