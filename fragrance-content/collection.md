@@ -23,7 +23,6 @@ what you already own.
 | Sisante (clone of YSL La Nuit de L'Homme) | Aromas Artesanales | Top: cardamom; Middle: lavender, Virginia cedar, bergamot; Base: vetiver, caraway | 2024 | 5.5 | Date night, Special occasion, Winter, Everyday |
 | Dubai (clone of Creed Silver Mountain Water) | Dubai Niche | Top: bergamot, blackcurrant, galbanum, orange; Middle: tea, ozonic accord; Base: musk, sandalwood, petitgrain | 2025 | 6 | Everyday, Office, Summer |
 | Ocean Breeze | Emper | Top: citron, orange, mint, lemon, black currant, coriander; Middle: apricot, basil, carrot seeds, may rose; Base: fig, dates, ambrette | 2026 | 8 | Everyday, Office, Summer |
-| Atlantis (Extrait) | French Avenue | Top: orange, mandarin orange, lemon; Middle: watermelon, coconut; Base: ambergris, cacao, amberwood | 2026 | 5.5 | Everyday, Office, Special occasion, Summer, Date night |
 | Spectre Ghost | French Avenue | Top: ginger, cardamom, bergamot; Middle: pink pepper, blackcurrant, rose; Base: vanilla, cedarwood, patchouli | 2026 | 9.5 | Evening, Date night, Special occasion, Winter |
 | Sun Kissed | French Avenue | Top: pomelo, bitter orange, bergamot; Middle: tea, cream soda, Aperol, cardamom; Base: ambertonic, cedarwood, vetiver, vanilla, cashmeran | 2026 | 9 | Everyday, Office, Summer, Evening |
 | Art of Arabia III | Lattafa | Top: olibanum, davana, bergamot; Middle: dates, tobacco, sandalwood, tuberose; Base: myrrh, vanilla, tonka bean, labdanum, patchouli | 2025 | 9 | Winter, Special occasion, Date night, Evening |
@@ -58,6 +57,7 @@ what you already own.
 | Aquatica | Rayhaan | Top: lime, coconut milk, bergamot, mandarin; Middle: sugar cane, jasmine, hibiscus, gardenia; Base: rum, musk, tonka bean, patchouli | 2026-09 | 10 | Everyday, Summer, Beach, Evening, Date night |
 | Griffin | MAD Parfumeur | Top: rhubarb, grapefruit, mandarin; Middle: patchouli, ambrette, ginger; Base: ambroxan, vetiver, musk | 2026-09 | 8.5 | Everyday, Office, Summer, Beach |
 | Essence of Casablanca (Extrait) | Swiss Arabian | Top: grapes, apple; Middle: orris, patchouli; Base: vanilla, musk, amber, balsamic notes | 2026-10 | 9.7 | Evening, Date night, Winter |
+| Vulcan Feu | French Avenue | Top: mango, lemon, ginger, rhubarb; Middle: pink pepper, jasmine, violet, praline; Base: tonka bean, cedarwood, ambergris, moss (sources disagree on the exact note list) | 2026-10 | | |
 
 ## Notes / preferences (optional)
 - Scent families you gravitate toward: Gourmand and vanillas (core favorite); increasingly into fresh/aquatic scents too as of 2026-08 (e.g. loving Unique Blue)
