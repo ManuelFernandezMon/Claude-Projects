@@ -24,16 +24,15 @@ export const clock = (ts) => new Date(ts).toLocaleTimeString('es-PA', { hour: 'n
 
 const capEvents = (events) => events.filter((e) => e.action !== 'fin');
 
-// Cap currently on the head: last `poner` with no later `quitar` for that cap.
+// Cap currently on the head. A head holds one cap, so putting a cap on replaces whatever was there
+// (a forgotten "quitar" must not leave a ghost that comes back later). Removing a cap that is not on the head is ignored.
 export function capOnHead(events) {
-  const open = new Map();
+  let head = null;
   for (const e of events) {
-    if (e.action === 'poner') open.set(e.cap, e.ts);
-    if (e.action === 'quitar') open.delete(e.cap);
+    if (e.action === 'poner') head = { cap: e.cap, since: e.ts };
+    else if (e.action === 'quitar' && head?.cap === e.cap) head = null;
   }
-  if (!open.size) return null;
-  const [cap, since] = [...open.entries()].pop();
-  return { cap, since };
+  return head;
 }
 
 // Last action per cap: 'sacar' (out of the cooler, ready), 'poner' (on head), 'quitar' (off head, must go back), 'meter' (in cooler).
@@ -43,7 +42,21 @@ export function capStates(events) {
   return st;
 }
 
-const capsWhere = (events, action) => [...capStates(events)].filter(([, a]) => a === action).map(([c]) => c);
+// Steps left open in the log (a cap taken out but never placed, a cap removed but never put back) go stale as the
+// session moves on. Only the most recent one counts, so a forgotten tap cannot confuse the instructions forever.
+export function readyCaps(events) {
+  const evs = capEvents(events);
+  const st = capStates(events);
+  const lastSacar = [...evs].reverse().find((e) => e.action === 'sacar');
+  if (!lastSacar || st.get(lastSacar.cap) !== 'sacar') return [];
+  const lastPoner = [...evs].reverse().find((e) => e.action === 'poner');
+  return lastPoner && lastPoner.ts > lastSacar.ts ? [] : [lastSacar.cap]; // another cap went on after this one came out
+}
+export function storeCaps(events) {
+  const evs = capEvents(events);
+  const lastQuitar = [...evs].reverse().find((e) => e.action === 'quitar');
+  return lastQuitar && capStates(events).get(lastQuitar.cap) === 'quitar' ? [lastQuitar.cap] : [];
+}
 
 // Cap number to use when the user didn't say one.
 export function inferCap(events, action, numCaps, selected = 1) {
@@ -55,9 +68,9 @@ export function inferCap(events, action, numCaps, selected = 1) {
     return last ? (last.cap % numCaps) + 1 : selected;
   };
   if (action === 'sacar') return rotation();
-  if (action === 'poner') return capsWhere(events, 'sacar')[0] ?? rotation();
+  if (action === 'poner') return readyCaps(events)[0] ?? rotation();
   if (action === 'quitar') return capOnHead(events)?.cap ?? [...evs].reverse().find((e) => e.action === 'poner')?.cap ?? selected;
-  if (action === 'meter') return capsWhere(events, 'quitar')[0] ?? [...evs].reverse().find((e) => e.action === 'quitar')?.cap ?? selected;
+  if (action === 'meter') return storeCaps(events)[0] ?? [...evs].reverse().find((e) => e.action === 'quitar')?.cap ?? selected;
   return selected;
 }
 
@@ -95,7 +108,7 @@ export function summarize(events) {
 // Cap that goes on the head at the next swap.
 export function nextCap(events, numCaps) {
   const head = capOnHead(events);
-  const ready = capsWhere(events, 'sacar').filter((c) => c !== head?.cap);
+  const ready = readyCaps(events).filter((c) => c !== head?.cap);
   return ready[0] ?? (head ? (head.cap % numCaps) + 1 : inferCap(events, 'sacar', numCaps));
 }
 
@@ -104,8 +117,8 @@ export function nextCap(events, numCaps) {
 export function todo(events, s, now) {
   const items = [];
   const head = capOnHead(events);
-  const ready = capsWhere(events, 'sacar').filter((c) => c !== head?.cap);
-  const store = capsWhere(events, 'quitar');
+  const ready = readyCaps(events).filter((c) => c !== head?.cap);
+  const store = storeCaps(events);
   const nextCap = ready[0] ?? (head ? (head.cap % s.numCaps) + 1 : inferCap(events, 'sacar', s.numCaps));
 
   if (!capEvents(events).length) {
@@ -191,7 +204,7 @@ export function liveTimeline(events, s, now) {
 
   const nxt = nextCap(events, s.numCaps);
   const swapAt = head.since + s.interval * 60000;
-  const alreadyOut = capsWhere(events, 'sacar').includes(nxt);
+  const alreadyOut = readyCaps(events).includes(nxt);
   const leadAt = s.lead > 0 && !alreadyOut ? Math.max(head.since, swapAt - s.lead * 60000) : null;
   const title = `Cap #${head.cap} en la cabeza`;
   const phases = [];

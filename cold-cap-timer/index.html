@@ -258,11 +258,26 @@
 
   /* ---------- error banner ---------- */
   .banner.err {
-    display: none; max-width: 520px; margin: 0 auto 14px; padding: 14px 16px; border-radius: var(--r-nest);
+    position: fixed; top: 8px; left: 12px; right: 12px; z-index: 50;
+    display: none; max-width: 496px; margin: 0 auto; padding: 14px 16px; border-radius: var(--r-nest);
     background: color-mix(in srgb, var(--danger) 18%, var(--base)); color: var(--ink); border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent); gap: 10px; font-size: .95rem;
   }
   .banner.err.show { display: grid; }
   .banner.err button { height: 40px; border-radius: var(--r-pill); border: 0; background: var(--danger); color: #fff; font-weight: 600; }
+
+  /* ---------- toast: confirms every tap, with undo ---------- */
+  .toast {
+    position: fixed; left: 50%; top: 10px; z-index: 40; pointer-events: none;
+    display: flex; align-items: center; gap: 14px; width: max-content; max-width: min(92vw, 480px); padding: 8px 8px 8px 20px;
+    border-radius: var(--r-pill); font-size: .95rem; font-weight: 520;
+    background: color-mix(in srgb, var(--base) 78%, var(--ink) 12%); color: var(--ink); border: 1px solid var(--glass-line);
+    -webkit-backdrop-filter: blur(24px) saturate(160%); backdrop-filter: blur(24px) saturate(160%);
+    box-shadow: inset 0 1px 0 var(--glass-hi), 0 12px 40px -10px var(--shadow);
+    opacity: 0; visibility: hidden; transform: translate(-50%, -28px) scale(.97);
+    transition: opacity .45s var(--ease-out), transform .6s var(--ease-spring), visibility 0s linear .6s;
+  }
+  .toast.show { opacity: 1; visibility: visible; transform: translate(-50%, 0) scale(1); transition-delay: 0s; }
+  .toast button { pointer-events: auto; height: 38px; padding: 0 16px; border: 0; border-radius: var(--r-pill); background: var(--accent); color: var(--accent-ink); font-weight: 600; font-size: .875rem; }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0ms !important; transition-duration: .01ms !important; }
@@ -331,6 +346,8 @@
   });
 })();
 </script>
+
+<div class="toast" id="toast" role="status" aria-live="polite"><span id="toastText"></span><button type="button" id="toastUndo">Deshacer</button></div>
 
 <main>
   <header class="top rise" style="--d:0">
@@ -459,11 +476,31 @@ let agoMin = 0;        // "hace N min" for the next button tap
 let capPick = null;    // explicit cap for the next button tap (null = automatic)
 
 // ---- log ----
+let toastTimer = null; let lastBatch = [];
+// Every tap gets a visible confirmation (with undo), even when the screen would not otherwise change.
+function toast(text, ns) {
+  lastBatch = ns;
+  $('toastText').textContent = text;
+  $('toast').classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => $('toast').classList.remove('show'), 5500);
+}
+$('toastUndo').onclick = safe(() => {
+  const ns = new Set(lastBatch);
+  state.events = state.events.filter((e) => !ns.has(e.n));
+  lastBatch = []; alarmedFor = null;
+  $('toast').classList.remove('show');
+  save(); render();
+});
 function addEvents(list) {
   AL()?.stopRinging().catch(() => {}); // the user acted: silence a ringing alarm
-  for (const e of list) state.events.push({ ...e, n: state.seq++ });
+  const ns = [];
+  for (const e of list) { const n = state.seq++; ns.push(n); state.events.push({ ...e, n }); }
   state.events.sort((a, b) => a.ts - b.ts); // stable: ties keep entry order
   save(); render();
+  toast(list.length === 1
+    ? `${ACTIONS[list[0].action]}${list[0].action === 'fin' ? '' : `, cap #${list[0].cap}`}`
+    : `${list.length} pasos registrados`, ns);
 }
 
 const logButton = safe(function logButton(action) {

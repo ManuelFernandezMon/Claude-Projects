@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fmt, capOnHead, capStates, inferCap, summarize, todo, plan, parseEntries, liveTimeline } from './logic.js';
+import { fmt, capOnHead, capStates, inferCap, summarize, todo, plan, parseEntries, liveTimeline, readyCaps, storeCaps } from './logic.js';
 
 const MIN = 60000;
 const NOW = new Date('2026-01-15T10:30:00').getTime();
@@ -149,4 +149,29 @@ test('liveTimeline: no cap on head counts up from the last step; nothing to show
   assert.equal(ph[0].countUpFrom, at(-2));
   assert.deepEqual(liveTimeline([], S, NOW), []);
   assert.deepEqual(liveTimeline([ev('poner', 1, -5), ev('quitar', 1, -1), ev('fin', 0, 0)], S, NOW), []);
+});
+
+test('a forgotten "quitar" does not leave a ghost cap on the head', () => {
+  const events = [ev('sacar', 1, 0), ev('poner', 1, 1), ev('sacar', 2, 16), ev('poner', 2, 21), ev('meter', 1, 22)];
+  assert.deepEqual(capOnHead(events), { cap: 2, since: at(21) });
+  const next = [...events, ev('sacar', 3, 36), ev('quitar', inferCap([...events, ev('sacar', 3, 36)], 'quitar', 4), 41)];
+  assert.equal(capOnHead(next), null); // before the fix cap 1 came back as the head
+  assert.equal(capOnHead([ev('poner', 1, 0), ev('quitar', 3, 5)])?.cap, 1); // removing a cap that is not on the head does nothing
+});
+
+test('stale open steps are ignored', () => {
+  // cap 2 was taken out, but cap 3 went on the head instead
+  assert.deepEqual(readyCaps([ev('sacar', 2, 0), ev('poner', 3, 2)]), []);
+  assert.deepEqual(readyCaps([ev('sacar', 2, 0), ev('poner', 1, -5)]), [2]);
+  // only the most recent removed cap waits to go back to the cooler
+  assert.deepEqual(storeCaps([ev('quitar', 1, 0), ev('quitar', 2, 20)]), [2]);
+  assert.deepEqual(storeCaps([ev('quitar', 1, 0), ev('meter', 1, 1)]), []);
+});
+
+test('instructions after a sloppy swap match reality', () => {
+  const events = [ev('sacar', 1, -50), ev('poner', 1, -49), ev('sacar', 2, -34), ev('poner', 2, -29), ev('sacar', 3, -14), ev('quitar', 2, -9)];
+  const items = todo(events, S, NOW);
+  assert.equal(capOnHead(events), null);
+  assert.equal(items[0].action, 'poner');
+  assert.equal(items[0].cap, 3);
 });
