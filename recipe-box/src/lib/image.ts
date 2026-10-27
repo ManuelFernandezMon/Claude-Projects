@@ -19,16 +19,16 @@ async function decode(file: Blob): Promise<ImageBitmap | HTMLImageElement> {
 }
 
 /** Resizes to at most 1600px on the longest side and re-encodes as JPEG (quality 0.8). */
-export async function compressImage(file: File): Promise<Blob> {
+export async function compressImage(file: Blob & { name?: string }, maxSide = MAX_SIDE, quality = JPEG_QUALITY): Promise<Blob> {
   let source: ImageBitmap | HTMLImageElement
   try {
     source = await decode(file)
   } catch {
-    throw new Error(`"${file.name}" could not be read as an image on this browser.`)
+    throw new Error(`"${file.name ?? 'That file'}" could not be read as an image on this browser.`)
   }
   const w = source instanceof HTMLImageElement ? source.naturalWidth : source.width
   const h = source instanceof HTMLImageElement ? source.naturalHeight : source.height
-  const scale = Math.min(1, MAX_SIDE / Math.max(w, h))
+  const scale = Math.min(1, maxSide / Math.max(w, h))
   const canvas = document.createElement('canvas')
   canvas.width = Math.max(1, Math.round(w * scale))
   canvas.height = Math.max(1, Math.round(h * scale))
@@ -39,8 +39,8 @@ export async function compressImage(file: File): Promise<Blob> {
   ctx.drawImage(source, 0, 0, canvas.width, canvas.height)
   if ('close' in source) source.close()
   const blob = await new Promise<Blob | null>((resolve) =>
-    canvas.toBlob(resolve, 'image/jpeg', JPEG_QUALITY),
+    canvas.toBlob(resolve, 'image/jpeg', quality),
   )
-  if (!blob) throw new Error(`"${file.name}" could not be compressed.`)
+  if (!blob) throw new Error(`"${file.name ?? 'That file'}" could not be compressed.`)
   return blob
 }

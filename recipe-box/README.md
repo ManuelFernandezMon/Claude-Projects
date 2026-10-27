@@ -13,7 +13,7 @@ Recipes, photos, categories and checklist state live in the browser's **IndexedD
 - Custom colored categories (create, rename, recolor, delete). Deleting a category never deletes recipes.
 - Home grid with multi-select category filter (matches **any** selected), search (title + ingredients), sort (newest / A-Z).
 - **Ask AI for a recipe:** describe what you want ("gluten-free banana bread for 8"); the AI writes a full recipe, you can ask for changes ("make it vegan"), then open it in the editor to review and save. AI recipes are labeled as untested.
-- **Import from a video:** upload a video you saved from TikTok/Instagram (or a screen recording) and the AI watches and listens to it, so no caption is needed. Or paste the caption instead. Either way the AI turns it into a recipe (ingredients with quantities, steps, times, categories) that you review before saving. Imported ingredients become the interactive checklist.
+- **Import from a video, screenshots and text:** add a video you saved from TikTok/Instagram (or a screen recording), screenshots (for example of the caption or an ingredient list) and/or pasted text, in any mix: up to 2 videos and 6 screenshots, read together in one request. The AI watches and listens to the videos and reads the pictures, so no caption is needed. Either way the AI turns it into a recipe (ingredients with quantities, steps, times, categories) that you review before saving. Imported ingredients become the interactive checklist.
 - Quick actions: press and hold a recipe (or right-click, or the Menu key / Shift+F10) for Open, Edit, Duplicate (photos are copied too),
   Share, Copy ingredients and Delete. The recipe page has the same menu behind "More". Delete always asks first.
 - Edit with AI: describe a change ("make it vegan", "double it for 8", "swap the butter") on a saved recipe. You get a
@@ -114,7 +114,7 @@ request); check Anthropic's pricing page and set a spend limit in the Console.
 
 `/api/extract` (caption to recipe), `/api/generate` (new recipe; with `mode: "edit"` it changes a saved recipe and offers no
 categories), `/api/convert` (metric and US amounts for a list of ingredients), `/api/photos` (Pixabay stock-photo search; uses no AI key),
-and the three video endpoints. All need the
+and the three video endpoints (`/api/video-extract` reads the videos, screenshots and text of one recipe together). All need the
 passcode header; all answer CORS preflights for the Android app only.
 
 ### Ask AI: what to know
@@ -124,7 +124,15 @@ passcode header; all answer CORS preflights for the Android app only.
 - "Ask for changes" resends the current recipe plus your instruction; there is no long chat memory.
 - Requests that are not about cooking return a friendly "not a cooking request" message.
 
-### Import from a video (no caption needed)
+### Import from a video, screenshots and text (no caption needed)
+
+The import page is one panel: add videos, screenshots and/or text, check the list, then press **Extract recipe**. Videos are uploaded to
+Google first (below); screenshots are shrunk in the browser (longest side 1400 px, JPEG, further if needed so that all of them stay
+under about 3.6 MB of base64) and sent inline in the same `/api/video-extract` request, together with the pasted text and the
+link. Gemini then reads everything as one source. Limits: 2 videos (100 MB and 5 minutes each, 150 MB together because they are
+held in the phone's memory), 6 screenshots. Only text goes to `/api/extract` as before (works with either AI provider);
+anything with a video or a screenshot needs Gemini. As with videos alone, a "no recipe" answer for screenshots is only
+believed after a second model agrees, and the "lite" models are not used for them.
 
 On `/import`, choose a video file. The AI (Gemini) watches the video and listens to the audio, so ingredients that are only
 said out loud are picked up. You then review the recipe in the editor before saving.

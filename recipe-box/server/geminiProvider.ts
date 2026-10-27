@@ -24,16 +24,20 @@ const textBudget = () => ({
   passes: 2,
 })
 const VIDEO = { timeout: 100_000, deadline: 170_000, hardLimit: 285_000, perModel: 1, passes: 2 }
+/** Screenshots only: far quicker to read than a video, but slower than plain text. */
+const IMAGES = { timeout: 45_000, deadline: 110_000, hardLimit: 200_000, perModel: 1, passes: 2 }
+const hasVideo = (req: ProviderRequest) => !!req.media?.some((m) => m.kind === 'file')
+const hasMedia = (req: ProviderRequest) => !!req.media?.length
 const PASS_GAP_MS = () => Number(process.env.GEMINI_PASS_GAP_MS ?? 4000)
 
-const models = (video = false) => {
+const models = (media = false) => {
   const all = (process.env.GEMINI_MODEL || DEFAULT_MODELS)
     .split(',')
     .map((m) => m.trim())
     .filter(Boolean)
-  // The "lite" models are the likeliest to misjudge a video (and then say "no recipe"), so videos skip them.
+  // The "lite" models are the likeliest to misjudge a video or a screenshot (and then say "no recipe"), so those skip them.
   const full = all.filter((m) => !/lite/i.test(m))
-  return video && full.length ? full : all
+  return media && full.length ? full : all
 }
 const retryDelayMs = () => Number(process.env.GEMINI_RETRY_DELAY_MS ?? 1000)
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -52,8 +56,18 @@ const BLOCKED_FINISH: string[] = [
 async function once(ai: GoogleGenAI, model: string, req: ProviderRequest): Promise<ProviderResult> {
   const res = await ai.models.generateContent({
     model,
-    contents: req.video
-      ? [{ role: 'user', parts: [createPartFromUri(req.video.uri, req.video.mimeType), { text: req.user }] }]
+    contents: hasMedia(req)
+      ? [
+          {
+            role: 'user',
+            parts: [
+              ...(req.media ?? []).map((m) =>
+                m.kind === 'file' ? createPartFromUri(m.uri, m.mimeType) : { inlineData: { mimeType: m.mimeType, data: m.data } },
+              ),
+              { text: req.user },
+            ],
+          },
+        ]
       : req.user,
     config: {
       systemInstruction: req.system,
@@ -96,10 +110,10 @@ export function makeGeminiClient(timeoutMs = REQUEST_TIMEOUT_MS): GoogleGenAI {
 
 /** `started` lets a caller that already spent time (e.g. waiting for a video to process) share one overall deadline. */
 export async function callGemini(req: ProviderRequest, started = Date.now()): Promise<ProviderResult> {
-  const budget = req.video ? VIDEO : textBudget()
+  const budget = hasVideo(req) ? VIDEO : hasMedia(req) ? IMAGES : textBudget()
   let lastError: unknown
   let sawTransient = false
-  // A video verdict of "not a recipe" is only believed after a second model agrees; one vote is kept in case no other model can answer.
+  // A verdict of "not a recipe" on a video or screenshots is only believed after a second model agrees; one vote is kept in case no other model can answer.
   const noVotes: { model: string; result: ProviderResult }[] = []
   for (let pass = 0; pass < budget.passes; pass++) {
     if (pass > 0) {
@@ -107,7 +121,7 @@ export async function callGemini(req: ProviderRequest, started = Date.now()): Pr
       await sleep(PASS_GAP_MS()) // everything was busy: give the service a moment, then walk the chain again
     }
     sawTransient = false
-    for (const model of models(!!req.video)) {
+    for (const model of models(hasMedia(req))) {
       if (noVotes.some((v) => v.model === model)) continue // already asked
       for (let attempt = 0; attempt < budget.perModel; attempt++) {
         const elapsed = Date.now() - started
@@ -119,8 +133,8 @@ export async function callGemini(req: ProviderRequest, started = Date.now()): Pr
           // One retry for malformed JSON on the same model; nothing else is worth spending free-tier quota on.
           const result = first.kind === 'bad_output' ? await once(ai, model, req) : first
           if (result.kind === 'ok') {
-            console.log(`gemini ${model} answered (${req.video ? 'video' : 'text'}): is_recipe=${result.out.is_recipe} ingredients=${result.out.ingredients.length} steps=${result.out.steps.length}`)
-            if (req.video && !result.out.is_recipe) {
+            console.log(`gemini ${model} answered (${hasVideo(req) ? 'video' : hasMedia(req) ? 'images' : 'text'}): is_recipe=${result.out.is_recipe} ingredients=${result.out.ingredients.length} steps=${result.out.steps.length}`)
+            if (hasMedia(req) && !result.out.is_recipe) {
               noVotes.push({ model, result: { ...result, model } })
               if (noVotes.length < 2) break // ask the next model before telling the user there is no recipe
               return noVotes[0]!.result

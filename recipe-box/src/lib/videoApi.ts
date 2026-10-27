@@ -4,6 +4,9 @@ import { ImportError, postAi, postAiDetailed } from './importApi'
 
 export const MAX_VIDEO_MB = 100
 export const MAX_VIDEO_MINUTES = 5
+/** Videos are held in the phone's memory while they upload, so the total is capped too. */
+export const MAX_TOTAL_VIDEO_MB = 150
+export const MAX_VIDEOS = 2
 
 export interface UploadedVideo {
   name: string
@@ -224,19 +227,24 @@ export async function uploadVideo(
   throw new ImportError('The video file is empty.', 'bad_request')
 }
 
-export function extractVideo(
-  input: { file: UploadedVideo; url?: string; categories: string[] },
+/**
+ * Asks the AI to read everything together: videos already uploaded to Google, screenshots (base64 JPEG) and pasted text.
+ * One request, one recipe.
+ */
+export function extractSources(
+  input: { files: UploadedVideo[]; images: { mimeType: string; data: string }[]; text?: string; url?: string; categories: string[] },
   passcode: string,
 ): Promise<{ recipe: ImportedRecipe | null; reason?: string }> {
   return postAiDetailed('/api/video-extract', input, passcode)
 }
 
-/** Deletes an uploaded video from Google right away (best effort; Google also deletes uploads after 48 hours). */
-export async function discardVideo(file: UploadedVideo, passcode: string): Promise<void> {
+/** Deletes uploaded videos from Google right away (best effort; Google also deletes uploads after 48 hours). */
+export async function discardVideos(files: UploadedVideo[], passcode: string): Promise<void> {
+  if (!files.length) return
   try {
-    await postAi('/api/video-extract', { file, discard: true }, passcode)
+    await postAi('/api/video-extract', { files, discard: true }, passcode)
   } catch {
-    /* nothing to do: it expires on its own */
+    /* nothing to do: they expire on their own */
   }
 }
 

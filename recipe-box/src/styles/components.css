@@ -1414,3 +1414,51 @@ label.btn:focus-within {
 .gallery__credit {
   margin-top: 8px;
 }
+
+/* ---------- import: the files the AI will read ---------- */
+.sources {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sources__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 8px 8px 8px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-ctl);
+  background: var(--glass);
+}
+.sources__thumb {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: var(--glass-raised);
+}
+.sources__thumb--video {
+  display: grid;
+  place-items: center;
+  color: var(--accent-text);
+}
+.sources__thumb--video svg {
+  width: 28px;
+  height: 28px;
+}
+.sources__name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.sources__name strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
