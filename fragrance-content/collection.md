@@ -57,7 +57,7 @@ what you already own.
 | Aquatica | Rayhaan | Top: lime, coconut milk, bergamot, mandarin; Middle: sugar cane, jasmine, hibiscus, gardenia; Base: rum, musk, tonka bean, patchouli | 2026-09 | 10 | Everyday, Summer, Beach, Evening, Date night |
 | Griffin | MAD Parfumeur | Top: rhubarb, grapefruit, mandarin; Middle: patchouli, ambrette, ginger; Base: ambroxan, vetiver, musk | 2026-09 | 8.5 | Everyday, Office, Summer, Beach |
 | Essence of Casablanca (Extrait) | Swiss Arabian | Top: grapes, apple; Middle: orris, patchouli; Base: vanilla, musk, amber, balsamic notes | 2026-10 | 9.7 | Evening, Date night, Winter |
-| Vulcan Feu | French Avenue | Top: mango, lemon, ginger, rhubarb; Middle: pink pepper, jasmine, violet, praline; Base: tonka bean, cedarwood, ambergris, moss (sources disagree on the exact note list) | 2026-10 | 8.5 | |
+| Vulcan Feu | French Avenue | Top: mango, lemon, ginger, rhubarb; Middle: pink pepper, jasmine, violet, praline; Base: tonka bean, cedarwood, ambergris, moss (sources disagree on the exact note list) | 2026-10 | 8.5 | Everyday, Summer, Beach |
 
 ## Notes / preferences (optional)
 - Scent families you gravitate toward: Gourmand and vanillas (core favorite); increasingly into fresh/aquatic scents too as of 2026-08 (e.g. loving Unique Blue)
