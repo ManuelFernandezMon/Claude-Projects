@@ -23,7 +23,7 @@ import org.json.JSONObject;
  */
 @CapacitorPlugin(name = "Alarms")
 public class AlarmsPlugin extends Plugin {
-    private static final int[] SLOT_IDS = {1, 2, 3, 9};
+    private static final int[] SLOT_IDS = {1, 2, 3, 4, 9};
 
     /** schedule({ alarms: [{ id, at, kind: 'alarm' | 'soft', title, text }], maxVolume }) replaces everything scheduled before. */
     @PluginMethod

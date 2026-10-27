@@ -243,8 +243,9 @@
   .field { display: grid; gap: 6px; align-content: start; font-size: .875rem; }
   .field span { color: var(--ink); font-weight: 520; }
   .field small { color: var(--muted); font-size: .8rem; margin-top: -2px; }
-  .field input[type=number] { height: 48px; padding: 0 16px; border-radius: var(--r-pill); border: 1px solid var(--edge); background: var(--inset); font-size: 1rem; width: 100%; outline: none; transition: border-color .3s var(--ease-out); }
-  .field input[type=number]:focus { border-color: color-mix(in srgb, var(--accent) 65%, transparent); }
+  .field.wide { grid-column: 1 / -1; }
+  .field input[type=number], .field input[type=text] { height: 48px; padding: 0 16px; border-radius: var(--r-pill); border: 1px solid var(--edge); background: var(--inset); font-size: 1rem; width: 100%; outline: none; transition: border-color .3s var(--ease-out); }
+  .field input[type=number]:focus, .field input[type=text]:focus { border-color: color-mix(in srgb, var(--accent) 65%, transparent); }
   .toggle { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: .95rem; }
   .toggle small { display: block; color: var(--muted); font-size: .8rem; }
   .switch { appearance: none; -webkit-appearance: none; flex: none; width: 54px; height: 32px; border-radius: var(--r-pill); background: var(--inset); border: 1px solid var(--edge); position: relative; cursor: pointer; transition: background .4s var(--ease-out); }
@@ -420,10 +421,10 @@
     <div class="acc-body" id="bodySet" inert><div class="acc-inner">
       <p class="small muted" style="margin:0">Los tiempos varían según el protocolo de Penguin y de tu oncólogo/a. Pon aquí los de ustedes, la app no asume ninguno.</p>
       <div class="settings">
-        <label class="field"><span>Minutos por cap</span><input id="interval" type="number" min="1" inputmode="numeric"></label>
+        <label class="field wide"><span>Minutos por cap, en orden</span><input id="schedule" type="text" inputmode="text" placeholder="20, 20, 25"><small>El último valor se repite. Con 20, 20, 25 los dos primeros caps van 20 min y los demás 25</small></label>
         <label class="field"><span>Cantidad de caps</span><input id="numCaps" type="number" min="1" max="12" inputmode="numeric"></label>
-        <label class="field"><span>Pre-enfriamiento</span><input id="pre" type="number" min="0" inputmode="numeric"><small>Minutos. 0 = no usar</small></label>
-        <label class="field"><span>Post-enfriamiento</span><input id="post" type="number" min="0" inputmode="numeric"><small>Minutos. 0 = no usar</small></label>
+        <label class="field"><span>Pre-enfriamiento</span><input id="pre" type="number" min="0" inputmode="numeric"><small>Minutos antes de empezar la infusión. 0 = no usar</small></label>
+        <label class="field"><span>Post-enfriamiento</span><input id="post" type="number" min="0" inputmode="numeric"><small>Minutos después de terminar la infusión (360 = 6 h). 0 = no usar</small></label>
         <label class="field"><span>Aviso previo</span><input id="warn" type="number" min="0" inputmode="numeric"><small>Segundos antes del cambio</small></label>
         <label class="field"><span>Sacar el siguiente cap</span><input id="lead" type="number" min="0" inputmode="numeric"><small>Minutos antes del cambio. 0 = no avisar</small></label>
         <label class="toggle"><span>Sonido y vibración</span><input class="switch" id="sound" type="checkbox" role="switch"></label>
@@ -432,6 +433,17 @@
         <div class="toggle native-only" hidden><span>Probar la alarma<small id="alarmStatus">Revisa el volumen antes de la sesión</small></span><button class="pill" id="testAlarm" type="button" style="flex:0 0 auto">Probar</button></div>
         <label class="toggle"><span>Notificación fija con cuenta regresiva<small>Solo en la app Android</small></span><input class="switch" id="live" type="checkbox" role="switch"></label>
       </div>
+      <button class="pill" id="presetPenguin" type="button" style="margin-top:16px;width:100%">Usar el protocolo de mi hoja de Penguin</button>
+      <details class="sub-acc"><summary>Resumen de la hoja de Penguin</summary>
+        <ul class="small muted" style="margin:8px 0 0;padding-left:18px;display:grid;gap:6px">
+          <li>Caps entre -28 °C y -32 °C (hasta -33 °C para pelo muy grueso).</li>
+          <li>Pre-enfriamiento de 50 min antes del tratamiento: cap 1 por 20 min, cap 2 por 20 min y cap 3 por 10 min.</li>
+          <li>La infusión empieza cuando el cap 3 lleve 10 min. Ese cap sigue 15 min más (25 en total).</li>
+          <li>Luego, cambio de caps cada 25 min, rotando los 3 (el 4 es el 1, el 5 es el 2, y así).</li>
+          <li>Seguir con los caps mínimo 6 horas después de terminar la infusión principal.</li>
+          <li>Cubrir con gasa o protectores la piel expuesta (orejas, frente, sienes, raya, cuello).</li>
+        </ul>
+      </details>
       <p class="small muted" style="margin:16px 0 0">Diagnóstico (últimos errores):</p>
       <pre class="diag" id="errLog"></pre>
     </div></div>
@@ -445,12 +457,14 @@
 </main>
 
 <script type="module">
-import { ACTIONS, fmt, clock, capOnHead, summarize, inferCap, nextCap, todo, plan, parseEntries, liveTimeline, toCSV } from './logic.js';
+import { ACTIONS, fmt, clock, capOnHead, summarize, inferCap, nextCap, todo, plan, parseEntries, liveTimeline, toCSV, milestones, changeAt } from './logic.js';
 
 const KEY = 'coldcap.v2';
 const defaults = () => ({
   start: Date.now(), events: [], seq: 0,
-  settings: { v: 3, interval: 20, numCaps: 4, pre: 0, post: 0, warn: 60, lead: 5, sound: true, live: true, alarm: true, maxVol: true },
+  // Defaults follow the Penguin 3-cap dry-ice schedule: pre-cooling 50 min (caps of 20, 20 and 10 min), the infusion
+  // starts 10 min into cap 3 (25 min in total), then a cap every 25 min, and 6 h of post-cooling after the infusion.
+  settings: { v: 4, schedule: [20, 20, 25], numCaps: 3, pre: 50, post: 360, warn: 60, lead: 5, sound: true, live: true, alarm: true, maxVol: true },
 });
 let state = load();
 function load() {
@@ -459,7 +473,8 @@ function load() {
     const st = JSON.parse(localStorage.getItem(KEY) ?? localStorage.getItem('coldcap.v1'));
     if (!st) return d;
     const settings = { ...d.settings, ...st.settings };
-    if ((st.settings?.v ?? 0) < 3) { settings.lead = 5; settings.v = 3; } // cap goes out of the cooler 5 min before each swap
+    if ((st.settings?.v ?? 0) < 3) settings.lead = 5; // cap goes out of the cooler 5 min before each swap
+    if ((st.settings?.v ?? 0) < 4) { Object.assign(settings, { v: 4, schedule: [20, 20, 25], numCaps: 3, pre: 50, post: 360 }); delete settings.interval; } // protocol from the personal Penguin schedule
     return { ...d, ...st, settings };
   } catch { return d; }
 }
@@ -664,12 +679,12 @@ let planKey = '';
 function renderPlan() {
   const p = plan(state.events, S(), Date.now());
   const rows = [];
-  if (p.preDoneAt) rows.push({ t: clock(p.preDoneAt), what: 'Pre-enfriamiento listo', sub: '' });
+  if (p.preDoneAt) rows.push({ t: clock(p.preDoneAt), what: 'Empieza la infusión', sub: `Pre-enfriamiento de ${S().pre} min completo` });
   p.swaps.forEach((w) => rows.push({
     t: clock(w.at), what: `Cap #${w.from} ${icon('arrow-right')} cap #${w.to}`,
-    sub: w.takeOutAt ? `Sacar el cap #${w.to} a las ${clock(w.takeOutAt)}` : '',
+    sub: `${w.takeOutAt ? `Sacar el cap #${w.to} a las ${clock(w.takeOutAt)}` : `Cap #${w.to}`} (lo usas ${w.minutes} min)`,
   }));
-  if (p.postDoneAt) rows.push({ t: clock(p.postDoneAt), what: 'Fin del post-enfriamiento', sub: '' });
+  if (p.postDoneAt) rows.push({ t: clock(p.postDoneAt), what: 'Fin del post-enfriamiento', sub: 'Ya puedes quitar el último cap' });
   const html = rows.length
     ? rows.map((r, i) => `<li style="--i:${i}"><span class="when">${r.t}</span><span class="what"><b>${r.what}</b>${r.sub ? `<small>${r.sub}</small>` : ''}</span></li>`).join('')
     : '<li class="empty" style="display:block">Aparece cuando pongas el primer cap.</li>';
@@ -715,15 +730,15 @@ function tick() {
     $('timer').textContent = last ? fmt(now - last.ts) : '--:--';
     $('timerSub').textContent = last ? `Desde: ${ACTIONS[last.action].toLowerCase()}` : 'Empieza sacando el primer cap';
   } else {
-    const total = S().interval * 60000;
-    const swapAt = head.since + total;
-    const remaining = swapAt - now;
-    $('timerLabel').textContent = `Cap #${head.cap} en la cabeza`;
-    $('timerSub').textContent = `Cambio a las ${clock(swapAt)}`;
+    const ch = changeAt(head, S(), milestones(state.events, S()).postDoneAt); // the last cap of the post-cooling just comes off
+    const total = ch.at - head.since;
+    const remaining = ch.at - now;
+    $('timerLabel').textContent = ch.final ? `Cap #${head.cap}, último cap` : `Cap #${head.cap} en la cabeza`;
+    $('timerSub').textContent = `${ch.final ? 'Quitar' : 'Cambio'} a las ${clock(ch.at)}`;
     frac = remaining <= 0 ? 1 : remaining / total;
-    if (remaining <= 0) { tone = 'over'; $('timer').textContent = `+${fmt(-remaining)}`; $('timerSub').textContent = 'De retraso'; alarm(head.since); }
+    if (remaining <= 0) { tone = 'over'; $('timer').textContent = `+${fmt(-remaining)}`; $('timerSub').textContent = ch.final ? 'Ya terminó' : 'De retraso'; alarm(head.since); }
     else { tone = remaining <= S().warn * 1000 ? 'soon' : 'run'; $('timer').textContent = fmt(remaining); }
-    if (tone !== 'over' && S().lead > 0 && S().lead < S().interval) notch = S().lead / S().interval;
+    if (!ch.final && tone !== 'over' && S().lead > 0 && S().lead * 60000 < total) notch = (S().lead * 60000) / total;
   }
 
   if (tone !== lastTone) {
@@ -788,32 +803,31 @@ async function syncNative() {
   if (!al && !ln) return;
   const head = capOnHead(state.events);
   const next = head ? nextCap(state.events, S().numCaps) : 0;
-  const key = head ? `${head.since}|${head.cap}|${next}|${S().interval}|${S().warn}|${S().lead}|${S().sound}|${S().alarm}|${S().maxVol}` : '';
+  const m = milestones(state.events, S());
+  const ch = head ? changeAt(head, S(), m.postDoneAt) : null;
+  const key = head ? `${head.since}|${head.cap}|${next}|${S().schedule}|${S().pre}|${S().post}|${m.finAt}|${S().warn}|${S().lead}|${S().sound}|${S().alarm}|${S().maxVol}` : '';
   if (key === nativeKey) return;
   nativeKey = key;
-  const swapAt = head ? head.since + S().interval * 60000 : 0;
   try {
+    const kind = S().alarm ? 'alarm' : 'soft';
+    const list = [];
+    if (head && S().sound) {
+      if (!ch.final && S().lead > 0) list.push({ id: 3, at: ch.at - S().lead * 60000, kind, title: `Saca el cap #${next} del cooler`, text: `Cambio a las ${clock(ch.at)}` });
+      if (S().warn > 0) list.push({ id: 2, at: ch.at - S().warn * 1000, kind: 'soft', title: ch.final ? `Faltan ${S().warn} s para terminar` : `Cambio de cap en ${S().warn} s`, text: ch.final ? `Ya casi puedes quitar el cap #${head.cap}` : `Quita el #${head.cap} y pon el #${next}` });
+      list.push(ch.final
+        ? { id: 1, at: ch.at, kind, title: 'Terminó el post-enfriamiento', text: `Ya puedes quitar el cap #${head.cap}` }
+        : { id: 1, at: ch.at, kind, title: 'Hora de cambiar el cap', text: `Quita el #${head.cap} y pon el #${next}` });
+      if (m.infusionAt) list.push({ id: 4, at: m.infusionAt, kind, title: 'Ya puede empezar la infusión', text: `Pre-enfriamiento de ${S().pre} min completo` });
+    }
+    const due = list.filter((a) => a.at > Date.now());
     if (al) {
       // Real alarms (AlarmManager.setAlarmClock): exact, loud, ring even in silent mode.
       await al.cancel();
-      if (!head || !S().sound) return;
-      const kind = S().alarm ? 'alarm' : 'soft';
-      const list = [];
-      if (S().lead > 0) list.push({ id: 3, at: swapAt - S().lead * 60000, kind, title: `Saca el cap #${next} del cooler`, text: `Cambio a las ${clock(swapAt)}` });
-      if (S().warn > 0) list.push({ id: 2, at: swapAt - S().warn * 1000, kind: 'soft', title: `Cambio de cap en ${S().warn} s`, text: `Quita el #${head.cap} y pon el #${next}` });
-      list.push({ id: 1, at: swapAt, kind, title: 'Hora de cambiar el cap', text: `Quita el #${head.cap} y pon el #${next}` });
-      await al.schedule({ alarms: list.filter((a) => a.at > Date.now()), maxVolume: S().maxVol });
+      if (due.length) await al.schedule({ alarms: due, maxVolume: S().maxVol });
       return;
     }
-    await ln.cancel({ notifications: [{ id: 1 }, { id: 2 }, { id: 3 }] });
-    if (!head || !S().sound) return;
-    const now = Date.now();
-    const list = [];
-    const add = (id, at, title, body) => { if (at > now) list.push({ id, title, body, channelId: 'swap', schedule: { at: new Date(at), allowWhileIdle: true } }); };
-    if (S().lead > 0) add(3, swapAt - S().lead * 60000, `Saca el cap #${next} del cooler`, `El cambio es a las ${clock(swapAt)}.`);
-    if (S().warn > 0) add(2, swapAt - S().warn * 1000, `Cambio de cap en ${S().warn} s`, `Quita el #${head.cap} y pon el #${next}.`);
-    add(1, swapAt, 'Hora de cambiar el cap', `Quita el #${head.cap} y pon el #${next}.`);
-    if (list.length) await ln.schedule({ notifications: list });
+    await ln.cancel({ notifications: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }] });
+    if (due.length) await ln.schedule({ notifications: due.map((a) => ({ id: a.id, title: a.title, body: a.text, channelId: 'swap', schedule: { at: new Date(a.at), allowWhileIdle: true } })) });
   } catch {}
 }
 // Persistent notification with the live countdown; the native service switches phases by itself.
@@ -864,10 +878,25 @@ window.addEventListener('pageshow', refreshNow);
 window.addEventListener('focus', refreshNow);
 
 // ---- settings ----
-for (const id of ['interval', 'numCaps', 'pre', 'post', 'warn', 'lead']) {
+const scheduleText = () => S().schedule.join(', ');
+$('schedule').value = scheduleText();
+$('schedule').onchange = () => {
+  const list = $('schedule').value.split(/[^0-9]+/).filter(Boolean).map(Number).filter((n) => n > 0 && n < 600);
+  if (list.length) S().schedule = list;
+  $('schedule').value = scheduleText();
+  save(); render();
+};
+$('presetPenguin').onclick = () => {
+  Object.assign(S(), { schedule: [20, 20, 25], numCaps: 3, pre: 50, post: 360, lead: 5 });
+  for (const id of ['numCaps', 'pre', 'post', 'lead']) $(id).value = S()[id];
+  $('schedule').value = scheduleText();
+  capPick = null; save(); buildSegs(); nativeKey = null; render();
+  toast('Protocolo de la hoja de Penguin aplicado', []);
+};
+for (const id of ['numCaps', 'pre', 'post', 'warn', 'lead']) {
   $(id).value = S()[id];
   $(id).onchange = () => {
-    const v = Math.max(id === 'interval' || id === 'numCaps' ? 1 : 0, Number($(id).value) || 0);
+    const v = Math.max(id === 'numCaps' ? 1 : 0, Number($(id).value) || 0);
     S()[id] = v; $(id).value = v;
     if (capPick > S().numCaps) capPick = null;
     save();

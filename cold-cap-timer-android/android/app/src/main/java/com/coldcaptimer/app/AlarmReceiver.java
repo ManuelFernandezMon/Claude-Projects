@@ -33,7 +33,7 @@ public class AlarmReceiver extends BroadcastReceiver {
     private static final String CHANNEL_ALARM = "alarm_v1";
     private static final String CHANNEL_SOFT = "aviso_v1";
     private static final int NOTIFICATION_BASE = 200;
-    private static final int[] ALARM_IDS = {1, 3, 9};
+    private static final int[] ALARM_IDS = {1, 3, 4, 9};
     private static final long AUTO_STOP_MS = 90_000;
 
     private static final String PREFS = "alarms";

@@ -27,9 +27,15 @@ Glassmorphism with a minimal layout: translucent cards (`backdrop-filter`, inner
 
 Assets are self-hosted so the app works offline: [Geist](https://github.com/vercel/geist-font) variable font (SIL OFL 1.1, license in `fonts/`) and [Phosphor](https://phosphoricons.com) icons (MIT), inlined as an SVG sprite in `index.html`. The page deliberately has no `viewport-fit=cover` (see the comment in `<head>`).
 
+## Protocol (Penguin 3-cap dry-ice schedule)
+
+The defaults come from the patient's personal Penguin schedule: pre-cooling of 50 minutes before treatment (cap 1 for 20 min, cap 2 for 20 min, cap 3 for 10 min), the infusion starts once cap 3 has been worn 10 minutes (25 minutes in total for that cap), then a cap change every 25 minutes rotating the 3 caps, and caps stay on for at least 6 hours after the main infusion is finished.
+
+How that is modelled (`logic.js`): `schedule` is the wear time of each placement in order and its last value repeats (`20, 20, 25`), so the n-th cap placed gets its own countdown. `pre` (50) gives the moment the infusion can start (10 minutes into cap 3, projected from the latest placement and replaced by the real one), with an alarm "Ya puede empezar la infusión". Tapping **Terminó la infusión** starts `post` (360 min); the cap whose time reaches the end of post-cooling is the last one and simply comes off at that moment. The default `lead` of 5 minutes is when to take the next cap out of the cooler. **Ajustes > Usar el protocolo de mi hoja de Penguin** restores all of this, and the sheet's key points are summarized there.
+
 ## Timings are configurable on purpose
 
-The swap interval, number of caps and pre/post-cooling minutes are settings, not hardcoded. Public sources disagree (patient reports range from 15 to 30 minutes per cap, and post-cooling depends on the chemo regimen), so use the values in Penguin's written instructions and your oncology team's protocol. The default of 20 minutes is only a starting point.
+The wear times, number of caps and pre/post-cooling minutes are settings. Public sources disagree and the right values depend on the regimen, so they follow the personal Penguin schedule above; change them only if the oncology team or Penguin says so.
 
 ## Install on Android
 

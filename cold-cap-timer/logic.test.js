@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fmt, capOnHead, capStates, inferCap, summarize, todo, plan, parseEntries, liveTimeline, readyCaps, storeCaps } from './logic.js';
+import { fmt, capOnHead, capStates, inferCap, summarize, todo, plan, parseEntries, liveTimeline, readyCaps, storeCaps, wearMin, placements, milestones, changeAt } from './logic.js';
 
 const MIN = 60000;
 const NOW = new Date('2026-01-15T10:30:00').getTime();
@@ -17,7 +17,7 @@ test('fmt formats mm:ss and h:mm:ss', () => {
 
 test('capOnHead tracks open poner', () => {
   assert.equal(capOnHead([]), null);
-  assert.deepEqual(capOnHead([ev('poner', 1, 0)]), { cap: 1, since: at(0) });
+  assert.deepEqual(capOnHead([ev('poner', 1, 0)]), { cap: 1, since: at(0), index: 1 });
   assert.equal(capOnHead([ev('poner', 1, 0), ev('quitar', 1, 20)]), null);
 });
 
@@ -153,7 +153,7 @@ test('liveTimeline: no cap on head counts up from the last step; nothing to show
 
 test('a forgotten "quitar" does not leave a ghost cap on the head', () => {
   const events = [ev('sacar', 1, 0), ev('poner', 1, 1), ev('sacar', 2, 16), ev('poner', 2, 21), ev('meter', 1, 22)];
-  assert.deepEqual(capOnHead(events), { cap: 2, since: at(21) });
+  assert.deepEqual(capOnHead(events), { cap: 2, since: at(21), index: 2 });
   const next = [...events, ev('sacar', 3, 36), ev('quitar', inferCap([...events, ev('sacar', 3, 36)], 'quitar', 4), 41)];
   assert.equal(capOnHead(next), null); // before the fix cap 1 came back as the head
   assert.equal(capOnHead([ev('poner', 1, 0), ev('quitar', 3, 5)])?.cap, 1); // removing a cap that is not on the head does nothing
@@ -174,4 +174,82 @@ test('instructions after a sloppy swap match reality', () => {
   assert.equal(capOnHead(events), null);
   assert.equal(items[0].action, 'poner');
   assert.equal(items[0].cap, 3);
+});
+
+// ---- Penguin 3-cap dry-ice protocol (personal schedule): pre-cooling 50 min = 20 + 20 + 10, infusion starts when
+// cap 3 has been worn 10 min (25 min in total), then a cap change every 25 min, and at least 6 h after the infusion.
+const P = { schedule: [20, 20, 25], numCaps: 3, pre: 50, post: 360, warn: 60, lead: 5 };
+
+test('protocol: wear minutes per placement, last value repeats', () => {
+  assert.deepEqual([1, 2, 3, 4, 5, 6, 7].map((i) => wearMin(i, P)), [20, 20, 25, 25, 25, 25, 25]);
+  assert.equal(wearMin(3, { interval: 20 }), 20); // single interval still works
+});
+
+test('protocol: the swap time follows the placement number', () => {
+  const events = [ev('poner', 1, 0), ev('quitar', 1, 20), ev('poner', 2, 20), ev('quitar', 2, 40), ev('poner', 3, 40)];
+  const head = capOnHead(events);
+  assert.equal(head.index, 3);
+  assert.equal(changeAt(head, P, null).at, at(65)); // cap 3 is worn 25 min
+  assert.equal(changeAt(capOnHead(events.slice(0, 1)), P, null).at, at(20)); // cap 1 is worn 20 min
+});
+
+test('protocol: a double tap on Poner does not count as a new placement', () => {
+  const events = [ev('poner', 1, 0), ev('poner', 1, 1)];
+  assert.equal(placements(events).length, 1);
+  assert.equal(capOnHead(events).since, at(0));
+});
+
+test('protocol: infusion starts 10 min into cap 3 (50 min of pre-cooling)', () => {
+  // only cap 1 placed: projected from it
+  assert.equal(milestones([ev('poner', 1, 0)], P).infusionAt, at(50));
+  // cap 3 placed late (at minute 45): the real placement wins, infusion 10 min after it
+  const late = [ev('poner', 1, 0), ev('poner', 2, 20), ev('poner', 3, 45)];
+  assert.equal(milestones(late, P).infusionAt, at(55));
+  // projection from the latest placement when cap 2 is late (placed at 25): 25 + 20 + 10
+  assert.equal(milestones([ev('poner', 1, 0), ev('poner', 2, 25)], P).infusionAt, at(55));
+  assert.equal(milestones([ev('poner', 1, 0)], { ...P, pre: 0 }).infusionAt, null);
+});
+
+test('protocol: post-cooling ends 6 h after the infusion finished and the last cap just comes off', () => {
+  const events = [ev('poner', 1, 0), ev('fin', 0, 100), ev('poner', 2, 340)];
+  const m = milestones(events, P);
+  assert.equal(m.postDoneAt, at(100 + 360));
+  assert.equal(m.infusionAt, null);
+  const head = capOnHead([ev('poner', 1, 440)]);
+  const last = changeAt(head, P, m.postDoneAt); // swap would be at 460 >= end at 460
+  assert.deepEqual(last, { at: at(460), final: true });
+  const mid = changeAt(capOnHead([ev('poner', 1, 300)]), P, m.postDoneAt);
+  assert.equal(mid.final, false);
+});
+
+test('protocol: instructions for the infusion start and the last cap', () => {
+  const justPlaced = [ev('sacar', 1, -49), ev('poner', 1, -48)];
+  assert.equal(todo(justPlaced, P, NOW).at(-1).text.startsWith('Empezar la infusión a las'), true);
+  const atInfusion = [ev('poner', 1, -50), ev('poner', 2, -30), ev('poner', 3, -10)];
+  const items = todo(atInfusion, P, NOW);
+  assert.equal(items[0].text, 'Ya puede empezar la infusión');
+  assert.equal(items[0].urgent, true);
+  const finished = [ev('poner', 1, -30), ev('fin', 0, -400)];
+  const done = todo(finished, P, NOW);
+  assert.equal(done[0].text, 'Terminó el post-enfriamiento');
+  assert.equal(done[0].action, 'quitar');
+  const lastCap = [ev('poner', 1, -10), ev('fin', 0, -352)]; // post-cooling ends in 8 min, this cap would last 20 more
+  assert.match(todo(lastCap, P, NOW)[0].text, /Último cap, hasta las/);
+});
+
+test('protocol: plan uses each cap duration and stops before the post-cooling end', () => {
+  const events = [ev('poner', 1, 0)];
+  const p = plan(events, P, at(5));
+  assert.deepEqual(p.swaps.map((x) => x.at), [at(20), at(40), at(65), at(90)]);
+  assert.deepEqual(p.swaps.map((x) => x.minutes), [20, 25, 25, 25]); // how long the next cap is worn
+  assert.deepEqual(p.swaps.map((x) => [x.from, x.to]), [[1, 2], [2, 3], [3, 1], [1, 2]]);
+  assert.equal(p.preDoneAt, at(50));
+});
+
+test('protocol: live notification for the last cap', () => {
+  const events = [ev('poner', 1, -10), ev('fin', 0, -352)];
+  const ph = liveTimeline(events, P, NOW);
+  assert.equal(ph.length, 2);
+  assert.match(ph[0].title, /último cap/);
+  assert.equal(ph[1].title, 'Terminó el post-enfriamiento');
 });

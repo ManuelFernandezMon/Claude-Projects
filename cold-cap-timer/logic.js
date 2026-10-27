@@ -24,15 +24,62 @@ export const clock = (ts) => new Date(ts).toLocaleTimeString('es-PA', { hour: 'n
 
 const capEvents = (events) => events.filter((e) => e.action !== 'fin');
 
-// Cap currently on the head. A head holds one cap, so putting a cap on replaces whatever was there
-// (a forgotten "quitar" must not leave a ghost that comes back later). Removing a cap that is not on the head is ignored.
-export function capOnHead(events) {
+// How long the n-th cap placed in the session (1-based) is worn. `schedule` is a list of minutes and its last
+// value repeats ("20, 20, 25": the first two caps 20 min, every later cap 25). Falls back to a single `interval`.
+export function wearMin(index, s) {
+  const list = s.schedule?.length ? s.schedule : [s.interval];
+  return list[Math.min(index, list.length) - 1];
+}
+export const wearMs = (index, s) => wearMin(index, s) * 60000;
+
+// Placements in order. A head holds one cap, so putting a cap on replaces whatever was there (a forgotten "quitar"
+// must not leave a ghost that comes back later), and a double tap on the same cap is ignored.
+function scan(events) {
+  const placements = [];
   let head = null;
   for (const e of events) {
-    if (e.action === 'poner') head = { cap: e.cap, since: e.ts };
-    else if (e.action === 'quitar' && head?.cap === e.cap) head = null;
+    if (e.action === 'poner') {
+      if (head?.cap === e.cap) continue;
+      head = { cap: e.cap, since: e.ts, index: placements.length + 1 };
+      placements.push(head);
+    } else if (e.action === 'quitar' && head?.cap === e.cap) {
+      head = null; // removing a cap that is not on the head is ignored
+    }
   }
-  return head;
+  return { placements, head };
+}
+export const capOnHead = (events) => scan(events).head;
+export const placements = (events) => scan(events).placements;
+
+// Milestones of the protocol: when the infusion can start (once `pre` minutes of pre-cooling are done) and when the
+// post-cooling ends (`post` minutes after the infusion finished, i.e. after the "fin" step).
+export function milestones(events, s) {
+  const pl = placements(events);
+  const fin = [...events].reverse().find((e) => e.action === 'fin');
+  const out = { infusionAt: null, finAt: fin?.ts ?? null, postDoneAt: fin && s.post > 0 ? fin.ts + s.post * 60000 : null };
+  if (!fin && s.pre > 0 && pl.length) {
+    // The infusion starts `offset` minutes into cap number `i`, where the pre-cooling total is reached.
+    let cum = 0;
+    let i = 1;
+    while (i < 30 && cum + wearMin(i, s) < s.pre) { cum += wearMin(i, s); i++; }
+    const offset = s.pre - cum;
+    if (pl[i - 1]) {
+      out.infusionAt = pl[i - 1].since + offset * 60000;
+    } else {
+      let t = pl[pl.length - 1].since; // project from the latest placement, assuming on-time swaps
+      for (let k = pl.length; k < i; k++) t += wearMs(k, s);
+      out.infusionAt = t + offset * 60000;
+    }
+  }
+  return out;
+}
+
+// When the cap on the head has to change. With post-cooling running, the cap whose time passes the end of
+// post-cooling is the last one: it simply comes off at the end (no more swaps).
+export function changeAt(head, s, postDoneAt) {
+  const swapAt = head.since + wearMs(head.index, s);
+  const final = !!postDoneAt && swapAt >= postDoneAt;
+  return { at: final ? postDoneAt : swapAt, final };
 }
 
 // Last action per cap: 'sacar' (out of the cooler, ready), 'poner' (on head), 'quitar' (off head, must go back), 'meter' (in cooler).
@@ -127,9 +174,15 @@ export function todo(events, s, now) {
   }
 
   if (head) {
-    const swapAt = head.since + s.interval * 60000;
+    const m = milestones(events, s);
+    const ch = changeAt(head, s, m.postDoneAt);
+    const swapAt = ch.at;
     const out = ready.includes(nextCap);
-    if (now >= swapAt) {
+    if (m.postDoneAt && now >= m.postDoneAt) {
+      items.push({ action: 'quitar', cap: head.cap, urgent: true, text: 'Terminó el post-enfriamiento', sub: `Ya puedes quitar el cap #${head.cap}` });
+    } else if (ch.final) {
+      items.push({ action: null, cap: head.cap, text: `Último cap, hasta las ${clock(swapAt)}`, sub: 'Después ya no hay más cambios' });
+    } else if (now >= swapAt) {
       if (!out) items.push({ action: 'sacar', cap: nextCap, urgent: true, text: `Saca el cap #${nextCap} del cooler` });
       items.push({ action: 'quitar', cap: head.cap, urgent: true, text: `Quita el cap #${head.cap}` });
       items.push({ action: 'poner', cap: nextCap, urgent: true, text: `Pon el cap #${nextCap}` });
@@ -139,6 +192,10 @@ export function todo(events, s, now) {
       items.push({ action: null, cap: nextCap, text: `Sacar el cap #${nextCap} a las ${clock(swapAt - s.lead * 60000)}`, sub: `Cambio a las ${clock(swapAt)}` });
     } else {
       items.push({ action: null, cap: nextCap, text: `Cambio a las ${clock(swapAt)}`, sub: out ? `El cap #${nextCap} ya está fuera del cooler` : `Siguiente: cap #${nextCap}` });
+    }
+    if (m.infusionAt) {
+      if (now >= m.infusionAt && now < m.infusionAt + 10 * 60000) items.unshift({ action: null, urgent: true, text: 'Ya puede empezar la infusión', sub: `Pre-enfriamiento de ${s.pre} min completo` });
+      else if (now < m.infusionAt) items.push({ action: null, text: `Empezar la infusión a las ${clock(m.infusionAt)}` });
     }
   } else if (ready.length) {
     items.push({ action: 'poner', cap: ready[0], urgent: true, text: `Pon el cap #${ready[0]} en la cabeza` });
@@ -154,21 +211,23 @@ export function todo(events, s, now) {
 
 // Rough projection assuming each swap happens right on time.
 export function plan(events, s, now) {
-  const first = events.find((e) => e.action === 'poner');
   const head = capOnHead(events);
-  const fin = [...events].reverse().find((e) => e.action === 'fin');
+  const m = milestones(events, s);
   const out = {
-    preDoneAt: first && s.pre > 0 ? first.ts + s.pre * 60000 : null,
-    postDoneAt: fin && s.post > 0 ? fin.ts + s.post * 60000 : null,
+    preDoneAt: m.infusionAt && m.infusionAt > now - 10 * 60000 ? m.infusionAt : null, // when the infusion can start
+    postDoneAt: m.postDoneAt,
     swaps: [],
   };
   if (head) {
     let cap = head.cap;
+    let at = head.since;
+    let index = head.index;
     for (let k = 1; k <= 4; k++) {
-      const at = head.since + k * s.interval * 60000;
+      at += wearMs(index, s);
+      index++;
       if (out.postDoneAt && at >= out.postDoneAt) break;
       const to = (cap % s.numCaps) + 1;
-      out.swaps.push({ at, from: cap, to, takeOutAt: s.lead > 0 ? at - s.lead * 60000 : null });
+      out.swaps.push({ at, from: cap, to, takeOutAt: s.lead > 0 ? at - s.lead * 60000 : null, minutes: wearMin(index, s) });
       cap = to;
     }
   }
@@ -190,7 +249,7 @@ export function liveTimeline(events, s, now) {
 
   const p = plan(events, s, now);
   const planLines = [
-    ...(p.preDoneAt ? [`Pre-enfriamiento listo: ${clock(p.preDoneAt)}`] : []),
+    ...(p.preDoneAt ? [`Empieza la infusión: ${clock(p.preDoneAt)}`] : []),
     ...p.swaps.slice(0, 3).map((w) => `${w.takeOutAt ? `Sacar #${w.to}: ${clock(w.takeOutAt)} · ` : ''}Cambio: ${clock(w.at)} (#${w.from} → #${w.to})`),
     ...(p.postDoneAt ? [`Fin del post-enfriamiento: ${clock(p.postDoneAt)}`] : []),
   ];
@@ -203,7 +262,15 @@ export function liveTimeline(events, s, now) {
   }
 
   const nxt = nextCap(events, s.numCaps);
-  const swapAt = head.since + s.interval * 60000;
+  const m = milestones(events, s);
+  const ch = changeAt(head, s, m.postDoneAt);
+  const swapAt = ch.at;
+  if (ch.final) {
+    return [
+      withBig({ at: head.since, title: `Cap #${head.cap}, último cap`, text: `Quítalo a las ${clock(swapAt)}`, sub: 'para terminar', countdownTo: swapAt }),
+      withBig({ at: swapAt, title: 'Terminó el post-enfriamiento', text: `Quita el cap #${head.cap}`, sub: 'de retraso', countUpFrom: swapAt, urgent: true }),
+    ];
+  }
   const alreadyOut = readyCaps(events).includes(nxt);
   const leadAt = s.lead > 0 && !alreadyOut ? Math.max(head.since, swapAt - s.lead * 60000) : null;
   const title = `Cap #${head.cap} en la cabeza`;
