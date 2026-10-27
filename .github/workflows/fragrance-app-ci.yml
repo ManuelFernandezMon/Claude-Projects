@@ -1,0 +1,19 @@
+name: fragrance-app CI
+on:
+  pull_request:
+    paths: ['fragrance-app/**', 'fragrance-content/**']
+  push:
+    branches: [main]
+    paths: ['fragrance-app/**', 'fragrance-content/**']
+jobs:
+  data-is-fresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node fragrance-app/build.mjs
+      - name: Fail if data.json is stale
+        run: git diff --exit-code -- fragrance-app/public/data.json
+      - run: node --check fragrance-app/public/app.js

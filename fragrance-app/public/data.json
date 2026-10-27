@@ -1,0 +1,751 @@
+{
+ "handle": "@tufrenperfumero",
+ "collection": [
+  {
+   "name": "Odyssey Bahamas",
+   "brand": "Armaf",
+   "notes": "Top: melon, cantaloupe, algae, salt, pear, Granny Smith apple, plum; Middle: aquatic notes, water lily, oakmoss, frankincense; Base: musk, amber, sugar, cedarwood",
+   "purchased": "2026",
+   "rating": 6.5,
+   "occasions": [
+    "Summer",
+    "Everyday"
+   ]
+  },
+  {
+   "name": "Stronger With You Intensely",
+   "brand": "Armani (Emporio Armani)",
+   "notes": "Top: pink pepper, juniper, violet; Middle: toffee, cinnamon, lavender, sage; Base: vanilla, tonka bean, amber, suede",
+   "purchased": "2023",
+   "rating": 9.5,
+   "occasions": [
+    "Date night",
+    "Special occasion",
+    "Winter"
+   ]
+  },
+  {
+   "name": "Acqua di Giò Profondo",
+   "brand": "Armani (Giorgio Armani)",
+   "notes": "Top: sea notes, aquozone, bergamot, green mandarin; Middle: rosemary, lavender, cypress, mastic/lentisque; Base: mineral notes, musk, patchouli, amber",
+   "purchased": "2022",
+   "rating": 7.5,
+   "occasions": [
+    "Office",
+    "Everyday",
+    "Summer"
+   ]
+  },
+  {
+   "name": "Cillan (clone of JPG Le Male Elixir)",
+   "brand": "Aromas Artesanales",
+   "notes": "Top: lavender, mint; Middle: vanilla, benzoin; Base: honey, tonka bean, tobacco",
+   "purchased": "2024",
+   "rating": 7,
+   "occasions": [
+    "Date night",
+    "Winter"
+   ]
+  },
+  {
+   "name": "Galvez (clone of Valentino Uomo Born in Roma)",
+   "brand": "Aromas Artesanales",
+   "notes": "Top: violet, mineral notes, salt; Middle: sage; Base: woody notes",
+   "purchased": "2023",
+   "rating": 6.5,
+   "occasions": [
+    "Everyday",
+    "Office",
+    "Summer"
+   ]
+  },
+  {
+   "name": "Dean (clone of Parfums de Marly Layton)",
+   "brand": "Aromas Artesanales",
+   "notes": "Top: apple, bergamot, lavender; Middle: jasmine, violet, geranium; Base: vanilla, spicy pepper, guaiac wood, patchouli (caramelized coffee accent)",
+   "purchased": "2024",
+   "rating": 8.5,
+   "occasions": [
+    "Date night",
+    "Special occasion",
+    "Winter",
+    "Evening"
+   ]
+  },
+  {
+   "name": "Joanne (clone of Louis Vuitton Imagination)",
+   "brand": "Aromas Artesanales",
+   "notes": "Top: citron, Calabrian bergamot, Sicilian orange; Middle: Tunisian neroli, Nigerian ginger, Ceylon cinnamon; Base: Chinese black tea, ambroxan, guaiac wood, olibanum",
+   "purchased": "2024",
+   "rating": 8,
+   "occasions": [
+    "Everyday",
+    "Office",
+    "Summer"
+   ]
+  },
+  {
+   "name": "Didier (clone of MFK Baccarat Rouge 540)",
+   "brand": "Aromas Artesanales",
+   "notes": "Top: saffron, jasmine; Middle: amberwood, ambergris, hedione; Base: fir resin, cedar, sugar, ambroxan, oakmoss",
+   "purchased": "2023",
+   "rating": 7.5,
+   "occasions": [
+    "Evening",
+    "Date night",
+    "Special occasion",
+    "Winter"
+   ]
+  },
+  {
+   "name": "Quer (clone of JPG Scandal Pour Homme EDT)",
+   "brand": "Aromas Artesanales",
+   "notes": "Top: clary sage, bergamot, mandarin; Middle: caramel, tonka bean; Base: vetiver, Georgywood",
+   "purchased": "2023",
+   "rating": 6.5,
+   "occasions": [
+    "Everyday",
+    "Office"
+   ]
+  },
+  {
+   "name": "Yvan (clone of By Kilian Apple Brandy)",
+   "brand": "Aromas Artesanales",
+   "notes": "Top: apple, rum, sugar, plum; Middle: oak, wood barrel, smoke; Base: vanilla, labdanum, Texas cedar, Chinese cedar, ambroxan",
+   "purchased": "2024",
+   "rating": 8.5,
+   "occasions": [
+    "Date night",
+    "Special occasion",
+    "Winter",
+    "Evening"
+   ]
+  },
+  {
+   "name": "Solange (clone of Parfums de Marly Herod)",
+   "brand": "Aromas Artesanales",
+   "notes": "Top: cinnamon, pepper wood; Middle: osmanthus, tobacco leaf, labdanum, incense; Base: vanilla, cedar, vetiver, patchouli, iso e super, cypriol, musk",
+   "purchased": "2024",
+   "rating": 9,
+   "occasions": [
+    "Date night",
+    "Special occasion",
+    "Winter"
+   ]
+  },
+  {
+   "name": "Alocen (clone of Givenchy Gentleman EDP)",
+   "brand": "Aromas Artesanales",
+   "notes": "Top: black pepper; Middle: lavender, orris; Base: patchouli, black vanilla",
+   "purchased": "2024",
+   "rating": 8,
+   "occasions": [
+    "Office",
+    "Winter",
+    "Date night",
+    "Special occasion"
+   ]
+  },
+  {
+   "name": "Kleber (clone of Initio Side Effect)",
+   "brand": "Aromas Artesanales",
+   "notes": "Top: cinnamon, rum; Middle: tobacco, saffron; Base: sandalwood, hedione",
+   "purchased": "2024",
+   "rating": 8,
+   "occasions": [
+    "Date night",
+    "Special occasion",
+    "Winter"
+   ]
+  },
+  {
+   "name": "Genave (clone of Bleu de Chanel EDP)",
+   "brand": "Aromas Artesanales",
+   "notes": "Top: lemon, mint, pink pepper, grapefruit, citrus; Middle: ginger, iso e super, nutmeg, jasmine; Base: labdanum, sandalwood, patchouli, vetiver, incense, cedar, white musk",
+   "purchased": "2024",
+   "rating": 7.5,
+   "occasions": [
+    "Office",
+    "Everyday",
+    "Date night",
+    "Summer",
+    "Winter"
+   ]
+  },
+  {
+   "name": "Sisante (clone of YSL La Nuit de L'Homme)",
+   "brand": "Aromas Artesanales",
+   "notes": "Top: cardamom; Middle: lavender, Virginia cedar, bergamot; Base: vetiver, caraway",
+   "purchased": "2024",
+   "rating": 5.5,
+   "occasions": [
+    "Date night",
+    "Special occasion",
+    "Winter",
+    "Everyday"
+   ]
+  },
+  {
+   "name": "Dubai (clone of Creed Silver Mountain Water)",
+   "brand": "Dubai Niche",
+   "notes": "Top: bergamot, blackcurrant, galbanum, orange; Middle: tea, ozonic accord; Base: musk, sandalwood, petitgrain",
+   "purchased": "2025",
+   "rating": 6,
+   "occasions": [
+    "Everyday",
+    "Office",
+    "Summer"
+   ]
+  },
+  {
+   "name": "Ocean Breeze",
+   "brand": "Emper",
+   "notes": "Top: citron, orange, mint, lemon, black currant, coriander; Middle: apricot, basil, carrot seeds, may rose; Base: fig, dates, ambrette",
+   "purchased": "2026",
+   "rating": 8,
+   "occasions": [
+    "Everyday",
+    "Office",
+    "Summer"
+   ]
+  },
+  {
+   "name": "Spectre Ghost",
+   "brand": "French Avenue",
+   "notes": "Top: ginger, cardamom, bergamot; Middle: pink pepper, blackcurrant, rose; Base: vanilla, cedarwood, patchouli",
+   "purchased": "2026",
+   "rating": 9.5,
+   "occasions": [
+    "Evening",
+    "Date night",
+    "Special occasion",
+    "Winter"
+   ]
+  },
+  {
+   "name": "Sun Kissed",
+   "brand": "French Avenue",
+   "notes": "Top: pomelo, bitter orange, bergamot; Middle: tea, cream soda, Aperol, cardamom; Base: ambertonic, cedarwood, vetiver, vanilla, cashmeran",
+   "purchased": "2026",
+   "rating": 9,
+   "occasions": [
+    "Everyday",
+    "Office",
+    "Summer",
+    "Evening"
+   ]
+  },
+  {
+   "name": "Art of Arabia III",
+   "brand": "Lattafa",
+   "notes": "Top: olibanum, davana, bergamot; Middle: dates, tobacco, sandalwood, tuberose; Base: myrrh, vanilla, tonka bean, labdanum, patchouli",
+   "purchased": "2025",
+   "rating": 9,
+   "occasions": [
+    "Winter",
+    "Special occasion",
+    "Date night",
+    "Evening"
+   ]
+  },
+  {
+   "name": "Najdia Intense",
+   "brand": "Lattafa",
+   "notes": "Top: pineapple, apple, mint, ginger; Middle: marine notes, lavender, geranium; Base: sandalwood, tonka bean, musk, patchouli",
+   "purchased": "2025",
+   "rating": 7,
+   "occasions": [
+    "Summer"
+   ]
+  },
+  {
+   "name": "Eternal Oud",
+   "brand": "Lattafa",
+   "notes": "Top: plum, grapefruit; Middle: heliotrope, orchid; Base: amber, benzoin, vanilla, labdanum, tonka bean, agarwood (oud)",
+   "purchased": "2025",
+   "rating": 8,
+   "occasions": [
+    "Date night",
+    "Special occasion",
+    "Winter"
+   ]
+  },
+  {
+   "name": "Dynasty",
+   "brand": "Lattafa",
+   "notes": "Top: bergamot, ginger, clary sage, raspberry, nutmeg; Middle: rooibos tea, suede; Base: cedarwood, cashmeran, amberwood",
+   "purchased": "2026",
+   "rating": 8,
+   "occasions": [
+    "Everyday",
+    "Office",
+    "Summer",
+    "Evening"
+   ]
+  },
+  {
+   "name": "Asad Bourbon",
+   "brand": "Lattafa",
+   "notes": "Top: lavender, mirabelle, pink pepper; Middle: cacao, nutmeg, davana; Base: bourbon vanilla, amber, vetiver",
+   "purchased": "2025",
+   "rating": 8.5,
+   "occasions": [
+    "Everyday",
+    "Date night",
+    "Special occasion",
+    "Summer",
+    "Winter",
+    "Evening"
+   ]
+  },
+  {
+   "name": "Embrace",
+   "brand": "Lattafa",
+   "notes": "Top: ginger, bergamot, artemisia; Middle: patchouli, balsam fir, incense; Base: benzoin, ambergris, oakmoss",
+   "purchased": "2025",
+   "rating": 8,
+   "occasions": [
+    "Special occasion",
+    "Winter",
+    "Summer",
+    "Office"
+   ]
+  },
+  {
+   "name": "Artisan Ethnique",
+   "brand": "Lattafa",
+   "notes": "Top: rum, cinnamon, sugar; Middle: caramel, cacao, coffee, oakmoss; Base: vanilla, tonka bean, cashmere wood, labdanum",
+   "purchased": "2025",
+   "rating": 9,
+   "occasions": [
+    "Date night",
+    "Special occasion",
+    "Winter",
+    "Evening"
+   ]
+  },
+  {
+   "name": "Qaed Al Fursan Unlimited",
+   "brand": "Lattafa",
+   "notes": "Top: coconut, pineapple, citruses; Middle: ylang-ylang, frangipani, jasmine; Base: vanilla, musk, sandalwood, sweet notes",
+   "purchased": "2024",
+   "rating": 6.5,
+   "occasions": [
+    "Everyday",
+    "Summer",
+    "Beach"
+   ]
+  },
+  {
+   "name": "Asad",
+   "brand": "Lattafa",
+   "notes": "Top: black pepper, tobacco, pineapple; Middle: patchouli, coffee, iris; Base: vanilla, amber, dry wood, benzoin, labdanum",
+   "purchased": "2023",
+   "rating": 8,
+   "occasions": [
+    "Office",
+    "Date night",
+    "Winter"
+   ]
+  },
+  {
+   "name": "Maahir Legacy",
+   "brand": "Lattafa",
+   "notes": "Top: lime, mint, grapefruit, lavender, pineapple; Middle: black pepper, rosemary, juniper berry, geranium, frankincense; Base: ambroxan, vetiver, oakmoss, cashmeran, tonka bean",
+   "purchased": "2023",
+   "rating": 8,
+   "occasions": [
+    "Everyday",
+    "Office",
+    "Summer"
+   ]
+  },
+  {
+   "name": "Hayaati",
+   "brand": "Lattafa",
+   "notes": "Top: apple, bergamot; Middle: cinnamon, woodsy notes; Base: musk, vanilla",
+   "purchased": "2023",
+   "rating": 7,
+   "occasions": [
+    "Everyday",
+    "Office",
+    "Summer"
+   ]
+  },
+  {
+   "name": "Khamrah",
+   "brand": "Lattafa",
+   "notes": "Top: cinnamon, nutmeg, bergamot; Middle: dates, praline, tuberose, mahonial; Base: vanilla, tonka bean, amberwood, myrrh, benzoin, akigalawood",
+   "purchased": "2023",
+   "rating": 6.5,
+   "occasions": [
+    "Date night",
+    "Winter",
+    "Evening"
+   ]
+  },
+  {
+   "name": "Honor & Glory (Bade'e Al Oud)",
+   "brand": "Lattafa",
+   "notes": "Top: pineapple, crème brûlée; Middle: cinnamon, turmeric, black pepper, benzoin; Base: vanilla, sandalwood, cashmeran, moss",
+   "purchased": "2024",
+   "rating": 9,
+   "occasions": [
+    "Everyday",
+    "Evening",
+    "Date night",
+    "Summer",
+    "Winter",
+    "Special occasion",
+    "Office"
+   ]
+  },
+  {
+   "name": "Amethyst (Bade'e Al Oud)",
+   "brand": "Lattafa",
+   "notes": "Top: pink pepper, bergamot; Middle: Turkish rose, Bulgarian rose, jasmine; Base: agarwood (oud), amber, vanilla",
+   "purchased": "2024",
+   "rating": 6,
+   "occasions": [
+    "Special occasion",
+    "Winter",
+    "Evening"
+   ]
+  },
+  {
+   "name": "Eclaire",
+   "brand": "Lattafa",
+   "notes": "Top: caramel, milk, sugar; Middle: honey, white flowers; Base: vanilla, praline, musk",
+   "purchased": "2024",
+   "rating": 9,
+   "occasions": [
+    "Special occasion",
+    "Date night",
+    "Evening",
+    "Winter"
+   ]
+  },
+  {
+   "name": "Oud for Glory (Bade'e Al Oud)",
+   "brand": "Lattafa",
+   "notes": "Top: saffron, nutmeg, lavender; Middle: agarwood (oud), patchouli; Base: agarwood (oud), patchouli, musk",
+   "purchased": "2024",
+   "rating": 8,
+   "occasions": [
+    "Special occasion",
+    "Date night",
+    "Winter"
+   ]
+  },
+  {
+   "name": "Ameer al Oud (Ameer Al Oudh)",
+   "brand": "Lattafa",
+   "notes": "Top: agarwood (oud), cinnamon, nutmeg; Middle: jasmine, sandalwood; Base: musk, vanilla, guaiac wood, amber, cedar",
+   "purchased": "2023",
+   "rating": 7.5,
+   "occasions": [
+    "Special occasion",
+    "Date night",
+    "Winter"
+   ]
+  },
+  {
+   "name": "Luxe Nightlife",
+   "brand": "Maison Alhambra",
+   "notes": "Top: jasmine, carnation, gardenia; Middle: patchouli, flowers, sandalwood, sea notes; Base: caramel, coffee",
+   "purchased": "2025",
+   "rating": 8.5,
+   "occasions": [
+    "Date night",
+    "Special occasion",
+    "Winter",
+    "Evening"
+   ]
+  },
+  {
+   "name": "Xplicit Vanille (Xplicit Vanilla)",
+   "brand": "Mancera",
+   "notes": "Top: Mexican vanilla, dark chocolate; Middle: Cambodian oud, brown sugar, cedarwood, Australian sandalwood; Base: tonka bean, amber, benzoin",
+   "purchased": "2026",
+   "rating": 10,
+   "occasions": [
+    "Date night",
+    "Special occasion",
+    "Winter",
+    "Evening"
+   ]
+  },
+  {
+   "name": "Explorer",
+   "brand": "Montblanc",
+   "notes": "Top: OrPur bergamot, French sage, pink pepper; Middle: OrPur vetiver, \"skin\" accord; Base: patchouli, cocoa, Ambrofix, Akigalawood",
+   "purchased": "2022",
+   "rating": 8.5,
+   "occasions": [
+    "Everyday",
+    "Office",
+    "Summer"
+   ]
+  },
+  {
+   "name": "Fire Your Desire (Emir)",
+   "brand": "Paris Corner",
+   "notes": "Main accords: cognac, tonka bean, cinnamon, oak, vanilla, praline, sandalwood",
+   "purchased": "2023",
+   "rating": 7.5,
+   "occasions": [
+    "Date night",
+    "Winter"
+   ]
+  },
+  {
+   "name": "Aqua Extreme",
+   "brand": "Perry Ellis",
+   "notes": "Top: bergamot, lemon verbena, aquatic notes; Middle: blue lavender, geranium, juniper; Base: tobacco leaf, labdanum, woody notes",
+   "purchased": "2026",
+   "rating": 6.5,
+   "occasions": [
+    "Everyday",
+    "Office",
+    "Summer"
+   ]
+  },
+  {
+   "name": "Italia",
+   "brand": "Rayhaan",
+   "notes": "Top: lavender, lemon, bergamot; Middle: honey, cinnamon, cashmeran, jasmine; Base: vanilla, tobacco leaf, tonka bean",
+   "purchased": "2026",
+   "rating": 9,
+   "occasions": [
+    "Date night",
+    "Special occasion",
+    "Winter",
+    "Summer"
+   ]
+  },
+  {
+   "name": "Momento",
+   "brand": "Riiffs",
+   "notes": "Top: sugar, saffron, mandarin; Middle: tonka bean, Damask rose, agarwood; Base: caramel, amberwood, cedar",
+   "purchased": "2025",
+   "rating": 8.5,
+   "occasions": [
+    "Date night",
+    "Special occasion",
+    "Winter"
+   ]
+  },
+  {
+   "name": "Flamingo Fizz",
+   "brand": "Superz.",
+   "notes": "Top: champagne, wild berries, grapefruit, lemon; Middle: rose, orange blossom, jasmine; Base: vetiver, musk, amber, benzoin, olibanum",
+   "purchased": "2026",
+   "rating": 10,
+   "occasions": [
+    "Everyday",
+    "Office",
+    "Evening",
+    "Date night",
+    "Special occasion",
+    "Summer",
+    "Winter",
+    "Beach"
+   ]
+  },
+  {
+   "name": "Dream Sea",
+   "brand": "Lorenzo Pazzaglia",
+   "notes": "Top: watery notes, ozonic notes, green notes, black pepper, pink pepper; Middle: ylang-ylang, white flowers, spices, Bulgarian rose; Base: vanilla, salt, ambergris, sandalwood, cedar",
+   "purchased": "2026-08",
+   "rating": 8.5,
+   "occasions": [
+    "Special occasion",
+    "Date night",
+    "Winter",
+    "Summer",
+    "Evening"
+   ]
+  },
+  {
+   "name": "Memories Gold",
+   "brand": "Superz.",
+   "notes": "Caramel, vanilla, amber, honey, milk, tonka bean, labdanum, cedarwood, musk, iris",
+   "purchased": "2026-08",
+   "rating": 10,
+   "occasions": [
+    "Date night",
+    "Winter",
+    "Special occasion"
+   ]
+  },
+  {
+   "name": "Fakhar Platin",
+   "brand": "Lattafa",
+   "notes": "Top: bergamot, pink pepper, cardamom; Middle: guava, lavender, ginger; Base: incense, palo santo, sandalwood",
+   "purchased": "2026-08",
+   "rating": 8,
+   "occasions": [
+    "Everyday",
+    "Office",
+    "Summer",
+    "Evening",
+    "Gym"
+   ]
+  },
+  {
+   "name": "Ebène",
+   "brand": "Maison Alhambra",
+   "notes": "Top: elemi, cloves, artemisia; Middle: olibanum, guaiac wood; Base: vanilla, benzoin, amber, musk",
+   "purchased": "2026-09",
+   "rating": 9.5,
+   "occasions": [
+    "Date night",
+    "Winter",
+    "Evening",
+    "Special occasion"
+   ]
+  },
+  {
+   "name": "Aquatica",
+   "brand": "Rayhaan",
+   "notes": "Top: lime, coconut milk, bergamot, mandarin; Middle: sugar cane, jasmine, hibiscus, gardenia; Base: rum, musk, tonka bean, patchouli",
+   "purchased": "2026-09",
+   "rating": 10,
+   "occasions": [
+    "Everyday",
+    "Summer",
+    "Beach",
+    "Evening",
+    "Date night"
+   ]
+  },
+  {
+   "name": "Griffin",
+   "brand": "MAD Parfumeur",
+   "notes": "Top: rhubarb, grapefruit, mandarin; Middle: patchouli, ambrette, ginger; Base: ambroxan, vetiver, musk",
+   "purchased": "2026-09",
+   "rating": 8.5,
+   "occasions": [
+    "Everyday",
+    "Office",
+    "Summer",
+    "Beach"
+   ]
+  },
+  {
+   "name": "Essence of Casablanca (Extrait)",
+   "brand": "Swiss Arabian",
+   "notes": "Top: grapes, apple; Middle: orris, patchouli; Base: vanilla, musk, amber, balsamic notes",
+   "purchased": "2026-10",
+   "rating": 9.7,
+   "occasions": [
+    "Evening",
+    "Date night",
+    "Winter"
+   ]
+  },
+  {
+   "name": "Vulcan Feu",
+   "brand": "French Avenue",
+   "notes": "Top: mango, lemon, ginger, rhubarb; Middle: pink pepper, jasmine, violet, praline; Base: tonka bean, cedarwood, ambergris, moss (sources disagree on the exact note list)",
+   "purchased": "2026-10",
+   "rating": 8.5,
+   "occasions": [
+    "Everyday",
+    "Summer",
+    "Beach"
+   ]
+  }
+ ],
+ "preferences": [
+  {
+   "label": "Scent families you gravitate toward",
+   "value": "Gourmand and vanillas (core favorite); increasingly into fresh/aquatic scents too as of 2026-08 (e.g. loving Unique Blue)"
+  },
+  {
+   "label": "Scent families you dislike or are sensitive to",
+   "value": "None"
+  },
+  {
+   "label": "Budget range you usually shop in",
+   "value": "Under $50, splurge on niche occasionally"
+  },
+  {
+   "label": "Niche vs. designer preference",
+   "value": "Love everything"
+  }
+ ],
+ "wishlist": [
+  {
+   "name": "Tenerife",
+   "brand": "Superz.",
+   "notes": "Sweet notes, citruses, white flowers, aromatic notes, vanilla, aromatic spices, amber",
+   "why": "Sweet, citrus-forward opening over a vanilla-amber base — bridges your gourmand favorites with the fresher scents you've been gravitating toward lately",
+   "priority": "High"
+  },
+  {
+   "name": "Unique Blue",
+   "brand": "Superz.",
+   "notes": "Marine notes, salt, ginger, yuzu, lemon, pineapple, passionfruit, eucalyptus, peppermint, cedarwood, musk, amber",
+   "why": "You named this yourself as an example of the fresh/aquatic direction you're loving right now — trust your own signal over the notes alone",
+   "priority": "High"
+  },
+  {
+   "name": "Van Py Rum",
+   "brand": "Lorenzo Pazzaglia",
+   "notes": "Top: bourbon/Madagascar/Tahitian vanilla, rum, tonka bean; Middle: vanilla, caramel, patchouli, white flowers; Base: black vanilla husk, rum, patchouli, agarwood (oud)",
+   "why": "Vanilla, rum, caramel, and oud — about as close to a direct hit on your top preference (gourmand/vanilla) as this list gets",
+   "priority": "High"
+  },
+  {
+   "name": "Prometheus",
+   "brand": "Ahmed Al Maghribi",
+   "notes": "Top: bergamot, mint, pink pepper, juniper, artemisia; Middle: cedarwood, lavender, patchouli, benzoin, dark chocolate; Base: white musk, musk, vetiver, guaiac wood, vanilla, tonka bean",
+   "why": "Fresh, herbal top (bergamot, mint, juniper) fits your growing interest in fresher scents, with dark chocolate and tonka keeping a gourmand thread underneath",
+   "priority": "Medium"
+  },
+  {
+   "name": "X Xandal",
+   "brand": "Aromatix (French Avenue)",
+   "notes": "Top: Madagascar/Bourbon vanilla, vanilla caviar; Middle: chocolate truffle, vanilla, rum, patchouli, jasmine; Base: vanilla absolute, caramel, tonka bean, agarwood",
+   "why": "Combines the profiles of your two best-rated bottles — Xplicit Vanille (10/10: vanilla, chocolate, oud) and Yvan (8.5: rum, vanilla, amber) — about as close to a guaranteed hit as this list gets",
+   "priority": "High"
+  },
+  {
+   "name": "Naughty Dates",
+   "brand": "Aromatix (French Avenue)",
+   "notes": "Top: cardamom, mandarin, bergamot; Middle: coffee, dates, honey, hazelnut, ebony wood, cinnamon; Base: caramel, vanilla, amber, sandalwood",
+   "why": "Coffee-and-caramel gourmand, a combo you've rated highly (Artisan Ethnique 9, Luxe Nightlife 8.5). Dense and sweet, so a night scent in Panama's heat; pairs with Frostbite for a day-vs-night video",
+   "priority": "High"
+  },
+  {
+   "name": "Frostbite",
+   "brand": "Aromatix (French Avenue)",
+   "notes": "Top: blueberry, apple, mango, bergamot, cardamom; Middle: jasmine, violet, geranium, pink pepper, lavender, vetiver; Base: vanilla, amber, sandalwood, cedar, patchouli, ambergris, oakmoss",
+   "why": "Fills the fresh-fruity gap in your collection without repeating Aquatica or Unique Blue. Reviews praise the mango/blueberry opening but call the dry-down fairly standard",
+   "priority": "High"
+  }
+ ],
+ "content": [
+  {
+   "file": "2026-08-15-dream-sea-first-impressions.md",
+   "title": "Video 2 — Primera impresión: Dream Sea (Lorenzo Pazzaglia)",
+   "date": "2026-08-15",
+   "html": "<p>Formato: \"First impressions\" (ver <code>strategy.md</code>) — reacción en vivo al probarlo, seguido de veredicto después de unas horas. Reel/TikTok, 35-50 seg.</p>\n<h3>Guion</h3>\n<p><strong>[HOOK — 0-3s, frasco en mano, cámara cerca, texto en pantalla: \"Acabo de caer en la tentación... nicho italiano\"]</strong></p>\n<p>Ok, esto acaba de llegar y no aguanté ni un día para probarlo en cámara. Se llama Dream Sea, de Lorenzo Pazzaglia — nicho italiano, y no, no es barato.</p>\n<p><strong>[SPRAY + REACCIÓN — 3-12s, aplícalo en la muñeca frente a la cámara, deja una pausa real de 2-3s para la reacción genuina, texto en pantalla: \"primer rocío...\"]</strong></p>\n<p><em>(rocía, huele, reacciona de verdad — no actúes)</em></p>\n<p><strong>[CUERPO — 12-35s, plano medio, texto en pantalla con cada nota que menciones]</strong></p>\n<p>Abre bien acuático, como algo verde y salado — se siente a mar de verdad, no a los \"aquáticos\" genéricos de siempre. Después me sale ylang-ylang con flores blancas y un toque de rosa búlgara, full elegante. Y donde se pone bueno es en el fondo: vainilla con sal marina, ámbar y sándalo — esa mezcla de dulce y salado es rarísima y me tiene enganchado.</p>\n<p><strong>[CTA — 35-45s, energía alta, texto en pantalla: \"¿Le doy seguimiento en unas horas?\"]</strong></p>\n<p>Todavía no sé cómo se comporta después de 4 o 5 horas — eso lo pruebo yo y les cuento en el próximo video si aguanta o se muere rápido. Comenta si quieren ese seguimiento, y de una, sígueme en @tufrenperfumero pa' que no se lo pierdan.</p>\n<h3>Notas de grabación</h3>\n<ul>\n<li>Este es formato de dos partes: graba la reacción de hoy, y en 4-5 horas graba un clip corto de seguimiento (\"¿cómo va?\") — se puede publicar como video aparte o como parte 2 en los comentarios.</li>\n<li>La pausa después de rociar es la parte más importante — no cortes la reacción real, ahí está el enganche.</li>\n<li>Muestra el frasco de cerca al mencionar la marca — mucha gente no conoce Lorenzo Pazzaglia todavía, la curiosidad ayuda a la retención.</li>\n</ul>"
+  },
+  {
+   "file": "2026-08-02-intro-video-script.md",
+   "title": "Video 1 — Presentación del canal (Español panameño)",
+   "date": "2026-08-02",
+   "html": "<p>Formato: Reel/TikTok, 30-45 seg. Hook → cuerpo → CTA (ver <code>strategy.md</code>).</p>\n<h3>Guion</h3>\n<p><strong>[HOOK — 0-3s, cámara en mano, cerca de la cara, texto en pantalla: \"¿Full billete en perfumes que no sabes si valen la pena?\"]</strong></p>\n<p>¡Xopa! Si tú también te gastas la plata en un perfume y después dices \"chuleta, ¿por qué compré esto?\"... este canal es pa' ti.</p>\n<p><strong>[CUERPO — 5-30s, cambia a plano medio, muestra 2-3 frascos de tu colección en la mano/mesa, texto en pantalla con cada punto que menciones]</strong></p>\n<p>Aquí vamos a hablar de perfumes de verdad: cuáles valen la pena, cuáles son puro bombo, y sobre todo... los dupes que sí funcionan — porque yo tengo varios clones que huelen igualito a perfumes de tres veces el precio, y te voy a decir cuáles.</p>\n<p>No importa si te gusta lo gourmand, lo dulce, lo de nicho carísimo o lo que venden aquí mismo en Panamá — voy a probar de todo y te voy a dar mi opinión bien honesta, sin filtro.</p>\n<p><strong>[CTA — 30-40s, vuelve a plano cercano, energía alta, texto en pantalla: \"Sígueme — se viene review cada semana\"]</strong></p>\n<p>Dale síguenos de una vez, porque esta semana traigo la primera comparación bien buena — y créeme, te vas a ahorrar billete. ¡Nos vemos en el próximo video!</p>\n<h3>Notas de grabación</h3>\n<ul>\n<li>Grábalo en dos tomas si te sientes más cómoda/o: hook aparte, cuerpo+CTA aparte, y las unes en edición.</li>\n<li>Ten a la mano 2-3 frascos que representen tu gusto (algo gourmand/vainilla, algo de nicho, algo Lattafa/dupe) para mostrar mientras hablas — ayuda mucho al \"hook visual\".</li>\n<li>Texto en pantalla en cada corte — la mayoría ve sin sonido al principio.</li>\n<li>Cierra con tu cara, no con el frasco — genera más conexión para un primer video de presentación.</li>\n</ul>"
+  }
+ ],
+ "research": [
+  {
+   "file": "2026-08-02-trends.md",
+   "title": "Fragrance Trend Check — 2026-08-02",
+   "date": "2026-08-02",
+   "html": "<h3>What's trending right now</h3>\n<ul>\n<li><strong>Lattafa Khamrah</strong> (cinnamon, vanilla, dates, amber) keeps dominating PerfumeTok — warm/gourmand, budget-friendly, high compliment-rate.</li>\n<li><strong>\"Cheap perfumes that smell expensive\"</strong> format is recurring every few weeks — e.g. Choco Musk (white chocolate + vanilla musk in a small 50ml bottle) goes viral under this framing.</li>\n<li><strong>Dupe-vs-original comparisons</strong> ($30 bottle next to a $300 one) remain a top-performing format; niche/indie brands are leaning into being called \"the $30 alternative to [hyped niche scent]\" as a discovery hook.</li>\n<li><strong>Three dominant scent directions in 2026 discourse</strong>: hyper-realistic fruit notes, \"comforting iced latte\" gourmands, and skin-like/intimate musks.</li>\n<li><strong>Boozy gourmands</strong> (whisky, rum, cognac) and <strong>tea notes</strong> (matcha) are trending upward.</li>\n<li><strong>\"Smellmaxxing\"</strong> — a men's-grooming-adjacent niche where creators share tips for smelling fresh/musky/clean — has its own growing audience.</li>\n</ul>\n<h3>Content angles to use this week</h3>\n<ol>\n<li><strong>\"Cheap perfumes that smell expensive\" batch</strong> — pick 2-3 budget scents (Khamrah-adjacent or Choco Musk-style gourmands) and film a reaction/first-impression comparison. High format-fit, low production cost.</li>\n<li><strong>Dupe comparison</strong> — pair a hyped niche scent from your <code>collection.md</code> against a budget alternative; walk through notes, longevity, and price. This is the single best-performing format right now.</li>\n<li><strong>\"Smellmaxxing\" tips post</strong> — a quick-hit listicle (blog or Reel) of layering/application tips for projection and freshness; taps a growing, underserved audience.</li>\n<li><strong>Boozy gourmand or matcha-note spotlight</strong> — if you own or can source one, a first-impressions video framed around the \"trending direction\" angle performs well while the trend is still rising.</li>\n</ol>\n<h3>Note</h3>\n<p>This run used the placeholder example rows in <code>collection.md</code> since the real collection hasn't been filled in yet — angle #2 will get much sharper once your actual perfumes are listed there.</p>\n<p>Sources:</p>\n<ul>\n<li><a href=\"https://www.giftexpress.com/blog/post/top-trending-tiktok-perfumes-in-2026\" target=\"_blank\" rel=\"noopener\">Top Trending TikTok Perfumes in 2026</a></li>\n<li><a href=\"https://www.spate.nyc/blog/fragrance-trends-2026-on-google-tiktok-and-instagram\" target=\"_blank\" rel=\"noopener\">Fragrance Trends 2026: Top Scents Winning on Google &amp; TikTok</a></li>\n<li><a href=\"https://qamareperfumes.com/blogs/qamare-blog/top-10-tiktok-viral-perfumes-of-2026-updated-monthly\" target=\"_blank\" rel=\"noopener\">Top 10 TikTok Viral Perfumes of 2026 (Updated Monthly)</a></li>\n<li><a href=\"https://www.scento.com/blog/perfume-tok-explained-why-fragrance-goes-viral\" target=\"_blank\" rel=\"noopener\">PerfumeTok Explained: Why Fragrance Goes Viral</a></li>\n<li><a href=\"https://fragrantip.com/tiktok-made-me-buy-it-best-viral-perfumes-2026/\" target=\"_blank\" rel=\"noopener\">TikTok Made Me Buy It — Best Viral Perfumes of 2026</a></li>\n</ul>"
+  }
+ ]
+}

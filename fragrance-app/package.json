@@ -1,0 +1,11 @@
+{
+  "name": "fragrance-app",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Read-only web app (PWA) for the fragrance collection, wishlist, and video scripts.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "start": "node build.mjs && python3 -m http.server 4173 --directory public"
+  }
+}
