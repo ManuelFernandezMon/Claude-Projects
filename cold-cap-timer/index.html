@@ -137,6 +137,13 @@
   .hero[data-tone="over"] .timer { color: var(--danger); }
   .ring-sub { font-size: .9rem; color: var(--muted); min-height: 1.3em; }
 
+  .pre { margin: 18px auto 0; max-width: 340px; display: grid; gap: 8px; }
+  .pre-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-size: .95rem; font-weight: 520; }
+  .pre-time { font-size: 1.35rem; font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+  .bar { height: 8px; border-radius: var(--r-pill); background: var(--track); overflow: hidden; }
+  .bar i { display: block; height: 100%; border-radius: inherit; background: var(--accent); transform-origin: left center; transform: scaleX(var(--p, 0)); transition: transform 1s linear; }
+  .pre.done .bar i { transition: transform .8s var(--ease-out); }
+  .pre-sub { text-align: right; min-height: 1.2em; }
   .todo { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 8px; text-align: center; }
   .todo li { color: var(--muted); font-size: .95rem; }
   .todo li.first { color: var(--ink); font-size: 1.3rem; font-weight: 600; letter-spacing: -.02em; line-height: 1.25; }
@@ -370,6 +377,11 @@
         <div class="ring-sub" id="timerSub"></div>
       </div>
     </div>
+    <div class="pre" id="preBox" hidden>
+      <div class="pre-row"><span id="preLabel">Pre-enfriamiento</span><span class="pre-time" id="preTime">--:--</span></div>
+      <div class="bar" aria-hidden="true"><i id="preBar"></i></div>
+      <div class="pre-sub muted small" id="preSub"></div>
+    </div>
     <ul class="todo" id="todo"></ul>
   </section>
 
@@ -457,7 +469,7 @@
 </main>
 
 <script type="module">
-import { ACTIONS, fmt, clock, capOnHead, summarize, inferCap, nextCap, todo, plan, parseEntries, liveTimeline, toCSV, milestones, changeAt } from './logic.js';
+import { ACTIONS, fmt, clock, capOnHead, summarize, inferCap, nextCap, todo, plan, parseEntries, liveTimeline, toCSV, milestones, changeAt, placements } from './logic.js';
 
 const KEY = 'coldcap.v2';
 const defaults = () => ({
@@ -752,7 +764,24 @@ function tick() {
   setRing(frac, tone);
   setNotch(notch);
 
-  const items = todo(state.events, S(), now);
+  // Pre-cooling timer: from the first cap until the infusion can start (S().pre minutes in total).
+  const pm = milestones(state.events, S());
+  const first = placements(state.events)[0];
+  const preBox = $('preBox');
+  const showPre = !!(first && pm.infusionAt && !pm.finAt && now < pm.infusionAt + 10 * 60000);
+  preBox.hidden = !showPre;
+  if (showPre) {
+    const done = now >= pm.infusionAt;
+    const p = Math.min(1, Math.max(0, (now - first.since) / (pm.infusionAt - first.since)));
+    preBox.classList.toggle('done', done);
+    $('preLabel').textContent = done ? 'Pre-enfriamiento completo' : `Pre-enfriamiento de ${S().pre} min`;
+    $('preTime').textContent = done ? 'Listo' : fmt(pm.infusionAt - now);
+    $('preSub').textContent = done ? 'Ya puede empezar la infusión' : `La infusión empieza a las ${clock(pm.infusionAt)}`;
+    preBox.querySelector('.bar i').style.setProperty('--p', p.toFixed(4));
+  }
+
+  // The pre-cooling timer already shows when the infusion starts, so skip the duplicate line.
+  const items = todo(state.events, S(), now).filter((it) => !(showPre && /^Empezar la infusión a las/.test(it.text)));
   const html = items.map((it, i) =>
     `<li class="${i === 0 ? 'first' : ''}${it.urgent ? ' urgent' : ''}">${it.text}${it.sub ? `<span class="s">${it.sub}</span>` : ''}</li>`).join('');
   if (html !== lastTodo) {
