@@ -30,7 +30,8 @@ jobs:
         continue-on-error: true
         run: npx @capacitor/assets generate --android --iconBackgroundColor '#8b2942' --iconBackgroundColorDark '#8b2942' --splashBackgroundColor '#8b2942' --splashBackgroundColorDark '#8b2942'
       - name: Stamp build number
-        run: echo '{ "build": ${{ github.run_number }} }' > ../public/build.json
+        run: |
+          echo '{ "build": ${{ github.run_number }} }' > ../public/build.json
       - run: npx cap sync android
       - name: Accept Android SDK licenses
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
