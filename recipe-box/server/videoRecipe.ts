@@ -17,6 +17,9 @@ const MIME: Record<string, string> = {
   'video/mpeg': 'video/mpeg',
   'video/x-msvideo': 'video/avi',
   'video/avi': 'video/avi',
+  // The fast import sends a video's sound as a WAV file instead of the whole video.
+  'audio/wav': 'audio/wav',
+  'audio/x-wav': 'audio/wav',
 }
 const SUPPORTED = new Set(Object.values(MIME))
 
@@ -26,6 +29,7 @@ Use everything provided together: what is said in a video, text overlays, what i
 
 Rules:
 - Extract only what the material says or clearly shows. Never invent ingredients, quantities, times or steps. If an ingredient appears but no amount is said or shown, use an empty string for quantity.
+- A video may arrive as its sound (an audio file) plus still pictures taken from it at regular moments, each introduced by a line like "Frame at 0:12". Treat them together as that one video: the audio is everything said and heard, the frames show what was on screen (including text overlays and the cooking itself).
 - Keep the language of the material (its speech or text). Do not translate.
 - Split each ingredient into quantity (for example "2 cups", "200 g", "1 pinch") and name. Merge duplicates, and list every ingredient that is used.
 - Steps are imperative sentences in cooking order, one action each.
@@ -86,6 +90,7 @@ const MAX_VIDEOS = 2
 const MAX_IMAGES = 6
 const MAX_IMAGE_CHARS = 2_800_000 // base64 characters of one screenshot (about 2 MB)
 const MAX_IMAGES_TOTAL_CHARS = 4_000_000 // Vercel rejects request bodies over 4.5 MB, and the rest of the request needs room
+const MAX_FRAMES = 40
 const MAX_TEXT = 8000
 const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
 
@@ -112,6 +117,33 @@ function looksLike(mimeType: string, base64: string): boolean {
   if (mimeType === 'image/webp') return head.toString('latin1', 0, 4) === 'RIFF' && head.toString('latin1', 8, 12) === 'WEBP'
   return false
 }
+
+interface Frame {
+  t: number
+  video: number
+  mimeType: string
+  data: string
+}
+
+function parseFrames(v: unknown): { frames: Frame[] } | { error: Response } {
+  if (v === undefined) return { frames: [] }
+  if (!Array.isArray(v) || v.length > MAX_FRAMES) return { error: json(400, { error: 'bad_request', message: `At most ${MAX_FRAMES} frames from a video.` }) }
+  const frames: Frame[] = []
+  for (const item of v) {
+    const o = typeof item === 'object' && item !== null ? (item as Record<string, unknown>) : {}
+    const t = typeof o.t === 'number' && Number.isFinite(o.t) && o.t >= 0 && o.t <= 7200 ? Math.floor(o.t) : -1
+    const video = typeof o.video === 'number' && Number.isInteger(o.video) && o.video >= 1 && o.video <= MAX_VIDEOS ? o.video : 1
+    const mimeType = typeof o.mimeType === 'string' ? o.mimeType : ''
+    const data = typeof o.data === 'string' ? o.data : ''
+    if (t < 0 || !IMAGE_TYPES.has(mimeType) || !/^[A-Za-z0-9+/]+={0,2}$/.test(data) || data.length < 64 || !looksLike(mimeType, data)) {
+      return { error: json(400, { error: 'bad_request', message: 'A video frame is not a valid picture.' }) }
+    }
+    frames.push({ t, video, mimeType, data })
+  }
+  return { frames }
+}
+
+const clock = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 
 function parseImages(v: unknown): { images: { mimeType: string; data: string }[] } | { error: Response } {
   if (v === undefined) return { images: [] }
@@ -158,6 +190,12 @@ export async function handleVideoExtract(request: Request): Promise<Response> {
   }
   const parsedImages = parseImages(b.images)
   if ('error' in parsedImages) return parsedImages.error
+  const parsedFrames = parseFrames(b.frames)
+  if ('error' in parsedFrames) return parsedFrames.error
+  const pictureChars = [...parsedImages.images, ...parsedFrames.frames].reduce((n, i) => n + i.data.length, 0)
+  if (pictureChars > MAX_IMAGES_TOTAL_CHARS) {
+    return json(413, { error: 'too_large', message: 'The screenshots and video frames are too large together. Remove some or use smaller ones.' })
+  }
   const text = typeof b.text === 'string' ? b.text.trim() : ''
   if (text.length > MAX_TEXT) return json(400, { error: 'bad_request', message: `The pasted text is too long (max ${MAX_TEXT} characters).` })
   const url = typeof b.url === 'string' ? b.url.trim().slice(0, 500) : ''
@@ -170,7 +208,7 @@ export async function handleVideoExtract(request: Request): Promise<Response> {
     await discardAll()
     return json(200, { discarded: true })
   }
-  if (!refs.length && !parsedImages.images.length) {
+  if (!refs.length && !parsedImages.images.length && !parsedFrames.frames.length) {
     return json(400, { error: 'bad_request', message: 'Add a video or at least one screenshot.' })
   }
 
@@ -196,7 +234,8 @@ export async function handleVideoExtract(request: Request): Promise<Response> {
       }
     }
     const what = [
-      refs.length ? `${refs.length} video${refs.length > 1 ? 's' : ''}` : '',
+      refs.length ? `${refs.length} ${parsedFrames.frames.length ? 'audio recording' : 'video'}${refs.length > 1 ? 's' : ''}` : '',
+      parsedFrames.frames.length ? `${parsedFrames.frames.length} video frame${parsedFrames.frames.length > 1 ? 's' : ''}` : '',
       parsedImages.images.length ? `${parsedImages.images.length} screenshot${parsedImages.images.length > 1 ? 's' : ''}` : '',
       text ? 'pasted text' : '',
     ].filter(Boolean)
@@ -207,6 +246,12 @@ export async function handleVideoExtract(request: Request): Promise<Response> {
       provider: 'gemini',
       media: [
         ...refs.map((r) => ({ kind: 'file' as const, uri: r.uri, mimeType: r.mimeType })),
+        ...parsedFrames.frames.map((f) => ({
+          kind: 'image' as const,
+          mimeType: f.mimeType,
+          data: f.data,
+          label: `${refs.length > 1 || f.video > 1 ? `Video ${f.video}, frame` : 'Frame'} at ${clock(f.t)}`,
+        })),
         ...parsedImages.images.map((i) => ({ kind: 'image' as const, mimeType: i.mimeType, data: i.data })),
       ],
       started,

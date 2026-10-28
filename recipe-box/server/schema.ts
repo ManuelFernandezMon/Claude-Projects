@@ -34,7 +34,10 @@ export interface ProviderRequest {
   media?: Media[]
 }
 
-export type Media = { kind: 'file'; uri: string; mimeType: string } | { kind: 'image'; mimeType: string; data: string }
+export type Media =
+  | { kind: 'file'; uri: string; mimeType: string }
+  /** `label` (for example "Frame at 0:12") is sent as a line of text just before the picture. */
+  | { kind: 'image'; mimeType: string; data: string; label?: string }
 
 /** What a provider hands back; API/network failures are thrown and mapped by that provider's `mapError`. */
 export type ProviderResult =

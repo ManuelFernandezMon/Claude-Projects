@@ -16,7 +16,7 @@ export async function prepareScreenshot(file: File, id: string): Promise<Screens
   return { id, name: file.name || 'screenshot', blob: await compressImage(file, 1400, 0.8) }
 }
 
-function toBase64(blob: Blob): Promise<string> {
+export function blobToBase64(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => resolve(String(reader.result).replace(/^data:[^,]*,/, ''))
@@ -30,7 +30,7 @@ export async function encodeScreenshots(shots: Screenshot[]): Promise<{ mimeType
   let blobs = shots.map((s) => s.blob)
   for (const [side, quality] of [[0, 0], [1100, 0.72], [900, 0.65]] as const) {
     if (side) blobs = await Promise.all(blobs.map((b) => compressImage(b, side, quality)))
-    const data = await Promise.all(blobs.map(toBase64))
+    const data = await Promise.all(blobs.map(blobToBase64))
     if (data.reduce((n, d) => n + d.length, 0) <= MAX_TOTAL_CHARS) return data.map((d) => ({ mimeType: 'image/jpeg', data: d }))
   }
   throw new Error('The screenshots are too large together. Remove some and try again.')

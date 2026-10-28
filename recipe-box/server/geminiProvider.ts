@@ -78,8 +78,10 @@ async function ask(ai: GoogleGenAI, model: string, req: ProviderRequest, thinkin
           {
             role: 'user',
             parts: [
-              ...(req.media ?? []).map((m) =>
-                m.kind === 'file' ? createPartFromUri(m.uri, m.mimeType) : { inlineData: { mimeType: m.mimeType, data: m.data } },
+              ...(req.media ?? []).flatMap((m) =>
+                m.kind === 'file'
+                  ? [createPartFromUri(m.uri, m.mimeType)]
+                  : [...(m.label ? [{ text: m.label }] : []), { inlineData: { mimeType: m.mimeType, data: m.data } }],
               ),
               { text: req.user },
             ],

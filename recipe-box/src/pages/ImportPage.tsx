@@ -8,7 +8,8 @@ import { usePasscode } from '../hooks/usePasscode'
 import { newId } from '../lib/id'
 import { ImportError, extractRecipe, fetchTikTokCaption } from '../lib/importApi'
 import { toPrefill } from '../lib/prefill'
-import { MAX_SCREENSHOTS, encodeScreenshots, prepareScreenshot, type Screenshot } from '../lib/screenshots'
+import { makeLite } from '../lib/liteVideo'
+import { MAX_SCREENSHOTS, blobToBase64, encodeScreenshots, prepareScreenshot, type Screenshot } from '../lib/screenshots'
 import { safeHttpUrl, sourceKind } from '../lib/url'
 import {
   MAX_TOTAL_VIDEO_MB,
@@ -26,10 +27,28 @@ import {
 
 const MAX_TEXT = 8000
 
+const FAST_KEY = 'recipe-box:fast-import'
+const loadFast = (): boolean => {
+  try {
+    return localStorage.getItem(FAST_KEY) !== 'off'
+  } catch {
+    return true
+  }
+}
+/** Picture budget of one request (base64 characters), shared by screenshots and video frames. */
+const PICTURE_BUDGET = 3_600_000
+
+interface SentFrame {
+  t: number
+  video: number
+  mimeType: string
+  data: string
+}
+
 type Phase =
   | { kind: 'idle' }
-  | { kind: 'preparing' }
-  | { kind: 'uploading'; index: number; count: number; fraction: number }
+  | { kind: 'preparing'; label?: string }
+  | { kind: 'uploading'; index: number; count: number; fraction: number; note?: string }
   | { kind: 'reading' }
 
 type Source =
@@ -57,6 +76,10 @@ export function ImportPage() {
   const [errorCode, setErrorCode] = useState<string>()
   /** Videos already on Google, by source id. After a transient failure they are reused instead of uploaded again. */
   const [uploaded, setUploaded] = useState<Record<string, UploadedVideo>>({})
+  /** Fast mode: send each video's sound and still frames instead of the whole video. Falls back to the video if the phone cannot. */
+  const [fast, setFast] = useState(loadFast)
+  /** The frames already taken for a video whose sound is held on Google, so a retry does not redo them. */
+  const framesRef = useRef<Record<string, SentFrame[]>>({})
   const videoFilesRef = useRef<HTMLInputElement>(null)
   const videoPhotosRef = useRef<HTMLInputElement>(null)
   const imagesRef = useRef<HTMLInputElement>(null)
@@ -180,18 +203,20 @@ export function ImportPage() {
       void discardVideos([up], passcode) // it is already on Google: remove it there too
       setUploaded(({ [id]: _drop, ...rest }) => rest)
     }
+    delete framesRef.current[id]
     setSources((prev) => prev.filter((x) => x.id !== id))
     clearError()
   }
 
-  async function analyse(refs: UploadedVideo[], encoded: { mimeType: string; data: string }[]) {
+  async function analyse(refs: UploadedVideo[], encoded: { mimeType: string; data: string }[], frames: SentFrame[]) {
     setPhase({ kind: 'reading' })
     try {
       const { recipe: r, reason } = await extractSources(
-        { files: refs, images: encoded, text: text.trim() || undefined, url: cleanUrl, categories: categories.map((c) => c.name) },
+        { files: refs, images: encoded, ...(frames.length ? { frames } : {}), text: text.trim() || undefined, url: cleanUrl, categories: categories.map((c) => c.name) },
         passcode,
       )
       setUploaded({}) // the server deletes the videos once they have been read
+      framesRef.current = {}
       if (!r) {
         setError(
           `No recipe found. ${reason ? `Gemini saw: “${reason}” ` : ''}Make sure the video, screenshots or text show or explain the ingredients and steps (with sound, if the recipe is spoken).`,
@@ -201,7 +226,10 @@ export function ImportPage() {
       openEditor(r)
     } catch (err) {
       // Overloaded model or quota: the videos are still on Google, so they are kept for a retry without uploading again.
-      if (!(err instanceof ImportError && RETRYABLE_CODES.has(err.code))) setUploaded({})
+      if (!(err instanceof ImportError && RETRYABLE_CODES.has(err.code))) {
+        setUploaded({})
+        framesRef.current = {}
+      }
       fail(err)
     } finally {
       setPhase({ kind: 'idle' })
@@ -231,7 +259,7 @@ export function ImportPage() {
       return
     }
 
-    setPhase({ kind: 'preparing' })
+    setPhase({ kind: 'preparing', label: images.length ? 'Preparing the screenshots…' : undefined })
     let encoded: { mimeType: string; data: string }[]
     try {
       encoded = images.length ? await encodeScreenshots(images.map((i) => i.shot)) : []
@@ -240,17 +268,42 @@ export function ImportPage() {
       setPhase({ kind: 'idle' })
       return
     }
+    const shotChars = encoded.reduce((n, i) => n + i.data.length, 0)
     const refs: UploadedVideo[] = []
+    const frames: SentFrame[] = []
     const held = { ...uploaded }
     try {
       for (const [i, v] of videos.entries()) {
+        const label = videos.length > 1 ? ` ${i + 1} of ${videos.length}` : ''
         const have = held[v.id]
         if (have) {
           refs.push(have)
+          frames.push(...(framesRef.current[v.id] ?? []))
           continue
         }
-        setPhase({ kind: 'uploading', index: i + 1, count: videos.length, fraction: 0 })
-        const up = await uploadVideo(v.loaded, passcode, (fraction) => setPhase({ kind: 'uploading', index: i + 1, count: videos.length, fraction }))
+        let note: string | undefined
+        let toUpload: LoadedVideo = v.loaded
+        if (fast) {
+          setPhase({ kind: 'preparing', label: `Preparing video${label}: taking pictures and the sound…` })
+          try {
+            const lite = await makeLite(v.loaded.bytes, v.loaded.mimeType, Math.floor((PICTURE_BUDGET - shotChars) / videos.length))
+            const taken: SentFrame[] = await Promise.all(
+              lite.frames.map(async (f) => ({ t: f.t, video: i + 1, mimeType: 'image/jpeg', data: await blobToBase64(f.blob) })),
+            )
+            framesRef.current[v.id] = taken
+            frames.push(...taken)
+            if (!lite.audio) continue // a video with no sound: the pictures are all there is to send
+            toUpload = { name: 'audio.wav', mimeType: 'audio/wav', bytes: await lite.audio.arrayBuffer(), durationSec: lite.durationSec }
+            note = `Sending the sound and ${taken.length} pictures (${mb(toUpload.bytes.byteLength)} MB) instead of the whole video (${v.mb} MB)`
+          } catch {
+            // this phone could not take the pictures or the sound (LiteUnavailable, or anything unexpected): send the whole video as before
+            delete framesRef.current[v.id]
+            frames.splice(0, frames.length, ...frames.filter((f) => f.video !== i + 1))
+            toUpload = v.loaded
+          }
+        }
+        setPhase({ kind: 'uploading', index: i + 1, count: videos.length, fraction: 0, note })
+        const up = await uploadVideo(toUpload, passcode, (fraction) => setPhase({ kind: 'uploading', index: i + 1, count: videos.length, fraction, note }))
         held[v.id] = up
         setUploaded({ ...held })
         refs.push(up)
@@ -260,7 +313,7 @@ export function ImportPage() {
       setPhase({ kind: 'idle' })
       return
     }
-    await analyse(refs, encoded)
+    await analyse(refs, encoded, frames)
   }
 
   async function discardHeld() {
@@ -352,6 +405,30 @@ export function ImportPage() {
           </label>
         </div>
 
+        <label className="fast">
+          <input
+            type="checkbox"
+            checked={fast}
+            disabled={working}
+            data-testid="fast-mode"
+            onChange={(e) => {
+              setFast(e.target.checked)
+              try {
+                localStorage.setItem(FAST_KEY, e.target.checked ? 'on' : 'off')
+              } catch {
+                /* the choice lasts until the app is closed */
+              }
+            }}
+          />
+          <span>
+            <strong>Fast mode</strong>
+            <span className="muted small">
+              Sends each video&rsquo;s sound and pictures from it instead of the whole video: a much smaller upload and a faster
+              reading. If your phone cannot do it, the whole video is sent.
+            </span>
+          </span>
+        </label>
+
         {adding && (
           <p className="muted" role="status">
             Preparing your files…
@@ -401,7 +478,7 @@ export function ImportPage() {
 
         {phase.kind === 'preparing' && (
           <p className="muted" role="status">
-            Preparing…
+            {phase.label ?? 'Preparing…'}
           </p>
         )}
         {phase.kind === 'uploading' && (
@@ -411,6 +488,7 @@ export function ImportPage() {
               {Math.round(phase.fraction * 100)}%
             </label>
             <progress id="vid-progress" className="progress" max={1} value={phase.fraction} />
+            {phase.note && <p className="muted small">{phase.note}</p>}
           </div>
         )}
         {phase.kind === 'reading' && (

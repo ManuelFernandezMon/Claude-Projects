@@ -131,6 +131,14 @@ passcode header; all answer CORS preflights for the Android app only.
 
 ### Import from a video, screenshots and text (no caption needed)
 
+**Fast mode** (a switch on the import page, on by default). A phone's upload is the slow part of importing a video (50 MB over mobile
+data takes a minute or more), and Gemini then has to process the video. In fast mode the browser takes the video's sound (16 kHz mono
+WAV, about 2 MB per minute) and still pictures at regular moments (one every ~2 s, at most 36, longest side 768 px, JPEG), uploads
+only the sound to Google and sends the pictures inline, each introduced by a line such as "Frame at 0:12". Gemini reads the audio
+and the pictures as one video. Anything that goes wrong on the phone (the browser cannot decode the video or its sound, a silent
+video, taking pictures is slow) quietly falls back to uploading the whole video as before. Not tested on a real Android phone: the
+tests use WebM videos made in Chromium, and mp4/H.264 on Android WebView is the part that could not be checked here.
+
 The import page is one panel: add videos, screenshots and/or text, check the list, then press **Extract recipe**. Videos are uploaded to
 Google first (below); screenshots are shrunk in the browser (longest side 1400 px, JPEG, further if needed so that all of them stay
 under about 3.6 MB of base64) and sent inline in the same `/api/video-extract` request, together with the pasted text and the

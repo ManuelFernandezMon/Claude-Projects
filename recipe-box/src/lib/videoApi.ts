@@ -232,7 +232,15 @@ export async function uploadVideo(
  * One request, one recipe.
  */
 export function extractSources(
-  input: { files: UploadedVideo[]; images: { mimeType: string; data: string }[]; text?: string; url?: string; categories: string[] },
+  input: {
+    files: UploadedVideo[]
+    images: { mimeType: string; data: string }[]
+    /** Still pictures taken from a video whose sound was uploaded as a file (the fast import). */
+    frames?: { t: number; video: number; mimeType: string; data: string }[]
+    text?: string
+    url?: string
+    categories: string[]
+  },
   passcode: string,
 ): Promise<{ recipe: ImportedRecipe | null; reason?: string }> {
   return postAiDetailed('/api/video-extract', input, passcode)

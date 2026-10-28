@@ -1462,3 +1462,27 @@ label.btn:focus-within {
   white-space: nowrap;
   font-weight: 600;
 }
+
+/* ---------- import: fast mode switch ---------- */
+.fast {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-ctl);
+  background: var(--glass);
+  cursor: pointer;
+}
+.fast input {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  accent-color: var(--accent);
+}
+.fast > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
