@@ -1,6 +1,6 @@
-// App shell is cached for offline use; data.json is network-first so new data shows up.
-const CACHE = "perfumes-v1";
-const SHELL = ["./", "index.html", "styles.css", "app.js", "manifest.webmanifest", "icons/icon.svg", "icons/icon-192.png"];
+// Network-first so updates show up right away; falls back to the cache when offline.
+const CACHE = "perfumes-v2";
+const SHELL = ["./", "index.html", "styles.css", "recommend.js", "app.js", "data.json", "manifest.webmanifest", "icons/icon.svg", "icons/icon-192.png"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -14,12 +14,10 @@ self.addEventListener("activate", (e) => {
 
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
-  const url = new URL(e.request.url);
-  if (url.origin !== location.origin) return;
-  const networkFirst = url.pathname.endsWith("/data.json");
+  if (new URL(e.request.url).origin !== location.origin) return;
   e.respondWith(
-    networkFirst
-      ? fetch(e.request).then((r) => { const copy = r.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy)); return r; }).catch(() => caches.match(e.request))
-      : caches.match(e.request).then((hit) => hit || fetch(e.request))
+    fetch(e.request)
+      .then((r) => { const copy = r.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy)); return r; })
+      .catch(() => caches.match(e.request))
   );
 });

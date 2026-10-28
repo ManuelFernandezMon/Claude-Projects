@@ -1,0 +1,14 @@
+{
+  "name": "perfumes-mobile",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Capacitor wrapper that packages ../public as an Android APK (built in CI).",
+  "dependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/core": "^8.6.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.6.0"
+  }
+}

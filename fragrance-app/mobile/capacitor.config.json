@@ -1,0 +1,6 @@
+{
+  "appId": "com.tufrenperfumero.app",
+  "appName": "Perfumes",
+  "webDir": "../public",
+  "server": { "androidScheme": "https" }
+}

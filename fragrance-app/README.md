@@ -1,16 +1,29 @@
 # Fragrance App
 
-Read-only web app (installable PWA) for browsing the fragrance collection: ratings, a
-"what should I wear" picker, the wishlist, video scripts/research, and a few insights.
-No framework, no dependencies, no backend — plain HTML/CSS/JS, free to host anywhere static.
+Installable app for managing the fragrance collection: add, edit, re-rate, re-categorize and
+delete perfumes, a wishlist, video ideas, a "describe your occasion" recommender, and insights.
+No framework, no dependencies, no backend — plain HTML/CSS/JS. Free to host and free to build.
 
-## How data gets in
+It runs three ways from the same code in `public/`:
 
-The markdown files in [`../fragrance-content/`](../fragrance-content/README.md) stay the
-single source of truth. `build.mjs` reads `collection.md`, `wishlist.md`, `content/`, and
-`research/` and writes `public/data.json`, which the page loads.
+| Where | How |
+|---|---|
+| **Android app (APK)** | Built by GitHub Actions (`fragrance-app-apk.yml`) with Capacitor; see below |
+| **Website / PWA** | Static site on Vercel, "Add to Home Screen" |
+| **Local** | `cd fragrance-app && npm start` → http://localhost:4173 |
 
-**After changing anything in `fragrance-content/`, regenerate and commit the data:**
+## Where your data lives
+
+- **On the device.** Edits are saved in the app's local storage (per phone/browser). Nothing
+  is sent anywhere, and the web version and the APK do not share data.
+- **First launch** seeds the app from `public/data.json`, which `build.mjs` generates from the
+  markdown in [`../fragrance-content/`](../fragrance-content/README.md). Later changes to
+  `data.json` never overwrite what you've edited on a device.
+- **Backup:** More tab → "Copy backup (JSON)". Restore by pasting it back.
+- **Sync with Claude:** More tab → "Copy as markdown for Claude", paste it into a session and
+  ask Claude to update `collection.md` / `wishlist.md`; it rebuilds `data.json` and pushes.
+
+After changing anything in `fragrance-content/`, regenerate the starter data and commit it:
 
 ```sh
 node fragrance-app/build.mjs
@@ -18,24 +31,27 @@ node fragrance-app/build.mjs
 
 CI fails if `public/data.json` is out of date.
 
-## Run locally
+## The recommender
 
-```sh
-cd fragrance-app
-npm start   # builds data.json, serves http://localhost:4173
-```
+`public/recommend.js` is a keyword matcher (English and Spanish), not an AI model. It reads the
+occasion text and tags you pick, then ranks your bottles by your own occasion tags, ratings, and
+notes (fresh vs. heavy vs. sweet), leaning fresher if "I live somewhere hot" is on.
 
-## Deploy (free)
+## Android APK
 
-It's a static site: publish the `public/` folder.
+GitHub builds a debug APK on every push that touches `public/` or `mobile/`
+(or run **Actions → fragrance-app APK → Run workflow**). The result is published as the
+**`apk-latest` release** (Releases page of the repo) and as a workflow artifact.
 
-- **Vercel (free Hobby plan):** new project from this repo, Root Directory `fragrance-app`,
-  Framework Preset "Other", Output Directory `public`, no build command (data.json is committed).
-- **GitHub Pages:** works if the repo is public (private repos need a paid plan).
+To install: open the APK on your phone (signed in to GitHub if the repo is private), allow
+"Install unknown apps" for your browser when asked, then tap Install. It is a debug build signed
+with a throwaway key, so Play Protect may warn; installing a newer APK over an old one works
+as long as it came from this same workflow.
 
-Once deployed, open the URL on your phone and use "Add to Home Screen" to install it.
+`mobile/` is a small Capacitor project (`capacitor.config.json`) that packages `../public`.
+The `android/` folder is generated in CI and is not committed.
 
-## Editing
+## Deploy the website (free)
 
-The app is read-only on purpose. To add or rate a perfume, update the wishlist, or write
-a script, ask Claude in your session; it edits the markdown, rebuilds `data.json`, and pushes.
+Static site: publish `public/`. Vercel Hobby: Root Directory `fragrance-app`, Framework "Other",
+Output Directory `public`, build command `echo data.json is committed`.

@@ -20,10 +20,10 @@
       </a>
       <nav class="tabs" id="tabs" aria-label="Sections">
         <a href="#/collection" data-route="collection">Collection</a>
-        <a href="#/wear" data-route="wear">Wear today</a>
+        <a href="#/recommend" data-route="recommend">Recommend</a>
         <a href="#/wishlist" data-route="wishlist">Wishlist</a>
         <a href="#/videos" data-route="videos">Videos</a>
-        <a href="#/insights" data-route="insights">Insights</a>
+        <a href="#/more" data-route="more">More</a>
       </nav>
     </div>
   </header>
@@ -34,9 +34,12 @@
 
   <footer class="foot">
     <span id="footMeta"></span>
-    <span>Read-only view. To change anything, tell Claude in your session.</span>
+    <span>Your data is stored on this device. Back it up from the More tab.</span>
   </footer>
 
+  <dialog id="dlg"></dialog>
+
+  <script src="recommend.js" defer></script>
   <script src="app.js" defer></script>
 </body>
 </html>
