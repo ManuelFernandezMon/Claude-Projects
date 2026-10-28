@@ -26,7 +26,8 @@ const textBudget = () => ({
 const VIDEO = { timeout: 100_000, deadline: 170_000, hardLimit: 285_000, perModel: 1, passes: 2 }
 /** Screenshots only: far quicker to read than a video, but slower than plain text. */
 const IMAGES = { timeout: 45_000, deadline: 110_000, hardLimit: 200_000, perModel: 1, passes: 2 }
-const hasVideo = (req: ProviderRequest) => !!req.media?.some((m) => m.kind === 'file')
+/** A real video (a long wait is normal). The sound of a video as a WAV file plus pictures is light and answers like screenshots do. */
+const hasVideo = (req: ProviderRequest) => !!req.media?.some((m) => m.kind === 'file' && !m.mimeType.startsWith('audio/'))
 const hasMedia = (req: ProviderRequest) => !!req.media?.length
 const PASS_GAP_MS = () => Number(process.env.GEMINI_PASS_GAP_MS ?? 4000)
 
