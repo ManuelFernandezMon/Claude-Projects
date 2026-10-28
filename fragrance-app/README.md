@@ -16,6 +16,7 @@ It runs three ways from the same code in `public/`:
 
 - **On the device.** Edits are saved in the app's local storage (per phone/browser). Nothing
   is sent anywhere, and the web version and the APK do not share data.
+- **Ask AI** (Recommend tab) sends your occasion and collection to Google Gemini using your own free key (aistudio.google.com/apikey), stored only on the device and left out of backups. It finds a current Flash model automatically and falls back to the keyword picks on errors or when offline.
 - **First launch** seeds the app from `public/data.json`, which `build.mjs` generates from the
   markdown in [`../fragrance-content/`](../fragrance-content/README.md). Later changes to
   `data.json` never overwrite what you've edited on a device.

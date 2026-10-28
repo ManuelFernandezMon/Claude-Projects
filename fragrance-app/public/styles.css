@@ -221,7 +221,7 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .hint { color: var(--muted); font-size: 0.8rem; margin: 0.4rem 0; }
 
 /* ---- inputs ---- */
-textarea, .field input[type="text"], .field select {
+textarea, .field input[type="text"], .field input[type="password"], .field select {
   font: inherit; font-size: 0.92rem; color: var(--ink); width: 100%;
   background: var(--glass); border: 1px solid var(--hairline); border-radius: 14px; padding: 0.6rem 0.85rem;
 }

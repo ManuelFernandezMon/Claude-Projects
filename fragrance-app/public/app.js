@@ -16,6 +16,8 @@ const state = {
   recText: "",
   recTags: new Set(),
   recResult: null,
+  recAi: null,
+  recNote: "",
 };
 
 /* ---------- helpers ---------- */
@@ -297,6 +299,26 @@ function viewCollection() {
   ];
 }
 
+function openAiSettings(onSaved) {
+  const key = textInput(GeminiAI.getKey(), { type: "password", placeholder: "Paste your Gemini API key", autocomplete: "off", spellcheck: "false" });
+  const model = textInput(GeminiAI.getModel(), { placeholder: "Leave empty to pick automatically" });
+  const remove = btn("Remove key", "danger", () => { GeminiAI.clear(); dlg.close(); renderCurrent(); });
+  openModal("AI settings", [
+    h("p", { class: "hint" }, "Ask AI uses Google Gemini with your own free key. Get one in a minute at ",
+      h("a", { href: "https://aistudio.google.com/apikey", target: "_blank", rel: "noopener" }, "aistudio.google.com/apikey"), "."),
+    field("Gemini API key", key, "Stored only on this device and left out of backups. Anyone with your phone unlocked could read it, so don't reuse a key you care about."),
+    field("Model (optional)", model, "The app finds a current Flash model by itself. Only set this if Google renames it."),
+    h("p", { class: "hint" }, "When you tap Ask AI, your occasion text and your collection (names, notes, ratings, tags) are sent to Google. The free tier may use prompts to improve Google's models. Nothing else leaves your phone."),
+  ], {
+    saveLabel: "Save", extra: GeminiAI.hasKey() ? remove : null,
+    onSave: () => {
+      if (!key.value.trim()) { key.focus(); return false; }
+      GeminiAI.save(key.value, model.value);
+      if (onSaved) setTimeout(onSaved, 0);
+    },
+  });
+}
+
 function viewRecommend() {
   const { collection, meta } = state.db;
   const counts = occasionCounts(collection);
@@ -306,13 +328,41 @@ function viewRecommend() {
   const input = h("textarea", { rows: "3", placeholder: "Describe where you're going… e.g. “Birthday party at a cervecería at night” or “Entrevista de trabajo, hace calor”", value: state.recText, "aria-label": "Describe the occasion" });
   input.addEventListener("input", () => { state.recText = input.value; });
 
+  async function askAi() {
+    if (!GeminiAI.hasKey()) { openAiSettings(askAi); return; }
+    state.recText = input.value;
+    state.recNote = "";
+    out.replaceChildren(h("p", { class: "count" }, "Asking Gemini…"));
+    aiBtn.disabled = true;
+    try {
+      state.recAi = await GeminiAI.ask({ collection, text: state.recText, tags: [...state.recTags], warm: meta.warmClimate });
+      state.recResult = null;
+      drawOut();
+    } catch (e) {
+      state.recAi = null;
+      state.recResult = Recommender.recommend(collection, state.recText, [...state.recTags], 5, { warmClimate: meta.warmClimate });
+      state.recNote = `${e.message} Showing keyword picks instead.`;
+      drawOut();
+    } finally { aiBtn.disabled = false; }
+  }
   function run() {
+    state.recAi = null; state.recNote = "";
     state.recText = input.value;
     state.recResult = Recommender.recommend(collection, state.recText, [...state.recTags], 5, { warmClimate: meta.warmClimate });
     drawOut();
   }
   function drawOut() {
     out.replaceChildren();
+    if (state.recNote) out.append(h("p", { class: "note-box" }, state.recNote));
+    const ai = state.recAi;
+    if (ai) {
+      out.append(
+        h("p", { class: "count" }, `Gemini picks · ${ai.model}`),
+        perfumeCard(ai.picks[0].perfume, { big: true, eyebrow: "Top pick", reasons: [ai.picks[0].why] }),
+        h("div", { class: "cards" }, ai.picks.slice(1).map((x) => perfumeCard(x.perfume, { reasons: [x.why] }))),
+        ai.tip ? h("p", { class: "note-box" }, ai.tip) : null);
+      return;
+    }
     const r = state.recResult;
     if (!r) return;
     if (!r.ctx.understood) {
@@ -333,6 +383,7 @@ function viewRecommend() {
   }
   drawChips(); drawOut();
 
+  const aiBtn = btn("Ask AI", "", askAi, null, "sparkle");
   const examples = ["Birthday party at a cervecería at night", "Entrevista de trabajo, hace calor", "Día de playa", "Romantic dinner, something sweet"];
   return [
     pageHead("What should I wear?", "Describe the occasion in your own words (English or Spanish), or pick tags. Picks come from your own shelf, ranked by your tags, ratings and notes."),
@@ -340,12 +391,14 @@ function viewRecommend() {
     h("div", { class: "chips ex" }, examples.map((x) => h("button", { type: "button", class: "chip", onclick: () => { input.value = x; run(); } }, x))),
     chipHost,
     h("div", { class: "controls" },
-      btn("Recommend", "primary", run, null, "sparkle"),
+      btn("Recommend", "primary", run, null, "magnifying-glass"),
+      aiBtn,
+      btn("AI settings", "small", () => openAiSettings(), null, "sliders-horizontal"),
       h("label", { class: "check" },
         h("input", { type: "checkbox", checked: meta.warmClimate, onchange: (e) => { meta.warmClimate = e.target.checked; save(); } }),
         " I live somewhere hot (lean fresher)")),
     out,
-    h("p", { class: "hint" }, "This runs on your phone using keywords, not AI. For deeper advice, ask Claude in your session."),
+    h("p", { class: "hint" }, "Recommend runs on your phone using keywords. Ask AI sends your occasion and collection to Gemini (needs your free key and internet)."),
   ];
 }
 
