@@ -24,6 +24,11 @@ Recipes, photos, categories and checklist state live in the browser's **IndexedD
   ounces to grams) are computed on the device. Volume to weight (cups of flour to grams) depends on the ingredient, so the AI
   estimates it once; the result is saved on the recipe, works offline afterwards and is marked "≈". Editing an ingredient's
   amount drops its saved conversion. Kitchen values are used (1 cup = 240 ml, 1 lb = 450 g).
+- Find a photo (more results): a long title ("Double chocolate brownies with a hint of coffee") finds nothing on Pixabay, so the
+  search tries the title as typed, then just the dish name before "with" and with its leading words dropped ("chocolate brownies",
+  "brownies"), and the panel says which words it used. Results come 24 at a time with a "More photos" button. Pixabay stays the
+  only source: Pexels has paused new keys, Unsplash requires showing photos from its own servers, and Openverse and Wikimedia
+  could not be tested from the build environment.
 - Find a photo: on the recipe editor, "Find a photo" searches free stock photos on Pixabay (starting from the recipe title),
   and the chosen photo is downloaded and stored like any other, so it works offline (Pixabay forbids hotlinking, so the app keeps
   its own copy). Every stock photo is credited on the recipe page ("Stock photo by … on Pixabay"). These are real photos, not
@@ -132,7 +137,10 @@ under about 3.6 MB of base64) and sent inline in the same `/api/video-extract` r
 link. Gemini then reads everything as one source. Limits: 2 videos (100 MB and 5 minutes each, 150 MB together because they are
 held in the phone's memory), 6 screenshots. Only text goes to `/api/extract` as before (works with either AI provider);
 anything with a video or a screenshot needs Gemini. As with videos alone, a "no recipe" answer for screenshots is only
-believed after a second model agrees, and the "lite" models are not used for them.
+believed after a second model agrees, and the "lite" models are only tried last (when the full ones are busy), and a "no recipe"
+verdict never rests on lite models alone. When every model fails, the error that is shown is the most useful one: "overloaded" wins
+over "this old model is no longer available" (Google retired `gemini-2.5-flash` for new keys on its own). Requests ask for LOW
+thinking, which makes answers faster; a model that rejects that setting is asked again without it.
 
 On `/import`, choose a video file. The AI (Gemini) watches the video and listens to the audio, so ingredients that are only
 said out loud are picked up. You then review the recipe in the editor before saving.

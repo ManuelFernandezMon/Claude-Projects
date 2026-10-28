@@ -1,4 +1,4 @@
-import { ApiError, FinishReason, GoogleGenAI, createPartFromUri } from '@google/genai'
+import { ApiError, FinishReason, GoogleGenAI, ThinkingLevel, createPartFromUri } from '@google/genai'
 import { z } from 'zod'
 import { RecipeOutputSchema, type ProviderRequest, type ProviderResult } from './schema.js'
 
@@ -30,15 +30,19 @@ const hasVideo = (req: ProviderRequest) => !!req.media?.some((m) => m.kind === '
 const hasMedia = (req: ProviderRequest) => !!req.media?.length
 const PASS_GAP_MS = () => Number(process.env.GEMINI_PASS_GAP_MS ?? 4000)
 
+const isLite = (m: string) => /lite/i.test(m)
 const models = (media = false) => {
   const all = (process.env.GEMINI_MODEL || DEFAULT_MODELS)
     .split(',')
     .map((m) => m.trim())
     .filter(Boolean)
-  // The "lite" models are the likeliest to misjudge a video or a screenshot (and then say "no recipe"), so those skip them.
-  const full = all.filter((m) => !/lite/i.test(m))
-  return media && full.length ? full : all
+  // The "lite" models are the likeliest to misjudge a video or a screenshot (and then say "no recipe"), so those try them last:
+  // better a small model's answer than nothing when the full ones are overloaded.
+  return media ? [...all.filter((m) => !isLite(m)), ...all.filter(isLite)] : all
 }
+
+/** Models that refused the thinking setting (older ones): asked again without it, and remembered. */
+const noThinking = new Set<string>()
 const retryDelayMs = () => Number(process.env.GEMINI_RETRY_DELAY_MS ?? 1000)
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -54,6 +58,19 @@ const BLOCKED_FINISH: string[] = [
 ]
 
 async function once(ai: GoogleGenAI, model: string, req: ProviderRequest): Promise<ProviderResult> {
+  try {
+    return await ask(ai, model, req, !noThinking.has(model))
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 400 && /think/i.test(e.message) && !noThinking.has(model)) {
+      noThinking.add(model)
+      console.warn(`gemini ${model} does not accept the thinking setting; asking without it`)
+      return ask(ai, model, req, false)
+    }
+    throw e
+  }
+}
+
+async function ask(ai: GoogleGenAI, model: string, req: ProviderRequest, thinking: boolean): Promise<ProviderResult> {
   const res = await ai.models.generateContent({
     model,
     contents: hasMedia(req)
@@ -74,6 +91,8 @@ async function once(ai: GoogleGenAI, model: string, req: ProviderRequest): Promi
       responseMimeType: 'application/json',
       responseJsonSchema: RESPONSE_SCHEMA,
       maxOutputTokens: 16000,
+      // Writing down a recipe needs little reasoning, and the default (a lot of thinking) adds many seconds to every answer.
+      ...(thinking ? { thinkingConfig: { thinkingLevel: ThinkingLevel.LOW } } : {}),
     },
   })
   if (res.promptFeedback?.blockReason) return { kind: 'refused' }
@@ -92,6 +111,16 @@ async function once(ai: GoogleGenAI, model: string, req: ProviderRequest): Promi
 }
 
 const isTransient = (status: number) => status === 500 || status === 503 || status === 504
+
+/**
+ * Which failure to report when every model failed. "Overloaded" (the real problem) must win over "this old model no longer
+ * exists" (a harmless 404 on a fallback), otherwise people are told to change a setting that is fine.
+ */
+const importance = (e: unknown): number => {
+  if (e instanceof ApiError) return isTransient(e.status) ? 3 : e.status === 429 ? 2 : e.status === 404 ? 1 : 4
+  return 3 // a hang or dropped connection is the same overload in another form
+}
+const worse = (current: unknown, next: unknown): unknown => (current === undefined || importance(next) >= importance(current) ? next : current)
 
 /** A request that hung or dropped (our own timeout, a reset connection): the model is too slow right now, so move on. */
 const isSlowFailure = (e: unknown): boolean =>
@@ -137,13 +166,14 @@ export async function callGemini(req: ProviderRequest, started = Date.now()): Pr
             if (hasMedia(req) && !result.out.is_recipe) {
               noVotes.push({ model, result: { ...result, model } })
               if (noVotes.length < 2) break // ask the next model before telling the user there is no recipe
-              return noVotes[0]!.result
+              if (noVotes.some((v) => !isLite(v.model))) return noVotes[0]!.result // two models agree, and at least one is a full model
+              break // only "lite" models said no: keep asking
             }
             return { ...result, model }
           }
           return result
         } catch (e) {
-          lastError = e
+          lastError = worse(lastError, e)
           if (!(e instanceof ApiError)) {
             if (!isSlowFailure(e)) throw e
             sawTransient = true
@@ -163,8 +193,10 @@ export async function callGemini(req: ProviderRequest, started = Date.now()): Pr
       }
     }
   }
-  if (noVotes.length) return noVotes[0]!.result // the only model that could answer said no
-  throw lastError
+  // The only models that could answer said "no recipe". "Lite" models are not trusted with that verdict (they were only asked
+  // because the better ones were busy), so unless a full model is among them, report the overload instead.
+  if (noVotes.some((v) => !isLite(v.model))) return noVotes[0]!.result
+  throw lastError ?? new Error('Gemini did not answer')
 }
 
 export function mapGeminiError(e: unknown): { status: number; error: string; message: string } {

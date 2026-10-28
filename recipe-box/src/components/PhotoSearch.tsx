@@ -16,8 +16,13 @@ interface Props {
 
 export function PhotoSearch({ initialQuery, onPick, onClose }: Props) {
   const pc = usePasscode()
-  const [query, setQuery] = useState(initialQuery.trim() ? `${initialQuery.trim()} food` : '')
+  const [query, setQuery] = useState(initialQuery.trim())
   const [results, setResults] = useState<StockPhoto[]>()
+  const [usedQuery, setUsedQuery] = useState('')
+  /** The words that were searched (not what is typed in the box now). */
+  const [searched, setSearched] = useState('')
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(false)
   const [busy, setBusy] = useState<'search' | string>()
   const [error, setError] = useState<string>()
 
@@ -29,9 +34,29 @@ export function PhotoSearch({ initialQuery, onPick, onClose }: Props) {
     try {
       const found = await searchPhotos(query.trim(), pc.passcode)
       pc.remember()
-      setResults(found)
+      setResults(found.photos)
+      setUsedQuery(found.usedQuery)
+      setSearched(query.trim())
+      setPage(1)
+      setHasMore(found.hasMore)
     } catch (e) {
       if (e instanceof ImportError && e.code === 'unauthorized') pc.forget()
+      setError(errorMessage(e))
+    } finally {
+      setBusy(undefined)
+    }
+  }
+
+  async function more() {
+    setBusy('more')
+    setError(undefined)
+    try {
+      const next = await searchPhotos(usedQuery, pc.passcode, { page: page + 1 })
+      // never show the same photo twice if the pages overlap
+      setResults((prev) => [...(prev ?? []), ...next.photos.filter((p) => !(prev ?? []).some((q) => q.id === p.id))])
+      setPage(page + 1)
+      setHasMore(next.hasMore)
+    } catch (e) {
       setError(errorMessage(e))
     } finally {
       setBusy(undefined)
@@ -85,6 +110,11 @@ export function PhotoSearch({ initialQuery, onPick, onClose }: Props) {
         </p>
       )}
       {results && results.length === 0 && <p className="muted small">No photos found. Try different words.</p>}
+      {results && results.length > 0 && usedQuery.toLowerCase() !== searched.toLowerCase() && (
+        <p className="muted small" role="status">
+          Nothing matched “{searched}” exactly, so these are results for “{usedQuery}”.
+        </p>
+      )}
       {results && results.length > 0 && (
         <ul className="stock" aria-label="Photo results">
           {results.map((p) => (
@@ -102,6 +132,13 @@ export function PhotoSearch({ initialQuery, onPick, onClose }: Props) {
             </li>
           ))}
         </ul>
+      )}
+      {results && results.length > 0 && hasMore && (
+        <div className="row">
+          <button type="button" className="btn" onClick={() => void more()} disabled={busy !== undefined}>
+            {busy === 'more' ? 'Loading…' : 'More photos'}
+          </button>
+        </div>
       )}
       <p className="muted small">
         Photos provided by{' '}

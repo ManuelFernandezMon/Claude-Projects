@@ -10,24 +10,34 @@ export interface StockPhoto {
   alt: string
 }
 
-/** Searches Pixabay through our server (the API key lives there). */
-export async function searchPhotos(query: string, passcode: string): Promise<StockPhoto[]> {
+export interface PhotoSearchResult {
+  photos: StockPhoto[]
+  /** The words that actually found photos (a long title is simplified when nothing matches it). */
+  usedQuery: string
+  hasMore: boolean
+}
+
+/**
+ * Searches Pixabay through our server (the API key lives there). Page 1 may simplify the words; later pages pass `exact`
+ * with the words that worked so they continue the same search.
+ */
+export async function searchPhotos(query: string, passcode: string, more?: { page: number }): Promise<PhotoSearchResult> {
   let res: Response
   try {
     res = await fetch(apiUrl('/api/photos'), {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-import-passcode': passcode },
-      body: JSON.stringify({ query }),
+      body: JSON.stringify(more ? { query, page: more.page, exact: true } : { query }),
     })
   } catch {
     throw new ImportError('Could not reach the server. Finding photos needs an internet connection.', 'network')
   }
-  const body: { photos?: StockPhoto[]; error?: string; message?: string } = await res.json().catch(() => ({}))
+  const body: { photos?: StockPhoto[]; usedQuery?: string; hasMore?: boolean; error?: string; message?: string } = await res.json().catch(() => ({}))
   if (!res.ok) {
     const fallback = res.status === 404 ? 'The photo endpoint was not found. It only exists on Vercel or in `npm run dev`.' : `Request failed (HTTP ${res.status}).`
     throw new ImportError(body.message ?? fallback, body.error ?? 'http')
   }
-  return Array.isArray(body.photos) ? body.photos : []
+  return { photos: Array.isArray(body.photos) ? body.photos : [], usedQuery: body.usedQuery ?? query, hasMore: body.hasMore === true }
 }
 
 /**
