@@ -6,7 +6,7 @@ A monorepo holding independent projects, one per top-level folder.
 
 - [`panama-pets-website/`](panama-pets-website/README.md) — marketing site for the Panama Pets veterinary clinic (React + Vite + TypeScript + Tailwind).
 - [`fragrance-content/`](fragrance-content/README.md) — content-creation workspace for a fragrance/perfume channel (scripts, post ideas, recommendations, trend research).
-- [`fragrance-app/`](fragrance-app/README.md) — read-only installable web app (PWA) that displays the fragrance-content data: collection, ratings, wear-today picker, wishlist, scripts.
+- [`fragrance-app/`](fragrance-app/README.md) — installable web app and Android APK for the fragrance data: collection, ratings, occasion recommender, wishlist, video ideas (editable on-device, with an update banner).
 
 ## Plans
 

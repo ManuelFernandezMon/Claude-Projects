@@ -45,8 +45,14 @@ GitHub builds a debug APK on every push that touches `public/` or `mobile/`
 
 To install: open the APK on your phone (signed in to GitHub if the repo is private), allow
 "Install unknown apps" for your browser when asked, then tap Install. It is a debug build signed
-with a throwaway key, so Play Protect may warn; installing a newer APK over an old one works
-as long as it came from this same workflow.
+with a fixed debug key committed in `mobile/debug.keystore` (not secret, not for Play Store), so Play
+Protect may warn, but a newer APK installs over the old one and keeps your data. (Build 1 used a
+different key: uninstall it once, after copying a backup from the More tab.)
+
+**Update banner.** Each CI build stamps `public/build.json` with its run number and titles the
+release "... build N". The Android app checks the latest release when it opens and shows a
+"New version available" banner with a Download button when N is newer. The website and installed
+PWA show a "Reload" banner when the service worker swaps in new files.
 
 `mobile/` is a small Capacitor project (`capacitor.config.json`) that packages `../public`.
 The `android/` folder is generated in CI and is not committed.

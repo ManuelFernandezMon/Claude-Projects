@@ -5,25 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>tufrenperfumero</title>
   <meta name="description" content="Fragrance collection, ratings, wishlist and video ideas.">
-  <meta name="theme-color" content="#8b2942">
+  <meta name="theme-color" content="#0d0c10" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f3f3f6" media="(prefers-color-scheme: light)">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="preload" href="fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="top">
     <div class="top-inner">
       <a class="brand" href="#/collection" aria-label="tufrenperfumero home">
-        <img src="icons/icon.svg" alt="" width="34" height="34">
+        <img src="icons/icon.svg" alt="" width="30" height="30">
         <span class="brand-name">tufren<span>perfumero</span></span>
       </a>
       <nav class="tabs" id="tabs" aria-label="Sections">
-        <a href="#/collection" data-route="collection">Collection</a>
-        <a href="#/recommend" data-route="recommend">Recommend</a>
-        <a href="#/wishlist" data-route="wishlist">Wishlist</a>
-        <a href="#/videos" data-route="videos">Videos</a>
-        <a href="#/more" data-route="more">More</a>
+        <a href="#/collection" data-route="collection" data-icon="squares-four"><span>Collection</span></a>
+        <a href="#/recommend" data-route="recommend" data-icon="sparkle"><span>Recommend</span></a>
+        <a href="#/wishlist" data-route="wishlist" data-icon="heart"><span>Wishlist</span></a>
+        <a href="#/videos" data-route="videos" data-icon="film-slate"><span>Videos</span></a>
+        <a href="#/more" data-route="more" data-icon="dots-three-circle"><span>More</span></a>
       </nav>
     </div>
   </header>
@@ -38,7 +40,9 @@
   </footer>
 
   <dialog id="dlg"></dialog>
+  <div class="banner-host" id="bannerHost" aria-live="polite"></div>
 
+  <script src="icons.js" defer></script>
   <script src="recommend.js" defer></script>
   <script src="app.js" defer></script>
 </body>

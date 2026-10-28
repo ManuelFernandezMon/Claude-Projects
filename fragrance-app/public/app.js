@@ -76,7 +76,7 @@ function ratingEl(p) {
     h("span", { class: "bar", title: `${fmt(p.rating)} / 10` }, h("i", { style: `width:${p.rating * 10}%` })));
 }
 const tagsEl = (list) => (list.length ? h("div", { class: "tags" }, list.map((o) => h("span", { class: "tag" }, o))) : null);
-const btn = (label, cls, onclick, attrs) => h("button", { type: "button", class: "btn " + (cls || ""), onclick, ...(attrs || {}) }, label);
+const btn = (label, cls, onclick, attrs, ico) => h("button", { type: "button", class: "btn " + (cls || ""), onclick, ...(attrs || {}) }, ico ? icon(ico, 16) : null, label);
 
 function perfumeCard(p, opts = {}) {
   return h("article", { class: "card" + (opts.big ? " top-pick" : "") },
@@ -87,7 +87,7 @@ function perfumeCard(p, opts = {}) {
     tagsEl(p.occasions || []),
     opts.reasons ? h("ul", { class: "reasons" }, opts.reasons.map((r) => h("li", {}, r))) : null,
     p.notes ? h("details", { class: "notes", open: opts.big }, h("summary", {}, "Notes"), h("p", {}, p.notes)) : null,
-    opts.edit ? h("div", { class: "card-actions" }, btn("Edit", "small", () => editPerfume(p))) : null);
+    opts.edit ? h("div", { class: "card-actions" }, btn("Edit", "small", () => editPerfume(p), null, "pencil-simple")) : null);
 }
 
 function chipRow(options, selected, onToggle, counts) {
@@ -282,7 +282,7 @@ function viewCollection() {
   drawChips(); drawResults();
 
   return [
-    pageHead("Collection", "Everything you own. Tap Edit on any card to change it.", btn("+ Add perfume", "primary", addPerfume)),
+    pageHead("Collection", "Everything you own. Tap Edit on any card to change it.", btn("Add perfume", "primary", addPerfume, null, "plus")),
     h("div", { class: "stats" },
       h("div", { class: "stat" }, h("div", { class: "n" }, collection.length), h("div", { class: "l" }, "perfumes")),
       h("div", { class: "stat" }, h("div", { class: "n" }, fmt(Math.round(avg(rated) * 10) / 10) || "–"), h("div", { class: "l" }, "average rating"), h("div", { class: "s" }, `${rated.length} rated`)),
@@ -340,7 +340,7 @@ function viewRecommend() {
     h("div", { class: "chips ex" }, examples.map((x) => h("button", { type: "button", class: "chip", onclick: () => { input.value = x; run(); } }, x))),
     chipHost,
     h("div", { class: "controls" },
-      btn("Recommend", "primary", run),
+      btn("Recommend", "primary", run, null, "sparkle"),
       h("label", { class: "check" },
         h("input", { type: "checkbox", checked: meta.warmClimate, onchange: (e) => { meta.warmClimate = e.target.checked; save(); } }),
         " I live somewhere hot (lean fresher)")),
@@ -353,7 +353,7 @@ function viewWishlist() {
   const order = { High: 0, Medium: 1, Low: 2 };
   const list = [...state.db.wishlist].sort((a, b) => (order[a.priority] ?? 3) - (order[b.priority] ?? 3) || a.name.localeCompare(b.name));
   return [
-    pageHead("Wishlist", "Perfumes you want but don't own yet.", btn("+ Add to wishlist", "primary", addWish)),
+    pageHead("Wishlist", "Perfumes you want but don't own yet.", btn("Add to wishlist", "primary", addWish, null, "plus")),
     list.length ? h("div", { class: "cards" }, list.map((p) =>
       h("article", { class: "card" },
         h("div", { class: "card-head" },
@@ -381,7 +381,7 @@ function viewVideos(parts) {
   }
   const ideas = state.db.ideas;
   return [
-    pageHead("Videos", "Your video ideas, plus the scripts and research saved from Claude sessions.", btn("+ New idea", "primary", addIdea)),
+    pageHead("Videos", "Your video ideas, plus the scripts and research saved from Claude sessions.", btn("New idea", "primary", addIdea, null, "plus")),
     h("h2", {}, "Ideas"),
     ideas.length ? IDEA_STATUSES.map((s) => {
       const group = ideas.filter((i) => (i.status || "Idea") === s);
@@ -494,8 +494,64 @@ function renderCurrent(keepScroll = true) {
   document.querySelectorAll("#tabs a").forEach((a) => a.classList.toggle("active", a.dataset.route === key));
   const y = window.scrollY;
   view.replaceChildren(...routes[key](rest).flat().filter(Boolean));
-  document.getElementById("footMeta").textContent = `${state.db.collection.length} perfumes · ${state.seed.handle}`;
+  document.getElementById("footMeta").textContent = `${state.db.collection.length} perfumes · ${state.seed.handle}${state.build ? ` · build ${state.build}` : ""}`;
   window.scrollTo(0, keepScroll ? y : 0);
+}
+
+function decorateNav() {
+  document.querySelectorAll("#tabs a[data-icon]").forEach((a) => a.prepend(icon(a.dataset.icon, 20)));
+}
+
+/* ---------- update banner ---------- */
+const REPO = "ManuelFernandezMon/Claude-Projects";
+const APK_URL = `https://github.com/${REPO}/releases/download/apk-latest/tufrenperfumero.apk`;
+const SKIP_KEY = "perfumeApp.skipBuild";
+const bannerHost = document.getElementById("bannerHost");
+const isApk = () => !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+const lsGet = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } };
+
+function showBanner({ title, sub, action, onDismiss }) {
+  const x = h("button", { type: "button", class: "x", "aria-label": "Dismiss", onclick: () => { bannerHost.replaceChildren(); onDismiss && onDismiss(); } }, icon("x", 16));
+  bannerHost.replaceChildren(h("div", { class: "banner", role: "status" },
+    h("span", { class: "ico-dot" }, icon(action.icon, 20)),
+    h("div", { class: "banner-text" }, h("b", {}, title), h("span", {}, sub)),
+    action.href
+      ? h("a", { class: "btn primary small", href: action.href, target: "_blank", rel: "noopener" }, action.label)
+      : btn(action.label, "primary small", action.onclick),
+    x));
+}
+
+async function checkApkUpdate(build) {
+  try {
+    const res = await fetch(`https://api.github.com/repos/${REPO}/releases/tags/apk-latest`, { headers: { Accept: "application/vnd.github+json" } });
+    if (!res.ok) return;
+    const rel = await res.json();
+    const latest = parseInt((/build\s+(\d+)/i.exec(rel.name || "") || [])[1], 10);
+    if (!latest || latest <= build || String(latest) === lsGet(SKIP_KEY)) return;
+    showBanner({
+      title: "New version available", sub: `Build ${latest} is ready. Your data stays on the phone when you install over this one.`,
+      action: { label: "Download", icon: "download-simple", href: APK_URL },
+      onDismiss: () => lsSet(SKIP_KEY, String(latest)),
+    });
+  } catch (e) { /* offline or rate limited: try again next time */ }
+}
+
+async function initUpdates() {
+  // Web / installed PWA: the service worker swaps in new files by itself; offer a reload.
+  if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      showBanner({ title: "New version ready", sub: "Reload to get the latest changes.", action: { label: "Reload", icon: "arrow-clockwise", onclick: () => location.reload() } });
+    });
+  }
+  // Android app: compare this build with the latest published APK.
+  let build = 0;
+  try { const r = await fetch("build.json", { cache: "no-cache" }); build = (await r.json()).build || 0; } catch (e) { /* none */ }
+  state.build = build;
+  if (isApk() && build) {
+    checkApkUpdate(build);
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) checkApkUpdate(build); });
+  }
 }
 
 async function init() {
@@ -509,7 +565,9 @@ async function init() {
   }
   state.db = loadDb(state.seed);
   window.addEventListener("hashchange", () => renderCurrent(false));
+  decorateNav();
   renderCurrent(false);
+  initUpdates();
 }
 
 if ("serviceWorker" in navigator && location.protocol.startsWith("http") && location.hostname !== "localhost") navigator.serviceWorker.register("sw.js").catch(() => {});
