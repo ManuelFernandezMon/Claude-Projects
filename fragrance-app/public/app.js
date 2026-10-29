@@ -320,7 +320,8 @@ function openAiSettings(onSaved) {
 }
 
 function viewRecommend() {
-  const { collection, meta } = state.db;
+  const { collection } = state.db;
+  const meta = { warmClimate: true }; // Panama: always lean a little fresher
   const counts = occasionCounts(collection);
   const occs = [...new Set([...OCCASIONS, ...Object.keys(counts)])].filter((o) => counts[o]);
   const out = h("div", {});
@@ -332,8 +333,9 @@ function viewRecommend() {
     if (!GeminiAI.hasKey()) { openAiSettings(askAi); return; }
     state.recText = input.value;
     state.recNote = "";
-    out.replaceChildren(h("p", { class: "count" }, "Asking Gemini…"));
+    out.replaceChildren(h("div", { class: "thinking" }, h("span", { class: "spinner" }), "Asking Gemini…"));
     aiBtn.disabled = true;
+    out.scrollIntoView({ behavior: "smooth", block: "start" });
     try {
       state.recAi = await GeminiAI.ask({ collection, text: state.recText, tags: [...state.recTags], warm: meta.warmClimate });
       state.recResult = null;
@@ -343,13 +345,14 @@ function viewRecommend() {
       state.recResult = Recommender.recommend(collection, state.recText, [...state.recTags], 5, { warmClimate: meta.warmClimate });
       state.recNote = `${e.message} Showing keyword picks instead.`;
       drawOut();
-    } finally { aiBtn.disabled = false; }
+    } finally { aiBtn.disabled = false; out.scrollIntoView({ behavior: "smooth", block: "start" }); }
   }
   function run() {
     state.recAi = null; state.recNote = "";
     state.recText = input.value;
     state.recResult = Recommender.recommend(collection, state.recText, [...state.recTags], 5, { warmClimate: meta.warmClimate });
     drawOut();
+    out.scrollIntoView({ behavior: "smooth", block: "start" });
   }
   function drawOut() {
     out.replaceChildren();
@@ -393,10 +396,7 @@ function viewRecommend() {
     h("div", { class: "controls" },
       btn("Recommend", "primary", run, null, "magnifying-glass"),
       aiBtn,
-      btn("AI settings", "small", () => openAiSettings(), null, "sliders-horizontal"),
-      h("label", { class: "check" },
-        h("input", { type: "checkbox", checked: meta.warmClimate, onchange: (e) => { meta.warmClimate = e.target.checked; save(); } }),
-        " I live somewhere hot (lean fresher)")),
+      btn("AI settings", "small", () => openAiSettings(), null, "sliders-horizontal")),
     out,
     h("p", { class: "hint" }, "Recommend runs on your phone using keywords. Ask AI sends your occasion and collection to Gemini (needs your free key and internet)."),
   ];
@@ -558,11 +558,9 @@ function decorateNav() {
 /* ---------- update banner ---------- */
 const REPO = "ManuelFernandezMon/Claude-Projects";
 const APK_URL = `https://github.com/${REPO}/releases/download/apk-latest/tufrenperfumero.apk`;
-const SKIP_KEY = "perfumeApp.skipBuild";
+let bannerDismissed = false; // closing hides it until the app is opened again
 const bannerHost = document.getElementById("bannerHost");
 const isApk = () => !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
-const lsGet = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
-const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } };
 
 function showBanner({ title, sub, action, onDismiss }) {
   const x = h("button", { type: "button", class: "x", "aria-label": "Dismiss", onclick: () => { bannerHost.replaceChildren(); onDismiss && onDismiss(); } }, icon("x", 16));
@@ -581,11 +579,11 @@ async function checkApkUpdate(build) {
     if (!res.ok) return;
     const rel = await res.json();
     const latest = parseInt((/build\s+(\d+)/i.exec(rel.name || "") || [])[1], 10);
-    if (!latest || latest <= build || String(latest) === lsGet(SKIP_KEY)) return;
+    if (!latest || latest <= build || bannerDismissed) return;
     showBanner({
       title: "New version available", sub: `Build ${latest} is ready. Your data stays on the phone when you install over this one.`,
       action: { label: "Download", icon: "download-simple", href: APK_URL },
-      onDismiss: () => lsSet(SKIP_KEY, String(latest)),
+      onDismiss: () => { bannerDismissed = true; },
     });
   } catch (e) { /* offline or rate limited: try again next time */ }
 }
