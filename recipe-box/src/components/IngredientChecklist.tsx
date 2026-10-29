@@ -50,6 +50,7 @@ export function IngredientChecklist({ recipeId, ingredients, initialChecked, mod
         )}
       </div>
       {controls}
+      {footer}
       {ingredients.length === 0 ? (
         <p className="muted">No ingredients listed.</p>
       ) : (
@@ -87,7 +88,6 @@ export function IngredientChecklist({ recipeId, ingredients, initialChecked, mod
           </button>
         </>
       )}
-      {footer}
       {error && (
         <p className="error" role="alert">
           {error}

@@ -1311,7 +1311,7 @@ label.btn:focus-within {
   font-variant-numeric: tabular-nums;
 }
 .fill {
-  margin-top: 12px;
+  margin: 12px 0;
 }
 
 /* ---------- AI edit: what changes ---------- */
