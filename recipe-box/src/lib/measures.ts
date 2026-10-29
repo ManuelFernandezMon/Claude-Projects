@@ -37,11 +37,30 @@ function inCups(ing: Ingredient): { text: string; approx: boolean } | undefined 
  * A bare number with no unit ("175") that is probably a weight in grams (or millilitres): counts like "3 eggs" are small,
  * amounts people weigh are not. Only the AI can say what it means for a given ingredient.
  */
+/** "3", "1/2", "1 1/2": a count or fraction with no unit, nothing for the switch to change. */
+const isSmallCount = (q: string) => /^\s*[\d\s./½⅓⅔¼¾⅛]+\s*$/.test(q) && !isBareNumber(q)
 const isBareNumber = (q: string) => /^\s*\d+(?:[.,]\d+)?\s*$/.test(q) && parseFloat(q.replace(',', '.')) >= 20
+
+/** "1 cup (240 ml)" or "200 g / 7 oz": both systems are already written, so show the one asked for as written. */
+function dualWritten(original: string, mode: UnitMode): string | undefined {
+  const m = /^(.+?)\s*(?:\(([^()]+)\)|\/\s*(.+))$/.exec(original)
+  if (!m) return undefined
+  const parts = [m[1].trim(), (m[2] ?? m[3]).trim()]
+  const parsed = parts.map((t) => ({ t, p: parseQuantity(t) }))
+  if (parsed.some((x) => !x.p)) return undefined
+  const sys = (t: string) => unitSystem(t)
+  if (sys(parts[0]) === sys(parts[1])) return undefined
+  const want = (t: string) =>
+    mode === 'metric' ? sys(t) === 'metric' : mode === 'us' ? sys(t) === 'us' : mode === 'cups' ? sys(t) === 'us' && unitKind(t) === 'volume' : false
+  return parts.find(want)
+}
 
 export function showQuantity(ing: Ingredient, mode: UnitMode): ShownQuantity {
   const original = (ing.quantity ?? '').trim()
   if (mode === 'written') return { text: original, approx: false }
+
+  const dual = mode === 'both' ? undefined : dualWritten(original, mode)
+  if (dual) return { text: dual, approx: false }
 
   if (mode === 'cups') {
     const r = inCups(ing)
@@ -79,11 +98,12 @@ export function needsAi(ingredients: Ingredient[], mode: UnitMode): boolean {
   })
 }
 
-/** True when at least one amount can be shown in another unit at all (decides whether the switch is worth showing). */
+/**
+ * True when the switch is worth showing: any amount that is not just a small count ("3" eggs). Amounts like "1 cup (125 g)" or "2 medium" cannot be converted on
+ * the device, but the AI can still do them, so hiding the switch would leave those recipes with no way to ask.
+ */
 export function canConvert(ingredients: Ingredient[]): boolean {
-  return ingredients.some(
-    (i) => !!i.measures?.metric || !!i.measures?.us || !!i.measures?.cups || (!!i.quantity && (parseQuantity(i.quantity) !== null || isBareNumber(i.quantity))),
-  )
+  return ingredients.some((i) => !!i.measures?.metric || !!i.measures?.us || !!i.measures?.cups || (!!i.quantity?.trim() && !isSmallCount(i.quantity)))
 }
 
 /** Copies AI conversions onto the ingredients. Null when the answer does not line up with the list (never guess). */
