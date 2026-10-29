@@ -48,8 +48,8 @@ export function MeasureFill({ recipe, onSaved }: Props) {
   return (
     <div className="fill panel stack stack--tight">
       <p className="small">
-        Turning cups into grams (or back) depends on the ingredient, so it cannot be calculated. The AI can estimate it
-        once and the recipe remembers it. Estimates are marked ≈.
+        Turning grams into cups (or cups into grams) depends on the ingredient, so it cannot be calculated. The AI can estimate it
+        once and the recipe remembers it, even offline. Estimates are marked ≈.
       </p>
       <PasscodeField value={pc.passcode} onChange={pc.setPasscode} editing={pc.editing} onEdit={() => pc.setEditing(true)} />
       <div className="row">

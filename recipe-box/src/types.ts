@@ -2,6 +2,10 @@
 export interface Measures {
   metric?: string
   us?: string
+  /** The amount in US measuring cups and spoons ("1 1/3 cups"); absent when it is not measured that way (eggs, meat...). */
+  cups?: string
+  /** The AI has already looked at this ingredient for volume measures, so it is not asked again even when `cups` is empty. */
+  volume?: true
   /** True when a conversion crossed between volume and weight (needs a typical density) or is a rough estimate. */
   approx?: boolean
 }
@@ -73,7 +77,7 @@ export type ImportMode = 'merge' | 'replace'
 export interface ImportedRecipe {
   title: string
   description: string
-  ingredients: { quantity: string; name: string; metric?: string; us?: string; approximate?: boolean }[]
+  ingredients: { quantity: string; name: string; metric?: string; us?: string; cups?: string; approximate?: boolean }[]
   steps: string[]
   prepMinutes: number | null
   cookMinutes: number | null

@@ -11,6 +11,8 @@ export const RecipeOutputSchema = z.object({
       /** Only filled by the conversion task: the same amount in grams / millilitres, and in US cups / spoons / ounces. */
       metric: z.string().optional(),
       us: z.string().optional(),
+      /** Only filled by the conversion task: the amount as US measuring cups and spoons ("1 1/3 cups", "2 tbsp"); empty when it is not measured that way. */
+      cups: z.string().optional(),
       /** True when a conversion crossed between volume and weight (needs a typical density) or is a rough estimate. */
       approximate: z.boolean().optional(),
     }),

@@ -20,10 +20,13 @@ Recipes, photos, categories and checklist state live in the browser's **IndexedD
   **review of exactly what would change** (New / Changed / Removed lines, with the old value) and then choose Replace,
   Save as a copy, or Discard. You can keep refining the proposal. Photos, categories and the source link are never sent to the
   AI and never changed by it; unchanged ingredients keep their ticked state.
-- Measurements: a switch on the recipe page shows amounts As written / Metric / US / Both. Same-kind conversions (cups to ml,
-  ounces to grams) are computed on the device. Volume to weight (cups of flour to grams) depends on the ingredient, so the AI
-  estimates it once; the result is saved on the recipe, works offline afterwards and is marked "≈". Editing an ingredient's
-  amount drops its saved conversion. Kitchen values are used (1 cup = 240 ml, 1 lb = 450 g).
+- Measurements: a switch on the recipe page shows amounts Original / Metric / US / Cups / Both. Same-kind conversions (cups to ml,
+  ounces to grams) are computed on the device. **Cups** shows everything as US measuring cups and spoons: what is already in
+  cups or spoons stays, millilitres are converted on the device, and grams (also a bare number such as "175", which the AI reads as
+  grams for flour, sugar, butter and the like) need the AI, because a cup of flour and a cup of sugar weigh differently. The AI
+  estimates it once; the result is saved on the recipe, works offline afterwards and is marked "≈". Eggs, meat and other things
+  that are not measured in cups keep what was written (and are not asked about again). Editing an ingredient's amount drops its
+  saved conversion. Kitchen values are used (1 cup = 240 ml, 1 lb = 450 g).
 - Find a photo (more results): a long title ("Double chocolate brownies with a hint of coffee") finds nothing on Pixabay, so the
   search tries the title as typed, then just the dish name before "with" and with its leading words dropped ("chocolate brownies",
   "brownies"), and the panel says which words it used. Results come 24 at a time with a "More photos" button. Pixabay stays the

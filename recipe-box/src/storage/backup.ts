@@ -118,7 +118,16 @@ function parseBackup(text: string): StorageSnapshot {
     if (!isObj(v)) return undefined
     const metric = shortText(v.metric)
     const us = shortText(v.us)
-    return metric || us ? { ...(metric ? { metric } : {}), ...(us ? { us } : {}), ...(v.approx === true ? { approx: true } : {}) } : undefined
+    const cups = shortText(v.cups)
+    const volume = v.volume === true
+    if (!metric && !us && !cups && !volume) return undefined
+    return {
+      ...(metric ? { metric } : {}),
+      ...(us ? { us } : {}),
+      ...(cups ? { cups } : {}),
+      ...(v.approx === true ? { approx: true } : {}),
+      ...(volume ? { volume: true as const } : {}),
+    }
   }
   const arr = (v: unknown) => (Array.isArray(v) ? v : [])
   const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : undefined)

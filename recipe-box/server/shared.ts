@@ -167,6 +167,7 @@ export async function runRecipeModel(
           name: i.name.trim().slice(0, 200),
           ...(i.metric?.trim() ? { metric: i.metric.trim().slice(0, 60) } : {}),
           ...(i.us?.trim() ? { us: i.us.trim().slice(0, 60) } : {}),
+          ...(i.cups?.trim() ? { cups: i.cups.trim().slice(0, 60) } : {}),
           ...(i.approximate ? { approximate: true } : {}),
         }))
         .filter((i) => i.name)
