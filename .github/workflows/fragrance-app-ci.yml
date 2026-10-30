@@ -16,4 +16,4 @@ jobs:
       - run: node fragrance-app/build.mjs
       - name: Fail if data.json is stale
         run: git diff --exit-code -- fragrance-app/public/data.json
-      - run: node --check fragrance-app/public/app.js && node --check fragrance-app/public/recommend.js && node --check fragrance-app/public/ai.js && node --check fragrance-app/public/sw.js
+      - run: node --check fragrance-app/public/app.js && node --check fragrance-app/public/recommend.js && node --check fragrance-app/public/ai.js && node --check fragrance-app/public/sync.js && node --check fragrance-app/public/icons.js && node --check fragrance-app/public/sw.js

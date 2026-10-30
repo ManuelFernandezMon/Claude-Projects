@@ -41,6 +41,18 @@ const fmt = (n) => (n == null ? "" : n.toFixed(1).replace(/\.0$/, ""));
 const ratedOnly = (list) => list.filter((p) => p.rating != null);
 const avg = (list) => (list.length ? list.reduce((s, p) => s + p.rating, 0) / list.length : 0);
 const thisMonth = () => new Date().toISOString().slice(0, 7);
+const today = () => new Date().toISOString().slice(0, 10);
+const money = (n) => (n == null || n === "" ? "" : "$" + (Math.round(n * 100) / 100).toFixed(2).replace(/\.00$/, ""));
+const daysSince = (d) => Math.floor((Date.now() - new Date(d + "T12:00:00").getTime()) / 864e5);
+const ago = (d) => { const n = daysSince(d); return n <= 0 ? "today" : n === 1 ? "yesterday" : `${n} days ago`; };
+function wearStats() {
+  const m = new Map();
+  for (const w of state.db.wears) {
+    const e = m.get(w.perfumeId) || { n: 0, last: "" };
+    e.n++; if (w.date > e.last) e.last = w.date; m.set(w.perfumeId, e);
+  }
+  return m;
+}
 const cell = (s) => String(s ?? "").replace(/\|/g, "/").replace(/\n+/g, " ").trim();
 
 /* ---------- data layer (stored on this device) ---------- */
@@ -50,6 +62,7 @@ function seedDb(seed) {
     collection: seed.collection.map((p) => ({ id: uid(), ...p })),
     wishlist: seed.wishlist.map((w) => ({ id: uid(), ...w })),
     ideas: [],
+    wears: [],
     meta: { lastBackup: null, warmClimate: true },
   };
 }
@@ -58,6 +71,7 @@ function loadDb(seed) {
     const d = JSON.parse(localStorage.getItem(STORE_KEY));
     if (d && Array.isArray(d.collection) && Array.isArray(d.wishlist)) {
       d.ideas = d.ideas || [];
+      d.wears = d.wears || [];
       d.meta = { lastBackup: null, warmClimate: true, ...(d.meta || {}) };
       return d;
     }
@@ -68,7 +82,7 @@ function save() {
   try { localStorage.setItem(STORE_KEY, JSON.stringify(state.db)); }
   catch (e) { alert("Couldn't save to this device (storage full or blocked). Copy a backup from the More tab."); }
 }
-function commit() { save(); renderCurrent(); }
+function commit() { save(); GitSync.schedule(); renderCurrent(); }
 
 /* ---------- shared UI pieces ---------- */
 function ratingEl(p) {
@@ -80,6 +94,17 @@ function ratingEl(p) {
 const tagsEl = (list) => (list.length ? h("div", { class: "tags" }, list.map((o) => h("span", { class: "tag" }, o))) : null);
 const btn = (label, cls, onclick, attrs, ico) => h("button", { type: "button", class: "btn " + (cls || ""), onclick, ...(attrs || {}) }, ico ? icon(ico, 16) : null, label);
 
+function bottleLine(p) {
+  const w = wearStats().get(p.id);
+  const bits = [
+    p.size ? `${p.size} ml` : null, p.price != null && p.price !== "" ? money(p.price) : null,
+    p.fill != null && p.fill < 100 ? `${p.fill}% left` : null,
+    p.longevity ? `lasts ${p.longevity}` : null, p.projection ? `${p.projection.toLowerCase()} projection` : null,
+    w ? `worn ${w.n}× · ${ago(w.last)}` : "never worn",
+  ].filter(Boolean);
+  return h("p", { class: "meta-line" }, bits.join(" · "));
+}
+
 function perfumeCard(p, opts = {}) {
   return h("article", { class: "card" + (opts.big ? " top-pick" : "") },
     opts.eyebrow ? h("p", { class: "eyebrow" }, opts.eyebrow) : null,
@@ -89,7 +114,8 @@ function perfumeCard(p, opts = {}) {
     tagsEl(p.occasions || []),
     opts.reasons ? h("ul", { class: "reasons" }, opts.reasons.map((r) => h("li", {}, r))) : null,
     p.notes ? h("details", { class: "notes", open: opts.big }, h("summary", {}, "Notes"), h("p", {}, p.notes)) : null,
-    opts.edit ? h("div", { class: "card-actions" }, btn("Edit", "small", () => editPerfume(p), null, "pencil-simple")) : null);
+    opts.edit ? bottleLine(p) : null,
+    opts.edit ? h("div", { class: "card-actions" }, btn("Wore it", "small", () => logWear(p), null, "calendar-check"), btn("Edit", "small", () => editPerfume(p), null, "pencil-simple")) : null);
 }
 
 function chipRow(options, selected, onToggle, counts) {
@@ -160,9 +186,22 @@ function perfumeForm(p, { title, onSave, onDelete, extra }) {
   };
   custom.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); addCustom(); } });
 
+  const size = textInput(p.size ?? "", { type: "number", inputmode: "decimal", min: "0", step: "any", placeholder: "100" });
+  const price = textInput(p.price ?? "", { type: "number", inputmode: "decimal", min: "0", step: "any", placeholder: "35" });
+  const store = textInput(p.store, { placeholder: "e.g. Superz Budapest" });
+  const fill = h("input", { type: "range", min: "0", max: "100", step: "5", value: String(p.fill ?? 100), class: "fill-slider" });
+  const fillLabel = h("span", { class: "rating-value is-set" });
+  const syncFill = () => { fillLabel.textContent = `${fill.value}% left`; };
+  fill.addEventListener("input", syncFill); syncFill();
+  const longevity = h("select", {}, ["", "under 4h", "4-6h", "6-8h", "8h+"].map((x) => h("option", { value: x, selected: (p.longevity || "") === x }, x || "Not set")));
+  const projection = h("select", {}, ["", "Weak", "Moderate", "Strong", "Beast"].map((x) => h("option", { value: x, selected: (p.projection || "") === x }, x || "Not set")));
   openModal(title, [
     field("Name", name), field("Brand", brand), field("Notes / accords", notes),
     field("Purchased", purchased),
+    h("div", { class: "two" }, field("Size (ml)", size), field("Price paid (USD)", price)),
+    field("Bought at", store),
+    field("Bottle level", h("div", { class: "rating-row" }, fill, fillLabel)),
+    h("div", { class: "two" }, field("Longevity", longevity), field("Projection", projection)),
     field("Rating", h("div", { class: "rating-row" }, rating, ratingLabel), "Slide to 0 to mark it unrated."),
     h("div", { class: "field" }, h("span", { class: "field-label" }, "Occasions"), chipHost,
       h("div", { class: "inline" }, custom, btn("Add", "small", addCustom))),
@@ -174,6 +213,8 @@ function perfumeForm(p, { title, onSave, onDelete, extra }) {
       return onSave({
         name: name.value.trim(), brand: brand.value.trim(), notes: notes.value.trim(), purchased: purchased.value.trim(),
         rating: r > 0 ? r : null, occasions: [...draft.occasions],
+        size: size.value === "" ? null : parseFloat(size.value), price: price.value === "" ? null : parseFloat(price.value),
+        store: store.value.trim(), fill: parseInt(fill.value, 10), longevity: longevity.value, projection: projection.value,
       });
     },
   });
@@ -189,7 +230,16 @@ function editPerfume(p) {
   perfumeForm(p, {
     title: "Edit perfume",
     onSave: (next) => { Object.assign(p, next); commit(); },
-    onDelete: () => { state.db.collection = state.db.collection.filter((x) => x.id !== p.id); commit(); },
+    onDelete: () => { state.db.collection = state.db.collection.filter((x) => x.id !== p.id); state.db.wears = state.db.wears.filter((w) => w.perfumeId !== p.id); commit(); },
+  });
+}
+
+function logWear(p) {
+  const date = h("input", { type: "date", value: today(), max: today() });
+  const note = textInput("", { placeholder: "Where / how did it perform? (optional)" });
+  openModal(`Wore ${p.name}`, [field("Date", date), field("Note", note)], {
+    saveLabel: "Log it",
+    onSave: () => { state.db.wears.push({ id: uid(), perfumeId: p.id, date: date.value || today(), note: note.value.trim() }); commit(); },
   });
 }
 
@@ -251,6 +301,9 @@ const sorters = {
   rating: (a, b) => (b.rating ?? -1) - (a.rating ?? -1) || a.name.localeCompare(b.name),
   name: (a, b) => a.name.localeCompare(b.name),
   brand: (a, b) => a.brand.localeCompare(b.brand) || a.name.localeCompare(b.name),
+  mostWorn: (a, b) => ((wearStats().get(b.id) || {}).n || 0) - ((wearStats().get(a.id) || {}).n || 0) || a.name.localeCompare(b.name),
+  notWorn: (a, b) => ((wearStats().get(a.id) || { last: "" }).last).localeCompare((wearStats().get(b.id) || { last: "" }).last) || a.name.localeCompare(b.name),
+  price: (a, b) => (b.price ?? -1) - (a.price ?? -1) || a.name.localeCompare(b.name),
   newest: (a, b) => (b.purchased || "").localeCompare(a.purchased || "") || a.name.localeCompare(b.name),
 };
 
@@ -292,7 +345,7 @@ function viewCollection() {
     h("div", { class: "controls" },
       h("input", { type: "search", placeholder: "Search name, brand or note…", value: state.search, "aria-label": "Search", oninput: (e) => { state.search = e.target.value; drawResults(); } }),
       h("select", { "aria-label": "Sort", onchange: (e) => { state.sort = e.target.value; drawResults(); } },
-        [["rating", "Highest rated"], ["name", "Name A-Z"], ["brand", "Brand A-Z"], ["newest", "Newest first"]].map(([v, t]) => h("option", { value: v, selected: state.sort === v }, t))),
+        [["rating", "Highest rated"], ["name", "Name A-Z"], ["brand", "Brand A-Z"], ["newest", "Newest first"], ["mostWorn", "Most worn"], ["notWorn", "Not worn lately"], ["price", "Price, high to low"]].map(([v, t]) => h("option", { value: v, selected: state.sort === v }, t))),
       h("select", { "aria-label": "Brand", onchange: (e) => { state.brand = e.target.value; drawResults(); } },
         h("option", { value: "" }, "All brands"), brands.map((b) => h("option", { value: b, selected: state.brand === b }, b)))),
     chipHost, countEl, results,
@@ -452,16 +505,44 @@ function viewVideos(parts) {
 }
 
 /* ---------- More: insights + backup ---------- */
-function collectionMarkdown() {
+function collectionTable() {
   let md = "| Perfume | Brand | Notes/Accords | Purchased | My Rating (1-10) | Occasion |\n|---|---|---|---|---|---|\n";
   for (const p of state.db.collection) md += `| ${cell(p.name)} | ${cell(p.brand)} | ${cell(p.notes)} | ${cell(p.purchased)} | ${p.rating == null ? "" : fmt(p.rating)} | ${cell((p.occasions || []).join(", "))} |\n`;
-  md += "\n\n| Perfume | Brand | Notes/Accords | Why it's on the list | Priority |\n|---|---|---|---|---|\n";
+  return md;
+}
+function wishlistTable() {
+  let md = "| Perfume | Brand | Notes/Accords | Why it's on the list | Priority |\n|---|---|---|---|---|\n";
   for (const w of state.db.wishlist) md += `| ${cell(w.name)} | ${cell(w.brand)} | ${cell(w.notes)} | ${cell(w.why)} | ${cell(w.priority)} |\n`;
+  return md;
+}
+function snapshot() {
+  const { collection, wishlist, ideas, wears, meta } = state.db;
+  return {
+    data: { app: "perfumes", version: 2, collection, wishlist, ideas, wears, meta: { warmClimate: meta.warmClimate } },
+    collectionMd: collectionTable(), wishlistMd: wishlistTable(),
+    summary: `${collection.length} perfumes, ${wishlist.length} wishlist, ${wears.length} wears`,
+  };
+}
+function applyRemote(d) {
+  state.db = { version: 1, collection: d.collection || [], wishlist: d.wishlist || [], ideas: d.ideas || [], wears: d.wears || [], meta: { lastBackup: state.db.meta.lastBackup, warmClimate: true, ...(d.meta || {}) } };
+  save(); GitSync.markPulled(d); renderCurrent();
+}
+function collectionMarkdown() {
+  let md = collectionTable();
+  md += "\n\n" + wishlistTable();
   if (state.db.ideas.length) {
     md += "\n\n## Video ideas\n";
     for (const i of state.db.ideas) md += `- [${i.status || "Idea"}] ${cell(i.title)}${i.perfume ? ` (${cell(i.perfume)})` : ""}${i.body ? `: ${cell(i.body)}` : ""}\n`;
   }
   return md;
+}
+
+function collectionCsv() {
+  const q = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const ws = wearStats();
+  const rows = [["Perfume", "Brand", "Notes", "Purchased", "Rating", "Occasions", "Size ml", "Price USD", "Bought at", "Bottle level %", "Longevity", "Projection", "Times worn", "Last worn"]];
+  for (const p of state.db.collection) { const w = ws.get(p.id); rows.push([p.name, p.brand, p.notes, p.purchased, p.rating ?? "", (p.occasions || []).join("; "), p.size ?? "", p.price ?? "", p.store, p.fill ?? "", p.longevity, p.projection, w ? w.n : 0, w ? w.last : ""]); }
+  return rows.map((r) => r.map(q).join(",")).join("\n");
 }
 
 async function copyText(text, statusEl, msg) {
@@ -471,6 +552,85 @@ async function copyText(text, statusEl, msg) {
     statusEl.replaceChildren(h("span", {}, "Couldn't copy automatically, select and copy this: "), ta);
     ta.select();
   }
+}
+
+const STATE_TEXT = { off: "Not connected", synced: "Saved to GitHub", saving: "Saving to GitHub…", offline: "Offline, will retry", error: "Couldn't save", conflict: "GitHub has newer changes" };
+
+function syncSection() {
+  const si = GitSync.info();
+  const err = h("p", { class: "hint" });
+  const wrap = (...kids) => [h("h2", {}, "GitHub sync"), ...kids];
+  if (!si.connected) {
+    const token = textInput("", { type: "password", placeholder: "github_pat_…", autocomplete: "off", spellcheck: "false" });
+    const repo = textInput(si.repo);
+    const branch = textInput(si.branch);
+    return wrap(
+      h("p", { class: "lede" }, "Every change you make is saved to a branch in your GitHub repo, so Claude and your other devices see it. It needs a token that can write to that one repo."),
+      h("ol", { class: "steps" },
+        h("li", {}, "Open ", h("a", { href: "https://github.com/settings/personal-access-tokens/new", target: "_blank", rel: "noopener" }, "GitHub, new fine-grained token"), "."),
+        h("li", {}, "Repository access: only select repositories, then pick the repo below."),
+        h("li", {}, "Permissions: Repository, Contents, Read and write. Nothing else."),
+        h("li", {}, "Generate it, copy it, paste it here.")),
+      field("Token", token, "Stored only on this device, never in backups or commits. If you lose the phone, delete the token on GitHub."),
+      field("Repository", repo), field("Branch for data", branch, "Created automatically. It holds only data files."),
+      h("p", { class: "note-box" }, "If the repo is public, the data you sync is public too."),
+      h("div", { class: "controls" }, btn("Connect and save now", "primary", async (e) => {
+        if (!token.value.trim()) { token.focus(); return; }
+        const b = e.currentTarget; b.disabled = true; err.textContent = "Checking the token…";
+        try { await GitSync.connect(token.value, repo.value, branch.value); GitSync.syncNow(); }
+        catch (x) { err.textContent = x.message; b.disabled = false; }
+      }, null, "github-logo")),
+      err);
+  }
+  const lastAt = si.lastAt ? `Last saved ${new Date(si.lastAt).toLocaleString()}.` : "";
+  return wrap(
+    h("p", { class: "sync-line " + si.state }, icon(si.state === "synced" ? "cloud-check" : si.state === "conflict" || si.state === "error" ? "cloud-warning" : si.state === "offline" ? "cloud-slash" : "cloud-arrow-up", 18),
+      h("span", {}, `${STATE_TEXT[si.state] || si.state} · ${si.repo} · ${si.branch}`)),
+    si.error ? h("p", { class: "note-box" }, si.error) : null,
+    si.state === "conflict" ? h("div", { class: "note-box" },
+      h("p", {}, "Another device saved to GitHub since this one last synced. Pick which version to keep. The other one is overwritten (older versions stay in the branch's git history)."),
+      h("div", { class: "controls" },
+        btn("Use the GitHub version", "primary", async () => { try { applyRemote(await GitSync.pull()); } catch (x) { err.textContent = x.message; } }),
+        btn("Keep this device's version", "", () => GitSync.overwriteGitHub()))) : null,
+    h("p", { class: "hint" }, lastAt),
+    h("label", { class: "check" }, h("input", { type: "checkbox", checked: si.auto, onchange: (e) => GitSync.setAuto(e.target.checked) }), " Save automatically after each change"),
+    h("div", { class: "controls" },
+      btn("Sync now", "primary", () => GitSync.syncNow(), null, "arrows-clockwise"),
+      btn("Restore from GitHub", "", async () => {
+        if (!confirm("Replace the data on this device with the version on GitHub?")) return;
+        try { applyRemote(await GitSync.pull()); } catch (x) { err.textContent = x.message; }
+      }, null, "download-simple"),
+      btn("Disconnect", "danger", () => { GitSync.disconnect(); renderCurrent(); })),
+    err);
+}
+
+function statsSection() {
+  const { collection, wears } = state.db;
+  const ws = wearStats();
+  const priced = collection.filter((p) => p.price != null && p.price !== "");
+  const value = priced.reduce((t, p) => t + p.price, 0);
+  const worn = collection.filter((p) => ws.has(p.id)).sort((a, b) => ws.get(b.id).n - ws.get(a.id).n);
+  const stale = collection.filter((p) => !ws.has(p.id) || daysSince(ws.get(p.id).last) >= 30)
+    .sort((a, b) => (ws.get(a.id) ? ws.get(a.id).last : "").localeCompare(ws.get(b.id) ? ws.get(b.id).last : ""));
+  const cpw = worn.filter((p) => p.price != null && p.price !== "").map((p) => ({ p, v: p.price / ws.get(p.id).n })).sort((a, b) => a.v - b.v);
+  const stat = (n, l, s) => h("div", { class: "stat" }, h("div", { class: "n" }, n), h("div", { class: "l" }, l), s ? h("div", { class: "s" }, s) : null);
+  const list = (title, rows) => rows.length ? h("div", { class: "mini" }, h("p", { class: "count" }, title), h("ul", { class: "plain" }, rows.map((r) => h("li", {}, r)))) : null;
+  return [
+    h("h2", {}, "Collection value & wear"),
+    h("div", { class: "stats" },
+      stat(priced.length ? money(value) : "–", "total paid", `${priced.length} priced`),
+      stat(wears.length, "wears logged", worn.length ? `${worn.length} bottles used` : "tap Wore it on a card"),
+      stat(stale.length, "idle 30+ days", "or never worn")),
+    list("Most worn", worn.slice(0, 5).map((p) => `${p.name} · ${ws.get(p.id).n}×`)),
+    list("Best cost per wear", cpw.slice(0, 5).map((x) => `${x.p.name} · ${money(x.v)}`)),
+    list("Give these some love", stale.slice(0, 6).map((p) => `${p.name} · ${ws.has(p.id) ? "last worn " + ago(ws.get(p.id).last) : "never worn"}`)),
+    h("h2", {}, "Wear log"),
+    wears.length ? h("ul", { class: "plain wearlog" }, [...wears].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 12).map((w) => {
+      const p = collection.find((x) => x.id === w.perfumeId);
+      return h("li", {}, h("span", {}, `${w.date} · ${p ? p.name : "(removed)"}${w.note ? " · " + w.note : ""}`),
+        h("button", { type: "button", class: "x-btn", "aria-label": "Remove entry", onclick: () => { state.db.wears = state.db.wears.filter((x) => x.id !== w.id); commit(); } }, icon("x", 14)));
+    })) : h("p", { class: "empty" }, "Nothing logged yet. Tap Wore it on any perfume."),
+  ];
 }
 
 function viewMore() {
@@ -496,19 +656,21 @@ function viewMore() {
 
   return [
     pageHead("More", "Insights on your shelf, and backup tools for your data."),
-    h("h2", {}, "Backup & sync"),
-    h("p", { class: "lede" }, "Your data lives only on this device. Copy a backup now and then, and use the markdown copy to give Claude your latest changes."),
+    syncSection(), statsSection(),
+    h("h2", {}, "Backup & export"),
+    h("p", { class: "lede" }, "Without GitHub sync your data lives only on this device, so copy a backup now and then."),
     h("p", { class: "hint" }, backupInfo),
     h("div", { class: "controls" },
       btn("Copy backup (JSON)", "primary", () => { state.db.meta.lastBackup = new Date().toISOString(); save(); copyText(JSON.stringify(state.db), status, "Backup copied. Paste it somewhere safe (notes app, email to yourself)."); }),
-      btn("Copy as markdown for Claude", "", () => copyText(collectionMarkdown(), status, "Copied. Paste it into your Claude session and ask it to update your repo files."))),
+      btn("Copy as markdown for Claude", "", () => copyText(collectionMarkdown(), status, "Copied. Paste it into your Claude session and ask it to update your repo files.")),
+      btn("Copy as CSV", "", () => copyText(collectionCsv(), status, "CSV copied. Paste it into a spreadsheet."), null, "copy")),
     status,
     h("div", { class: "field" }, h("span", { class: "field-label" }, "Restore from backup"), restoreBox,
       h("div", { class: "controls" }, btn("Restore", "", () => {
         try {
           const d = JSON.parse(restoreBox.value);
           if (!d || !Array.isArray(d.collection) || !Array.isArray(d.wishlist)) throw new Error("shape");
-          state.db = { ideas: [], meta: { lastBackup: null, warmClimate: true }, ...d, version: 1 };
+          state.db = { ideas: [], wears: [], meta: { lastBackup: null, warmClimate: true }, ...d, version: 1 };
           commit(); alert("Restored.");
         } catch (e) { alert("That doesn't look like a backup from this app."); }
       }), btn("Reset to starter data", "danger", () => {
@@ -549,6 +711,16 @@ function renderCurrent(keepScroll = true) {
   view.replaceChildren(...routes[key](rest).flat().filter(Boolean));
   document.getElementById("footMeta").textContent = `${state.db.collection.length} perfumes · ${state.seed.handle}${state.build ? ` · build ${state.build}` : ""}`;
   window.scrollTo(0, keepScroll ? y : 0);
+}
+
+function drawSyncChip(si) {
+  const el = document.getElementById("syncChip");
+  if (!el) return;
+  if (!si.connected) { el.replaceChildren(); el.hidden = true; return; }
+  const name = { synced: "cloud-check", saving: "cloud-arrow-up", offline: "cloud-slash", error: "cloud-warning", conflict: "cloud-warning" }[si.state] || "cloud-arrow-up";
+  el.hidden = false; el.className = "sync-chip " + si.state;
+  el.title = STATE_TEXT[si.state] || "";
+  el.replaceChildren(icon(name, 18));
 }
 
 function decorateNav() {
@@ -617,8 +789,24 @@ async function init() {
   state.db = loadDb(state.seed);
   window.addEventListener("hashchange", () => renderCurrent(false));
   decorateNav();
+  GitSync.init(snapshot);
+  let lastState = GitSync.info().state;
+  GitSync.onChange((si) => {
+    drawSyncChip(si);
+    if (si.state === "conflict" && lastState !== "conflict") {
+      showBanner({ title: "GitHub has newer changes", sub: "Another device saved first. Review it in More.", action: { label: "Review", icon: "cloud-warning", onclick: () => { bannerHost.replaceChildren(); location.hash = "#/more"; } } });
+    }
+    lastState = si.state;
+    if (location.hash.startsWith("#/more") && !document.querySelector("dialog[open]") && document.activeElement && document.activeElement.tagName !== "INPUT") renderCurrent();
+  });
+  drawSyncChip(GitSync.info());
   renderCurrent(false);
   initUpdates();
+  GitSync.onOpen().then((remote) => {
+    if (!remote) return;
+    applyRemote(remote);
+    showBanner({ title: "Updated from GitHub", sub: "Another device saved newer changes.", action: { label: "OK", icon: "check", onclick: () => bannerHost.replaceChildren() } });
+  });
 }
 
 if ("serviceWorker" in navigator && location.protocol.startsWith("http") && location.hostname !== "localhost") navigator.serviceWorker.register("sw.js").catch(() => {});

@@ -245,7 +245,7 @@ dialog::backdrop { background: rgba(14, 10, 18, 0.35); -webkit-backdrop-filter: 
 .field .hint { margin: 0; }
 .inline { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
 .rating-row { display: flex; align-items: center; gap: 0.8rem; }
-.rating-slider { flex: 1; accent-color: var(--accent); }
+.rating-slider, .fill-slider { flex: 1; accent-color: var(--accent); }
 .rating-value { font-variant-numeric: tabular-nums; font-size: 0.9rem; color: var(--muted); min-width: 5.5em; text-align: right; }
 .rating-value.is-set { color: var(--accent); font-weight: 650; }
 .dlg-actions { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; position: sticky; bottom: calc(-1rem - env(safe-area-inset-bottom)); margin: 0 -1.3rem calc(-1rem - env(safe-area-inset-bottom)); padding: 0.7rem 1.3rem calc(1rem + env(safe-area-inset-bottom)); background: var(--glass-strong); border-top: 1px solid var(--hairline); }
@@ -274,3 +274,23 @@ dialog::backdrop { background: rgba(14, 10, 18, 0.35); -webkit-backdrop-filter: 
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 @media (max-width: 520px) { .stats { gap: 0.4rem; } .stat { padding: 0.75rem 0.8rem; } .stat .n { font-size: 1.55rem; } }
+
+/* ---- manager + sync ---- */
+.meta-line { margin: 0; font-size: 0.76rem; color: var(--muted); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+.field input[type="number"], .field input[type="date"], input[type="date"] { font: inherit; font-size: 0.92rem; color: var(--ink); width: 100%; background: var(--glass); border: 1px solid var(--hairline); border-radius: 14px; padding: 0.6rem 0.85rem; }
+.field select { appearance: none; }
+.steps { margin: 0.4rem 0 0.8rem; padding-left: 1.2rem; color: var(--muted); font-size: 0.86rem; line-height: 1.6; }
+.sync-line { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; font-weight: 500; margin: 0.2rem 0; }
+.sync-line.synced, .sync-chip.synced { color: var(--accent); }
+.sync-line.error, .sync-line.conflict, .sync-chip.error, .sync-chip.conflict { color: #c0334f; }
+.sync-chip { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; color: var(--muted); text-decoration: none; margin-left: auto; margin-right: 0.3rem; }
+.sync-chip[hidden] { display: none; }
+.sync-chip.saving svg { animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: 0.35; } }
+@media (min-width: 721px) { .sync-chip { margin-left: 0; } }
+.plain { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; font-size: 0.88rem; }
+.plain li { display: flex; justify-content: space-between; gap: 0.6rem; align-items: center; }
+.mini { margin-bottom: 0.6rem; }
+.x-btn { background: none; border: 0; color: var(--muted); cursor: pointer; padding: 0.3rem; border-radius: 50%; display: grid; place-items: center; }
+.x-btn:hover { color: var(--ink); }
