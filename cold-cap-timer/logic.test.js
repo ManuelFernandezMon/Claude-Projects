@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fmt, capOnHead, capStates, inferCap, summarize, todo, plan, parseEntries, liveTimeline, readyCaps, storeCaps, wearMin, placements, milestones, changeAt } from './logic.js';
+import { fmt, capOnHead, capStates, inferCap, summarize, todo, plan, parseEntries, liveTimeline, readyCaps, storeCaps, wearMin, placements, milestones, changeAt, suggestedAction } from './logic.js';
 
 const MIN = 60000;
 const NOW = new Date('2026-01-15T10:30:00').getTime();
@@ -252,4 +252,23 @@ test('protocol: live notification for the last cap', () => {
   assert.equal(ph.length, 2);
   assert.match(ph[0].title, /último cap/);
   assert.equal(ph[1].title, 'Terminó el post-enfriamiento');
+});
+
+test('suggestedAction: the next step through a whole swap', () => {
+  const step = (events, now = NOW) => { const a = suggestedAction(events, P, now); return `${a.action}${a.cap}`; };
+  assert.equal(step([]), 'sacar1');
+  assert.equal(step([ev('sacar', 1, -1)]), 'poner1');
+  const placed = [ev('sacar', 1, -6), ev('poner', 1, -5)]; // cap 1 on the head, 15 min to go
+  assert.equal(step(placed), 'sacar2'); // waiting: next logical step
+  const lead = [ev('sacar', 1, -26), ev('poner', 1, -25)]; // swap due and cap 3 .. cap index 1 wears 20 min
+  assert.equal(step(lead), 'sacar2'); // due: take the next cap out first
+  assert.equal(step([...lead, ev('sacar', 2, 0)]), 'quitar1');
+  assert.equal(step([...lead, ev('sacar', 2, 0), ev('quitar', 1, 1)]), 'poner2');
+  assert.equal(step([...lead, ev('sacar', 2, 0), ev('quitar', 1, 1), ev('poner', 2, 2)]), 'meter1');
+  assert.equal(step([ev('poner', 1, -5), ev('sacar', 2, -1)]), 'quitar1'); // next cap already out while waiting
+});
+
+test('suggestedAction: the last cap of the post-cooling just comes off', () => {
+  const events = [ev('poner', 1, -10), ev('fin', 0, -352)];
+  assert.deepEqual(suggestedAction(events, P, NOW), { action: 'quitar', cap: 1, urgent: false });
 });

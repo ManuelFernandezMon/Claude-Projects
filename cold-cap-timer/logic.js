@@ -209,6 +209,22 @@ export function todo(events, s, now) {
   return items;
 }
 
+// The single next step to tap. Follows the instructions when one is actionable; while waiting it is the next logical
+// step (take the next cap out, or, when it is already out, remove the one on the head; the last cap just comes off).
+export function suggestedAction(events, s, now) {
+  const hit = todo(events, s, now).find((i) => i.action);
+  if (hit) return { action: hit.action, cap: hit.cap, urgent: !!hit.urgent };
+  const head = capOnHead(events);
+  if (head) {
+    if (changeAt(head, s, milestones(events, s).postDoneAt).final) return { action: 'quitar', cap: head.cap, urgent: false };
+    const next = nextCap(events, s.numCaps);
+    return readyCaps(events).includes(next)
+      ? { action: 'quitar', cap: head.cap, urgent: false }
+      : { action: 'sacar', cap: next, urgent: false };
+  }
+  return { action: 'sacar', cap: inferCap(events, 'sacar', s.numCaps), urgent: false };
+}
+
 // Rough projection assuming each swap happens right on time.
 export function plan(events, s, now) {
   const head = capOnHead(events);
