@@ -6,7 +6,7 @@ import { useData } from '../hooks/useData'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { usePasscode } from '../hooks/usePasscode'
 import { newId } from '../lib/id'
-import { ImportError, extractRecipe, fetchTikTokCaption } from '../lib/importApi'
+import { ImportError, extractRecipe, fetchPageText, fetchTikTokCaption } from '../lib/importApi'
 import { toPrefill } from '../lib/prefill'
 import { makeLite } from '../lib/liteVideo'
 import { MAX_SCREENSHOTS, blobToBase64, encodeScreenshots, prepareScreenshot, type Screenshot } from '../lib/screenshots'
@@ -97,11 +97,32 @@ export function ImportPage() {
   const canRead = !working && !tooLong && !!passcode && (hasFiles || text.trim().length >= 20)
   const heldVideo = Object.keys(uploaded).length > 0
 
+  /** Opens a web page through our server and puts the recipe text on it into the text box (after anything already typed there). */
+  async function readPage(link: string) {
+    setFetching(true)
+    setHint(undefined)
+    try {
+      const page = await fetchPageText(link, passcode)
+      setText((t) => (t.trim() ? `${t.trim()}\n\n${page.text}` : page.text))
+      setHint(
+        page.kind === 'recipe'
+          ? 'Recipe read from the page. Check it, then press Read with AI.'
+          : 'The page has no structured recipe, so its text was copied. Remove what is not part of the recipe, then press Read with AI.',
+      )
+    } catch (err) {
+      setHint(err instanceof Error ? err.message : 'Could not read that page.')
+    } finally {
+      setFetching(false)
+    }
+  }
+
   async function onUrlChange(value: string) {
     setUrl(value)
     setHint(undefined)
     const clean = safeHttpUrl(value)
     if (!clean) return
+    // a pasted link (more than one character at once) is read right away when the passcode is already there
+    if (sourceKind(clean) === 'other' && passcode && value.length - url.length > 1 && !fetching) void readPage(clean)
     if (sourceKind(clean) === 'instagram') {
       setHint('Instagram does not allow automatic reading of the post. Add the video or a screenshot of the caption below, or paste the caption.')
     } else if (sourceKind(clean) === 'tiktok' && text.trim() === '') {
@@ -346,20 +367,25 @@ export function ImportPage() {
       </p>
 
       <div className="field">
-        <label htmlFor="imp-url">Link (optional, saved as the source)</label>
+        <label htmlFor="imp-url">Link (a recipe web page, TikTok or Instagram; saved as the source)</label>
         <input
           id="imp-url"
           className="input"
           type="url"
           inputMode="url"
-          placeholder="https://www.tiktok.com/@user/video/…"
+          placeholder="https://… (recipe page or TikTok link)"
           value={url}
           onChange={(e) => void onUrlChange(e.target.value)}
           aria-invalid={url.trim() !== '' && !cleanUrl ? true : undefined}
         />
         {url.trim() !== '' && !cleanUrl && <span className="error">Enter a full link starting with https://</span>}
         {kind === 'other' && cleanUrl && (
-          <span className="muted small">The link is only saved as the source. The AI reads what you add below.</span>
+          <div className="row">
+            <button type="button" className="btn" onClick={() => void readPage(cleanUrl)} disabled={working || fetching || !passcode}>
+              {fetching ? 'Reading the page…' : 'Get the recipe from this page'}
+            </button>
+            {!passcode && <span className="muted small">Enter the passcode first.</span>}
+          </div>
         )}
       </div>
 
@@ -370,7 +396,7 @@ export function ImportPage() {
       )}
       {fetching && (
         <p className="muted" role="status">
-          Fetching caption from TikTok…
+          {kind === 'tiktok' ? 'Fetching caption from TikTok…' : 'Reading the page…'}
         </p>
       )}
 

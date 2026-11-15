@@ -15,6 +15,9 @@
     "api/photos.ts": {
       "maxDuration": 30
     },
+    "api/page.ts": {
+      "maxDuration": 30
+    },
     "api/video-start.ts": {
       "maxDuration": 60
     },

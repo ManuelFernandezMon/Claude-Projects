@@ -49,6 +49,33 @@ export async function fetchTikTokCaption(url: string): Promise<string | undefine
   }
 }
 
+export interface PageText {
+  text: string
+  title: string
+  /** "recipe" when the page carries a structured recipe, "article" when only its readable text was kept. */
+  kind: 'recipe' | 'article'
+}
+
+/** Asks our server to open a web page (browsers cannot, because of CORS) and return the recipe text on it. No AI is used. */
+export async function fetchPageText(url: string, passcode: string): Promise<PageText> {
+  let res: Response
+  try {
+    res = await fetch(apiUrl('/api/page'), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-import-passcode': passcode },
+      body: JSON.stringify({ url }),
+    })
+  } catch {
+    throw new ImportError('Could not reach the server. Reading a web page needs an internet connection.', 'network')
+  }
+  const body: { text?: string; title?: string; kind?: 'recipe' | 'article'; error?: string; message?: string } = await res.json().catch(() => ({}))
+  if (!res.ok || typeof body.text !== 'string') {
+    const fallback = res.status === 404 ? 'The page reader was not found. It only exists on Vercel or in `npm run dev`.' : `Request failed (HTTP ${res.status}).`
+    throw new ImportError(body.message ?? fallback, body.error ?? 'http')
+  }
+  return { text: body.text, title: body.title ?? '', kind: body.kind === 'recipe' ? 'recipe' : 'article' }
+}
+
 /** Like postAi, but also returns the model's one-line reason when it found no recipe. */
 export async function postAiDetailed(
   endpoint: string,
