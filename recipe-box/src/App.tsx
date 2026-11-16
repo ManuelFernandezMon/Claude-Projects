@@ -4,6 +4,7 @@ import { FloppyDisk, House, Plus, Tag } from '@phosphor-icons/react'
 import { isNativeApp } from './lib/apiBase'
 import { DataProvider } from './hooks/useData'
 import { useAndroidBack } from './hooks/useAndroidBack'
+import { useShareTarget } from './hooks/useShareTarget'
 import { AiEditPage } from './pages/AiEditPage'
 import { BackupPage } from './pages/BackupPage'
 import { CategoriesPage } from './pages/CategoriesPage'
@@ -18,6 +19,7 @@ import { ToastHost } from './components/ToastHost'
 
 function Shell() {
   useAndroidBack()
+  useShareTarget()
   return (
     <>
       <a

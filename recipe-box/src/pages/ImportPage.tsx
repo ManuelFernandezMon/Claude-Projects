@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { CaretLeft, FileVideo, X } from '@phosphor-icons/react'
+import { useLocation } from 'react-router-dom'
 import { Link, useNavigate } from '../lib/nav'
 import { PasscodeField } from '../components/PasscodeField'
 import { useData } from '../hooks/useData'
@@ -60,6 +61,7 @@ const mb = (bytes: number) => (bytes / 1024 / 1024).toFixed(1)
 export function ImportPage() {
   useDocumentTitle('Import a recipe')
   const navigate = useNavigate()
+  const location = useLocation()
   const { categories } = useData()
   const pc = usePasscode()
   const passcode = pc.passcode
@@ -116,13 +118,13 @@ export function ImportPage() {
     }
   }
 
-  async function onUrlChange(value: string) {
+  async function onUrlChange(value: string, pasted = value.length - url.length > 1) {
     setUrl(value)
     setHint(undefined)
     const clean = safeHttpUrl(value)
     if (!clean) return
     // a pasted link (more than one character at once) is read right away when the passcode is already there
-    if (sourceKind(clean) === 'other' && passcode && value.length - url.length > 1 && !fetching) void readPage(clean)
+    if (sourceKind(clean) === 'other' && passcode && pasted && !fetching) void readPage(clean)
     if (sourceKind(clean) === 'instagram') {
       setHint('Instagram does not allow automatic reading of the post. Add the video or a screenshot of the caption below, or paste the caption.')
     } else if (sourceKind(clean) === 'tiktok' && text.trim() === '') {
@@ -137,6 +139,18 @@ export function ImportPage() {
       }
     }
   }
+
+  /** A link shared to the app from Instagram, TikTok or a browser ("Share > recipe-box"): starts the import from it. */
+  const sharedLink = (location.state as { sharedLink?: string } | null)?.sharedLink
+  const handledShare = useRef<string | undefined>(undefined)
+  useEffect(() => {
+    if (!sharedLink || handledShare.current === location.key) return
+    handledShare.current = location.key
+    setText('')
+    setUrl('')
+    void onUrlChange(sharedLink, true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sharedLink, location.key])
 
   function openEditor(r: Parameters<typeof toPrefill>[0]) {
     pc.remember()
