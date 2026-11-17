@@ -108,8 +108,8 @@ export function ImportPage() {
       setText((t) => (t.trim() ? `${t.trim()}\n\n${page.text}` : page.text))
       setHint(
         page.kind === 'recipe'
-          ? 'Recipe read from the page. Check it, then press Read with AI.'
-          : 'The page has no structured recipe, so its text was copied. Remove what is not part of the recipe, then press Read with AI.',
+          ? 'Recipe read from the page. Check it, then press Extract recipe.'
+          : 'The page has no structured recipe, so its text was copied. Remove what is not part of the recipe, then press Extract recipe.',
       )
     } catch (err) {
       setHint(err instanceof Error ? err.message : 'Could not read that page.')
@@ -135,7 +135,7 @@ export function ImportPage() {
         setText(caption)
         setHint('Caption fetched from TikTok. Check it, and add anything that is missing.')
       } else {
-        setHint('Could not fetch the caption automatically. Add the video or a screenshot of the caption below, or paste the caption.')
+        setHint('This TikTok has no caption we can read (many recipes are only in the video). Save the video (Share → Save video) and add it below with “Add video”, or add a screenshot of the ingredients, or paste the text.')
       }
     }
   }
