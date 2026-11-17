@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { CaretLeft, FileVideo, X } from '@phosphor-icons/react'
 import { useLocation } from 'react-router-dom'
+import type { SharedFile } from '../hooks/useShareTarget'
 import { Link, useNavigate } from '../lib/nav'
 import { PasscodeField } from '../components/PasscodeField'
 import { useData } from '../hooks/useData'
@@ -151,6 +152,43 @@ export function ImportPage() {
     void onUrlChange(sharedLink, true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sharedLink, location.key])
+
+  /** A video or screenshot shared to the app: fetched from the app's own cache and added like a file picked by hand. */
+  const sharedFile = (location.state as { sharedFile?: SharedFile } | null)?.sharedFile
+  const sharedError = (location.state as { sharedError?: string } | null)?.sharedError
+  const handledFile = useRef<string | undefined>(undefined)
+  useEffect(() => {
+    if (handledFile.current === location.key) return
+    if (sharedError) {
+      handledFile.current = location.key
+      setError(sharedError)
+      return
+    }
+    if (!sharedFile) return
+    handledFile.current = location.key
+    void (async () => {
+      setAdding(true)
+      try {
+        const res = await fetch(sharedFile.url)
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const blob = await res.blob()
+        const mime = sharedFile.mime || blob.type
+        const file = new File([blob], sharedFile.name, { type: mime })
+        await addFiles(mime.startsWith('video/') ? 'video' : 'image', [file])
+        setHint(
+          mime.startsWith('video/')
+            ? 'Video received. Press Extract recipe (below) to have the AI watch it. You can add a screenshot or text first.'
+            : 'Screenshot received. Add more or press Extract recipe (below).',
+        )
+        requestAnimationFrame(() => document.querySelector('[data-testid="extract"]')?.scrollIntoView({ block: 'center', behavior: 'smooth' }))
+      } catch (err) {
+        setError(`The shared file could not be opened${err instanceof Error ? ` (${err.message})` : ''}. Try adding it with “Add video” instead.`)
+      } finally {
+        setAdding(false)
+      }
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sharedFile, sharedError, location.key])
 
   function openEditor(r: Parameters<typeof toPrefill>[0]) {
     pc.remember()
@@ -538,7 +576,7 @@ export function ImportPage() {
         )}
 
         <div className="row">
-          <button type="submit" className="btn btn--primary" disabled={!canRead}>
+          <button type="submit" className="btn btn--primary" disabled={!canRead} data-testid="extract">
             {busy ? 'Reading the caption…' : phase.kind !== 'idle' ? 'Working…' : 'Extract recipe'}
           </button>
           {!passcode && <span className="muted small">Enter the passcode above first.</span>}
