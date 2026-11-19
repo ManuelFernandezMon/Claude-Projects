@@ -47,4 +47,4 @@ export type ProviderResult =
   | { kind: 'refused' }
   | { kind: 'bad_output' }
 
-export type ProviderName = 'anthropic' | 'gemini'
+export type ProviderName = 'anthropic' | 'gemini' | 'openrouter'

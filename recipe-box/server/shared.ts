@@ -1,6 +1,7 @@
 import { createHash, timingSafeEqual } from 'node:crypto'
 import { callAnthropic, mapAnthropicError } from './anthropicProvider.js'
 import { callGemini, mapGeminiError } from './geminiProvider.js'
+import { callOpenRouter, hasOpenRouterKey } from './openrouterProvider.js'
 import type { ProviderName, ProviderRequest, ProviderResult } from './schema.js'
 
 type Json = Record<string, unknown>
@@ -139,7 +140,19 @@ export async function runRecipeModel(
   } catch (e) {
     console.error('AI request failed:', provider, e instanceof Error ? e.name : 'unknown', (e as { status?: number }).status ?? '', e instanceof Error ? e.message.slice(0, 300) : '')
     const m = provider === 'gemini' ? mapGeminiError(e) : mapAnthropicError(e)
-    return json(m.status, { error: m.error, message: m.message })
+    // Free backup: text-only requests that Gemini could not serve (busy or out of quota) go to OpenRouter's free models.
+    const busy = m.error === 'provider_overloaded' || m.error === 'rate_limited' || m.error === 'model_unavailable'
+    if (provider === 'gemini' && busy && !opts.media?.length && hasOpenRouterKey()) {
+      try {
+        result = await callOpenRouter(opts)
+        provider = 'openrouter'
+      } catch (e2) {
+        console.error('OpenRouter backup failed:', e2 instanceof Error ? e2.message.slice(0, 200) : 'unknown')
+        return json(m.status, { error: m.error, message: m.message })
+      }
+    } else {
+      return json(m.status, { error: m.error, message: m.message })
+    }
   }
 
   if (result.kind === 'refused') {

@@ -96,6 +96,8 @@ Choose a provider. Both features work the same with either.
 | Key | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) | [Anthropic Console](https://platform.claude.com/) |
 | Env var | `GEMINI_API_KEY` | `ANTHROPIC_API_KEY` |
 
+**Free backup (optional):** set `OPENROUTER_API_KEY` (free at [openrouter.ai/keys](https://openrouter.ai/keys)) and, when Gemini is overloaded or over its quota, text-only requests (a caption, a web page, Ask AI, measurement conversion) are retried on OpenRouter's free models (`OPENROUTER_MODELS`, default `google/gemma-4-31b-it:free,openrouter/free`). Video and screenshots always stay on Gemini. Third-party write-ups put the free limit at about 50 requests a day (more after buying credits); check [OpenRouter's docs](https://openrouter.ai/docs/api-reference/limits). Free models share capacity, may log prompts and change often, and recipe quality has not been tested with a real key.
+
 A Google AI Pro subscription does **not** give API quota: the API is billed and limited separately from the Gemini app.
 
 1. Create the API key for your provider.
