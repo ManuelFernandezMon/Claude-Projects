@@ -1,5 +1,5 @@
 import type { Ingredient, ImportedRecipe } from '../types'
-import { convertLocal, parseQuantity, unitKind, unitSystem, type System } from './units'
+import { convertLocal, parseQuantity, scaleQuantity, unitKind, unitSystem, type System } from './units'
 
 /** How ingredient amounts are shown: as written, in one system, in US cups and spoons, or as written plus the other system. */
 export type UnitMode = 'written' | 'metric' | 'us' | 'cups' | 'both'
@@ -135,3 +135,23 @@ export const UNIT_MODES: { value: UnitMode; label: string }[] = [
   { value: 'cups', label: 'Cups' },
   { value: 'both', label: 'Both' },
 ]
+
+/** A copy of the ingredient with every amount multiplied (the servings stepper); the saved recipe is never touched. */
+export function scaleIngredient(ing: Ingredient, factor: number): Ingredient {
+  if (Math.abs(factor - 1) < 1e-9) return ing
+  const m = ing.measures
+  return {
+    ...ing,
+    quantity: ing.quantity ? scaleQuantity(ing.quantity, factor) : ing.quantity,
+    ...(m
+      ? {
+          measures: {
+            ...m,
+            ...(m.metric ? { metric: scaleQuantity(m.metric, factor) } : {}),
+            ...(m.us ? { us: scaleQuantity(m.us, factor) } : {}),
+            ...(m.cups ? { cups: scaleQuantity(m.cups, factor) } : {}),
+          },
+        }
+      : {}),
+  }
+}

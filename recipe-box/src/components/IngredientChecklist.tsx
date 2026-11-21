@@ -13,9 +13,11 @@ interface Props {
   controls?: ReactNode
   /** Rendered under the list (the AI measurement helper). */
   footer?: ReactNode
+  /** The servings stepper, shown between the heading and the unit switch. */
+  scaler?: ReactNode
 }
 
-export function IngredientChecklist({ recipeId, ingredients, initialChecked, mode = 'written', controls, footer }: Props) {
+export function IngredientChecklist({ recipeId, ingredients, initialChecked, mode = 'written', controls, footer, scaler }: Props) {
   const [checked, setChecked] = useState<string[]>(initialChecked)
   const [error, setError] = useState<string>()
 
@@ -49,6 +51,7 @@ export function IngredientChecklist({ recipeId, ingredients, initialChecked, mod
           </span>
         )}
       </div>
+      {scaler}
       {controls}
       {footer}
       {ingredients.length === 0 ? (

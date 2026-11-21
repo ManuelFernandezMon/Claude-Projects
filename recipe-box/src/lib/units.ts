@@ -181,3 +181,52 @@ export function convertLocal(quantity: string, to: System): Converted | undefine
   }
   return { text: p.rest ? `${text} ${p.rest}` : text, approx }
 }
+
+const NUM_TOKEN = new RegExp(String.raw`(${NUM})`, 'g')
+const LEAD = new RegExp(String.raw`^\s*(${NUM})(?:\s*(?:-|–|to)\s*(${NUM}))?`, 'i')
+
+/** One amount, written the way a cook would: grams rounded, spoons and cups as fractions, small counts as fractions. */
+function fmtScaled(x: number, metric: boolean): string {
+  if (metric) {
+    if (x < 10) return trim(x, 1)
+    if (x < 100) return String(Math.round(x))
+    return String(Math.round(x / 5) * 5)
+  }
+  const f = fmtFraction(x, true)
+  return f.text === '0' ? trim(x, 2) : f.text
+}
+
+/**
+ * Multiplies an ingredient amount ("1 1/2 cups", "200 g", "2-3 tbsp", "1 cup (125 g)", "3") by a factor, for the servings
+ * stepper. Free text ("a pinch", "to taste") and anything that does not start with a number is returned unchanged.
+ * Only the leading amount is scaled, plus the equivalent in brackets or after a slash ("1 cup (125 g)"), because
+ * "1 (14 oz) can" is one can of 14 oz, not 14 ounces.
+ */
+export function scaleQuantity(quantity: string, factor: number): string {
+  const q = quantity.trim()
+  if (!q || !Number.isFinite(factor) || factor <= 0 || Math.abs(factor - 1) < 1e-9) return quantity
+  let s = q
+  for (const [v, r] of Object.entries(VULGAR)) s = s.split(v).join(r)
+  s = s.replace(/(\d)\s+(\d\/\d)/g, '$1 $2').trim()
+  const lead = LEAD.exec(s)
+  if (!lead) return quantity
+  const parsed = parseQuantity(s.split(/[(/]/)[0].trim()) // the amount before any "(125 g)" or "/ 7 oz"
+  const metric = parsed ? UNITS[parsed.unit].system === 'metric' : /^\d+(?:[.,]\d+)?$/.test(s) && parseFloat(s.replace(',', '.')) >= 20
+  const one = (t: string, m: boolean) => fmtScaled(toNumber(t) * factor, m)
+  const head = `${one(lead[1], metric)}${lead[2] ? `-${one(lead[2], metric)}` : ''}`
+  let rest = s.slice(lead[0].length)
+  // "1 cup" doubled is "2 cups"; "2 cups" halved is "1 cup"
+  const top = toNumber(lead[2] ?? lead[1]) * factor
+  rest = rest.replace(/^(\s*)(cup|teaspoon|tablespoon|pint|quart|pound|ounce|gram|liter|litre)(s?)\b/i, (_m, sp: string, w: string) => `${sp}${w}${top > 1.0001 ? 's' : ''}`)
+  if (/\b(?:plus|and)\b|\+/i.test(rest)) {
+    // "2 cups plus 1 tbsp": every amount in it grows together
+    rest = rest.replace(NUM_TOKEN, (t) => one(t, false))
+  } else if (parsed) {
+    // "1 cup (125 g)" / "200 g / 7 oz": the equivalent grows too, in its own unit
+    rest = rest.replace(new RegExp(String.raw`([(/]\s*)(${NUM})(\s*([a-zA-Z]+\.?))`, 'g'), (m, open: string, n: string, tail: string, unit: string) => {
+      const u = ALIASES[unit.toLowerCase().replace(/\.$/, '')]
+      return u ? `${open}${one(n, UNITS[u].system === 'metric')}${tail}` : m
+    })
+  }
+  return `${head}${rest}`
+}

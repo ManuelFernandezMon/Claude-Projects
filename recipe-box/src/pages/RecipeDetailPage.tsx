@@ -15,7 +15,8 @@ import { IngredientChecklist } from '../components/IngredientChecklist'
 import { MeasureFill } from '../components/MeasureFill'
 import { UnitToggle } from '../components/UnitToggle'
 import { useUnitMode } from '../hooks/useUnitMode'
-import { canConvert, needsAi } from '../lib/measures'
+import { canConvert, needsAi, scaleIngredient } from '../lib/measures'
+import { ServingsScale } from '../components/ServingsScale'
 import { Spinner } from '../components/Spinner'
 import { errorMessage, formatMinutes } from '../lib/format'
 import { safeHttpUrl } from '../lib/url'
@@ -29,11 +30,13 @@ export function RecipeDetailPage() {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [unitMode, setUnitMode] = useUnitMode()
+  const [factor, setFactor] = useState(1) // this visit only: never saved, and every recipe starts from what it says
   useDocumentTitle(recipe?.title)
 
   useEffect(() => {
     let cancelled = false
     setRecipe(undefined)
+    setFactor(1)
     recipeStore
       .getRecipe(id ?? '')
       .then((r) => {
@@ -69,7 +72,7 @@ export function RecipeDetailPage() {
   const facts: [string, string][] = []
   if (recipe.prepMinutes) facts.push(['Prep', formatMinutes(recipe.prepMinutes)])
   if (recipe.cookMinutes) facts.push(['Cook', formatMinutes(recipe.cookMinutes)])
-  if (recipe.servings) facts.push(['Serves', String(recipe.servings)])
+  if (recipe.servings) facts.push(['Serves', factor === 1 ? String(recipe.servings) : `${Math.max(1, Math.round(recipe.servings * factor))} (was ${recipe.servings})`])
 
   async function remove() {
     setConfirmDelete(false)
@@ -141,7 +144,8 @@ export function RecipeDetailPage() {
 
       <IngredientChecklist
         recipeId={recipe.id}
-        ingredients={recipe.ingredients}
+        ingredients={factor === 1 ? recipe.ingredients : recipe.ingredients.map((i) => scaleIngredient(i, factor))}
+        scaler={recipe.ingredients.length > 0 ? <ServingsScale base={recipe.servings ?? null} factor={factor} onChange={setFactor} /> : undefined}
         initialChecked={recipe.checked}
         mode={unitMode}
         controls={canConvert(recipe.ingredients) ? <UnitToggle value={unitMode} onChange={setUnitMode} /> : undefined}
