@@ -1,3 +1,5 @@
+import { AccountCard } from '../components/AccountCard'
+import { useAuth } from '../hooks/useAuth'
 import { useEffect, useRef, useState } from 'react'
 import { backupFilename, buildBackup, importBackup } from '../storage/backup'
 import type { ImportMode } from '../types'
@@ -14,6 +16,7 @@ import { errorMessage } from '../lib/format'
 type Status = { kind: 'ok' | 'error'; text: string } | null
 
 export function BackupPage() {
+  const auth = useAuth()
   useDocumentTitle('Backup')
   const { recipes, refresh } = useData()
   const [status, setStatus] = useState<Status>(null)
@@ -75,21 +78,29 @@ export function BackupPage() {
 
   return (
     <div className="stack">
-      <h1 className="h1">Backup</h1>
+      <h1 className="h1">Account &amp; backup</h1>
 
+      <AccountCard />
+
+      {auth.status === 'signedIn' ? (
+        <p className="notice" role="note">
+          Your recipes are saved in your account. A backup file is an extra copy you keep yourself, for example before a big change.
+        </p>
+      ) : (
       <p className="notice notice--warn" role="note">
-        {native ? (
-          <>
-            <strong>Your data is stored only in this app on this phone.</strong> There is no account and no cloud copy.
-            Uninstalling the app, clearing its storage or switching phones loses your recipes. Export a backup regularly.
-          </>
-        ) : (
-          <>
-            <strong>Your data is stored only in this browser.</strong> There is no account and no cloud copy. Clearing
-            site data, uninstalling the browser or switching devices loses your recipes. Export a backup regularly.
-          </>
-        )}
-      </p>
+          {native ? (
+            <>
+              <strong>Your data is stored only in this app on this phone.</strong> {auth.status === 'signedOut' ? 'While you are signed out there is no cloud copy.' : 'There is no account and no cloud copy.'}{' '}
+              Uninstalling the app, clearing its storage or switching phones loses your recipes. Export a backup regularly.
+            </>
+          ) : (
+            <>
+              <strong>Your data is stored only in this browser.</strong> {auth.status === 'signedOut' ? 'While you are signed out there is no cloud copy.' : 'There is no account and no cloud copy.'} Clearing
+              site data, uninstalling the browser or switching devices loses your recipes. Export a backup regularly.
+            </>
+          )}
+        </p>
+      )}
 
       <section className="panel stack stack--tight" aria-labelledby="export-h">
         <h2 id="export-h" className="h2">

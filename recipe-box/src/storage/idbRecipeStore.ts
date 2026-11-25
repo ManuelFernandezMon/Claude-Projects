@@ -1,6 +1,7 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb'
 import type { Category, ImportMode, Recipe, StoredImage, StorageSnapshot } from '../types'
-import type { ImageChanges, RecipeStore } from './recipeStore'
+import type { ImageChanges } from './recipeStore'
+import type { LocalStore, OutboxEntry } from './sync/types'
 import { buildSeed } from './seed'
 
 interface RecipeDB extends DBSchema {
@@ -15,13 +16,14 @@ interface RecipeDB extends DBSchema {
     value: StoredImage
     indexes: { 'by-recipe': string }
   }
-  meta: { key: string; value: boolean }
+  meta: { key: string; value: unknown }
+  outbox: { key: string; value: OutboxEntry }
 }
 
 type DB = IDBPDatabase<RecipeDB>
 
-const DB_NAME = 'recipe-box'
-const DB_VERSION = 1
+const GUEST_DB_NAME = 'recipe-box'
+const DB_VERSION = 2
 
 async function seedIfNeeded(db: DB): Promise<void> {
   const tx = db.transaction(['meta', 'categories', 'recipes'], 'readwrite')
@@ -34,38 +36,50 @@ async function seedIfNeeded(db: DB): Promise<void> {
   await tx.done
 }
 
-async function openDatabase(): Promise<DB> {
-  const db = await openDB<RecipeDB>(DB_NAME, DB_VERSION, {
-    upgrade(database) {
-      const recipes = database.createObjectStore('recipes', { keyPath: 'id' })
-      recipes.createIndex('by-createdAt', 'createdAt')
-      recipes.createIndex('by-title', 'title')
-      database.createObjectStore('categories', { keyPath: 'id' })
-      const images = database.createObjectStore('images', { keyPath: 'id' })
-      images.createIndex('by-recipe', 'recipeId')
-      database.createObjectStore('meta')
-    },
-    blocking() {
-      // Another tab wants to upgrade; release our connection so it can proceed.
-      void dbPromise?.then((d) => d.close())
+export interface IdbStoreOptions {
+  /** IndexedDB name. The signed-out copy keeps the original name; every account gets its own. */
+  name?: string
+  /** Sample recipes on first run: only for the signed-out copy. */
+  seed?: boolean
+}
+
+export function createIdbRecipeStore(options: IdbStoreOptions = {}): LocalStore {
+  const name = options.name ?? GUEST_DB_NAME
+  const seed = options.seed ?? true
+  let dbPromise: Promise<DB> | undefined
+
+  async function openDatabase(): Promise<DB> {
+    const db = await openDB<RecipeDB>(name, DB_VERSION, {
+      upgrade(database, oldVersion) {
+        if (oldVersion < 1) {
+          const recipes = database.createObjectStore('recipes', { keyPath: 'id' })
+          recipes.createIndex('by-createdAt', 'createdAt')
+          recipes.createIndex('by-title', 'title')
+          database.createObjectStore('categories', { keyPath: 'id' })
+          const images = database.createObjectStore('images', { keyPath: 'id' })
+          images.createIndex('by-recipe', 'recipeId')
+          database.createObjectStore('meta')
+        }
+        if (oldVersion < 2) database.createObjectStore('outbox', { keyPath: 'key' })
+      },
+      blocking() {
+        // Another tab wants to upgrade; release our connection so it can proceed.
+        void dbPromise?.then((d) => d.close())
+        dbPromise = undefined
+      },
+    })
+    if (seed) await seedIfNeeded(db)
+    return db
+  }
+
+  function getDb(): Promise<DB> {
+    dbPromise ??= openDatabase().catch((e: unknown) => {
       dbPromise = undefined
-    },
-  })
-  await seedIfNeeded(db)
-  return db
-}
+      throw e
+    })
+    return dbPromise
+  }
 
-let dbPromise: Promise<DB> | undefined
-
-function getDb(): Promise<DB> {
-  dbPromise ??= openDatabase().catch((e: unknown) => {
-    dbPromise = undefined
-    throw e
-  })
-  return dbPromise
-}
-
-export function createIdbRecipeStore(): RecipeStore {
   return {
     async listRecipes() {
       return (await getDb()).getAll('recipes')
@@ -177,6 +191,53 @@ export function createIdbRecipeStore(): RecipeStore {
       // Never re-seed sample recipes after the user has imported their own data.
       tx.objectStore('meta').put(true, 'seeded')
       await tx.done
+    },
+
+    async outboxList() {
+      return (await getDb()).getAll('outbox')
+    },
+
+    async outboxPut(entries) {
+      const db = await getDb()
+      const tx = db.transaction('outbox', 'readwrite')
+      for (const e of entries) tx.store.put(e)
+      await tx.done
+    },
+
+    async outboxClear(entries) {
+      const db = await getDb()
+      const tx = db.transaction('outbox', 'readwrite')
+      for (const e of entries) {
+        const now = await tx.store.get(e.key)
+        if (now && now.at === e.at) tx.store.delete(e.key)
+      }
+      await tx.done
+    },
+
+    async metaGet<T>(key: string) {
+      return (await (await getDb()).get('meta', key)) as T | undefined
+    },
+
+    async metaSet(key, value) {
+      await (await getDb()).put('meta', value, key)
+    },
+
+    async hasImage(id) {
+      return (await (await getDb()).getKey('images', id)) !== undefined
+    },
+
+    async putImageBlob(id, recipeId, blob) {
+      await (await getDb()).put('images', { id, recipeId, createdAt: Date.now(), blob })
+    },
+
+    async destroy() {
+      const open = dbPromise
+      dbPromise = undefined
+      if (open) (await open.catch(() => undefined))?.close()
+      await new Promise<void>((resolve) => {
+        const req = indexedDB.deleteDatabase(name)
+        req.onsuccess = req.onerror = req.onblocked = () => resolve()
+      })
     },
   }
 }

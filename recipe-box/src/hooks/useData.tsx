@@ -1,7 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { recipeStore } from '../storage/recipeStore'
+import { onStoreSwapped, recipeStore } from '../storage/recipeStore'
 import type { Category, Recipe } from '../types'
 import { errorMessage } from '../lib/format'
+import { DATA_CHANGED } from '../lib/events'
+import { useAuth } from './useAuth'
 
 interface DataState {
   recipes: Recipe[]
@@ -36,8 +38,22 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  // wait until it is known whether an account is signed in, or the signed-out list would flash first
+  const { status: authStatus } = useAuth()
+  const authReady = authStatus !== 'loading'
   useEffect(() => {
-    void refresh()
+    if (authReady) void refresh()
+  }, [refresh, authReady])
+
+  // signing in or out swaps the store; the cloud sync also announces when it brought something new
+  useEffect(() => {
+    const reload = () => void refresh()
+    window.addEventListener(DATA_CHANGED, reload)
+    const off = onStoreSwapped(reload)
+    return () => {
+      window.removeEventListener(DATA_CHANGED, reload)
+      off()
+    }
   }, [refresh])
 
   const value = useMemo(

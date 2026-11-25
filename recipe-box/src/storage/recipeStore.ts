@@ -8,8 +8,8 @@ export interface ImageChanges {
 
 /**
  * Everything the UI needs from persistence. The UI imports only `recipeStore`
- * from this file; to move to Supabase, implement this interface and swap the
- * assignment at the bottom.
+ * from this file; behind it sits either the phone's own copy or, when signed in,
+ * that copy kept in step with the cloud (see ./sync).
  */
 export interface RecipeStore {
   listRecipes(): Promise<Recipe[]>
@@ -34,4 +34,37 @@ export interface RecipeStore {
   importSnapshot(snapshot: StorageSnapshot, mode: ImportMode): Promise<void>
 }
 
-export const recipeStore: RecipeStore = createIdbRecipeStore()
+/** The signed-out copy: the one this phone has always had. */
+export const guestStore = createIdbRecipeStore()
+
+let active: RecipeStore = guestStore
+const listeners = new Set<() => void>()
+
+/** Switches what the screens read and write: the signed-out copy, or the account's synced copy. */
+export function setActiveStore(store: RecipeStore): void {
+  if (active === store) return
+  active = store
+  listeners.forEach((l) => l())
+}
+
+/** Called when the active store is swapped (signing in or out). Returns the unsubscribe function. */
+export function onStoreSwapped(listener: () => void): () => void {
+  listeners.add(listener)
+  return () => listeners.delete(listener)
+}
+
+/** Every screen uses this; it always forwards to whichever store is active. */
+export const recipeStore: RecipeStore = {
+  listRecipes: () => active.listRecipes(),
+  getRecipe: (id) => active.getRecipe(id),
+  saveRecipe: (r, i) => active.saveRecipe(r, i),
+  deleteRecipe: (id) => active.deleteRecipe(id),
+  setChecked: (id, c) => active.setChecked(id, c),
+  deleteSampleRecipes: () => active.deleteSampleRecipes(),
+  listCategories: () => active.listCategories(),
+  saveCategory: (c) => active.saveCategory(c),
+  deleteCategory: (id) => active.deleteCategory(id),
+  getImageBlob: (id) => active.getImageBlob(id),
+  exportSnapshot: () => active.exportSnapshot(),
+  importSnapshot: (s, m) => active.importSnapshot(s, m),
+}

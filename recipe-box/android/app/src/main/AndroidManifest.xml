@@ -24,6 +24,14 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
             </intent-filter>
+            <!-- Google sign-in comes back to the app through this address (also listed under Redirect URLs in Supabase) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="app.recipebox.personal" android:host="auth" />
+            </intent-filter>
+
             <!-- A video or a screenshot shared from the gallery, TikTok, Instagram or a file manager -->
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />

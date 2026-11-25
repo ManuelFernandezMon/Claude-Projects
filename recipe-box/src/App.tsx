@@ -3,6 +3,8 @@ import { Link, NavLink } from './lib/nav'
 import { FloppyDisk, House, Plus, Tag } from '@phosphor-icons/react'
 import { isNativeApp } from './lib/apiBase'
 import { DataProvider } from './hooks/useData'
+import { AuthProvider } from './hooks/useAuth'
+import { CloudPrompts } from './components/CloudPrompts'
 import { useAndroidBack } from './hooks/useAndroidBack'
 import { useShareTarget } from './hooks/useShareTarget'
 import { AiEditPage } from './pages/AiEditPage'
@@ -61,6 +63,7 @@ function Shell() {
         </NavLink>
       </nav>
       <main id="main" className="main" tabIndex={-1}>
+        <CloudPrompts />
         <Outlet />
       </main>
       <ToastHost />
@@ -84,9 +87,11 @@ function NotFound() {
 
 function Root() {
   return (
-    <DataProvider>
-      <Shell />
-    </DataProvider>
+    <AuthProvider>
+      <DataProvider>
+        <Shell />
+      </DataProvider>
+    </AuthProvider>
   )
 }
 
