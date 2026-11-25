@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { App as CapacitorApp } from '@capacitor/app'
 import { Browser } from '@capacitor/browser'
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js'
+import { setAiAccount } from '../lib/aiAuth'
 import { isNativeApp } from '../lib/apiBase'
 import { loadCloudConfig } from '../lib/cloud/config'
 import { guestRecipeCount, markMigration, moveGuestToAccount } from '../lib/cloud/migrate'
@@ -62,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const deactivate = useCallback(async (destroy: boolean) => {
     const cur = activeRef.current
     activeRef.current = null
+    setAiAccount(null)
     setActiveStore(guestStore)
     if (cur) {
       cur.store.dispose()
@@ -87,6 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         onStatus: (s) => setSync({ ...s }),
       })
       activeRef.current = { uid, store }
+      setAiAccount(async () => (await client.auth.getSession()).data.session?.access_token)
       setUser(userOf(session))
       setActiveStore(store)
       setStatus('signedIn')

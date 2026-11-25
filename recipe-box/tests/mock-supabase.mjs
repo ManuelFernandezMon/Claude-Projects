@@ -86,6 +86,13 @@ const server = http.createServer(async (req, res) => {
       user: { id: sub, aud: 'authenticated', role: 'authenticated', email: 'ana@example.com', user_metadata: { full_name: 'Ana' }, app_metadata: {}, created_at: '2026-01-01T00:00:00Z' },
     })
   }
+  if (url.pathname === '/auth/v1/user') {
+    const sub = userOf(req)
+    log.push('AUTH user ' + (sub ?? 'rejected'))
+    if (!sub) return send(401, { message: 'invalid JWT' })
+    const email = JSON.parse(Buffer.from(req.headers.authorization.slice(7).split('.')[1], 'base64url').toString()).email
+    return send(200, { id: sub, email, ...(email.includes('unconfirmed') ? {} : { email_confirmed_at: '2026-01-01T00:00:00Z' }) })
+  }
   if (url.pathname === '/auth/v1/logout') return send(204, '')
   if (url.pathname.startsWith('/auth/')) return send(200, {})
 

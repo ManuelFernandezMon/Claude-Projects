@@ -295,6 +295,8 @@ The Supabase free plan is enough for a family, but check its current limits: fre
 5. **Tell the server where it is:** in Vercel add `SUPABASE_URL` (the *Project URL*) and `SUPABASE_ANON_KEY` (the *anon public* key; it is meant to be public, the rules in step 2 protect the data) under *Settings → Environment Variables*, then redeploy. The app asks `/api/config` for them, so the Android app needs no rebuild.
 6. **Use it:** open the app → *Account & backup* → *Sign in with Google*. On a phone that already has recipes, the app offers to add them to the account.
 
+7. **AI without the passcode (optional):** add `AI_ALLOWED_EMAILS` in Vercel (comma-separated Google emails, for example `me@gmail.com, mom@gmail.com`) and redeploy. A signed-in person whose email is on the list uses the AI with no passcode: the app sends their sign-in token and the server checks it with Supabase (a made-up or unconfirmed one is refused). Anyone else, and anyone signed out, still needs `RECIPE_IMPORT_PASSCODE`. Without the list, nothing changes. Keep the list: Google sign-in is open to any Google account, and the list is what keeps strangers from spending your AI quota. With a list set, `RECIPE_IMPORT_PASSCODE` becomes optional.
+
 Menu names in the Supabase and Google consoles change from time to time; follow their current wording if it differs.
 
-Tests: `npm run test:sync` (sync rules, no browser). `tests/ui-cloud.test.mjs` runs the real app against `tests/mock-supabase.mjs`, a stand-in for Supabase (see the header of that file); it has not been run against a real Supabase project.
+Tests: `npm run test:sync` (sync rules, no browser); `tests/ai-auth.test.mjs` and `tests/ui-ai-account.test.mjs` cover AI access through the account (their headers say which servers to start). `tests/ui-cloud.test.mjs` runs the real app against `tests/mock-supabase.mjs`, a stand-in for Supabase (see the header of that file); it has not been run against a real Supabase project.

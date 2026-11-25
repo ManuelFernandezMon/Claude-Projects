@@ -32,7 +32,7 @@ export function withCors(handler: (request: Request) => Promise<Response>): (req
       if (origin) {
         headers.set('access-control-allow-origin', origin)
         headers.set('access-control-allow-methods', 'POST, OPTIONS')
-        headers.set('access-control-allow-headers', 'content-type, x-import-passcode')
+        headers.set('access-control-allow-headers', 'content-type, x-import-passcode, authorization')
         headers.set('access-control-max-age', '86400')
       }
       return new Response(null, { status: 204, headers })
@@ -87,15 +87,55 @@ export function resolveProvider(): { provider: ProviderName } | { error: string 
   return { error: 'No AI key is set on the server (GEMINI_API_KEY or ANTHROPIC_API_KEY).' }
 }
 
+/** Emails (comma-separated, any case) whose signed-in accounts may use the AI without the passcode. */
+const allowedEmails = (): string[] =>
+  (process.env.AI_ALLOWED_EMAILS ?? '')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean)
+
+const accountCache = new Map<string, { email: string; until: number }>()
+
 /**
- * Common gate for every AI endpoint: POST only, server configured, passcode correct.
- * `needs: 'gemini'` is for video, which only Gemini can read; `needs: 'none'` is for endpoints that call no AI model
- * (photo search). Returns an error Response, or null when allowed.
+ * A signed-in account (Supabase session token) counts as the passcode when its verified email is on AI_ALLOWED_EMAILS.
+ * The token is checked with Supabase itself, never trusted as sent; a good answer is remembered for a minute.
  */
-export function authorize(request: Request, needs?: 'gemini' | 'none'): Response | null {
+async function accountMayUseAi(request: Request): Promise<boolean> {
+  const list = allowedEmails()
+  const url = (process.env.SUPABASE_URL ?? '').trim().replace(/\/+$/, '')
+  const anon = (process.env.SUPABASE_ANON_KEY ?? '').trim()
+  const token = /^Bearer (.+)$/i.exec(request.headers.get('authorization') ?? '')?.[1]
+  if (!list.length || !url || !anon || !token || token.length > 4000) return false
+  const key = createHash('sha256').update(token).digest('hex')
+  const hit = accountCache.get(key)
+  let email = hit && hit.until > Date.now() ? hit.email : ''
+  if (!email) {
+    try {
+      const res = await fetch(`${url}/auth/v1/user`, { headers: { apikey: anon, authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(5000) })
+      if (!res.ok) return false
+      const u = (await res.json()) as { email?: unknown; email_confirmed_at?: unknown; confirmed_at?: unknown }
+      if (typeof u.email !== 'string' || !(u.email_confirmed_at || u.confirmed_at)) return false
+      email = u.email.toLowerCase()
+      accountCache.set(key, { email, until: Date.now() + 60_000 })
+      if (accountCache.size > 200) accountCache.delete(accountCache.keys().next().value as string)
+    } catch {
+      return false
+    }
+  }
+  return list.includes(email)
+}
+
+/**
+ * Common gate for every AI endpoint: POST only, server configured, and the caller proves who they are: the passcode, or a
+ * signed-in account on AI_ALLOWED_EMAILS. `needs: 'gemini'` is for video, which only Gemini can read; `needs: 'none'` is for
+ * endpoints that call no AI model (photo search). Returns an error Response, or null when allowed.
+ */
+export async function authorize(request: Request, needs?: 'gemini' | 'none'): Promise<Response | null> {
   if (request.method !== 'POST') return json(405, { error: 'method_not_allowed', message: 'Use POST.' })
   const passcode = process.env.RECIPE_IMPORT_PASSCODE
-  if (!passcode) return json(503, { error: 'not_configured', message: 'RECIPE_IMPORT_PASSCODE is not set on the server.' })
+  if (!passcode && !allowedEmails().length) {
+    return json(503, { error: 'not_configured', message: 'RECIPE_IMPORT_PASSCODE (or AI_ALLOWED_EMAILS) is not set on the server.' })
+  }
   if (needs === 'gemini') {
     if (!hasGeminiKey()) {
       return json(503, { error: 'not_configured', message: 'GEMINI_API_KEY is not set on the server (video understanding uses Gemini).' })
@@ -104,15 +144,16 @@ export function authorize(request: Request, needs?: 'gemini' | 'none'): Response
     const resolved = resolveProvider()
     if ('error' in resolved) return json(503, { error: 'not_configured', message: resolved.error })
   }
-  if (!sameSecret(request.headers.get('x-import-passcode') ?? '', passcode)) {
-    return json(401, { error: 'unauthorized', message: 'Wrong or missing passcode.' })
+  const passcodeOk = !!passcode && sameSecret(request.headers.get('x-import-passcode') ?? '', passcode)
+  if (!passcodeOk && !(await accountMayUseAi(request))) {
+    return json(401, { error: 'unauthorized', message: 'Wrong or missing passcode, and this account is not allowed to use the AI.' })
   }
   return null
 }
 
 /** `authorize` plus a JSON body. Returns the parsed body, or a ready-made error Response. */
 export async function guard(request: Request, needs?: 'gemini' | 'none'): Promise<{ body: unknown } | { response: Response }> {
-  const denied = authorize(request, needs)
+  const denied = await authorize(request, needs)
   if (denied) return { response: denied }
   try {
     return { body: await request.json() }

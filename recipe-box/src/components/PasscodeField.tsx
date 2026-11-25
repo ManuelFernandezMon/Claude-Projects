@@ -1,3 +1,6 @@
+import { useSyncExternalStore } from 'react'
+import { ACCOUNT_PASSCODE, aiViaAccount, onAiAccountChange } from '../lib/aiAuth'
+
 interface Props {
   value: string
   onChange: (v: string) => void
@@ -6,6 +9,10 @@ interface Props {
 }
 
 export function PasscodeField({ value, onChange, editing, onEdit }: Props) {
+  const viaAccount = useSyncExternalStore(onAiAccountChange, aiViaAccount)
+  if (viaAccount && value === ACCOUNT_PASSCODE) {
+    return <p className="muted small">The AI works through your account, no passcode needed.</p>
+  }
   if (!editing) {
     return (
       <p className="muted small">

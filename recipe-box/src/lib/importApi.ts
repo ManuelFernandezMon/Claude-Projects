@@ -1,4 +1,5 @@
 import type { ImportedRecipe } from '../types'
+import { aiHeaders } from './aiAuth'
 import { apiUrl } from './apiBase'
 import { sourceKind } from './url'
 
@@ -62,7 +63,7 @@ export async function fetchPageText(url: string, passcode: string): Promise<Page
   try {
     res = await fetch(apiUrl('/api/page'), {
       method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-import-passcode': passcode },
+      headers: { 'content-type': 'application/json', ...(await aiHeaders(passcode)) },
       body: JSON.stringify({ url }),
     })
   } catch {
@@ -86,7 +87,7 @@ export async function postAiDetailed(
   try {
     res = await fetch(apiUrl(endpoint), {
       method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-import-passcode': passcode },
+      headers: { 'content-type': 'application/json', ...(await aiHeaders(passcode)) },
       body: JSON.stringify(payload),
     })
   } catch {

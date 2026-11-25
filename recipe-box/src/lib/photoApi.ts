@@ -1,3 +1,4 @@
+import { aiHeaders } from './aiAuth'
 import { apiUrl } from './apiBase'
 import { ImportError } from './importApi'
 
@@ -26,7 +27,7 @@ export async function searchPhotos(query: string, passcode: string, more?: { pag
   try {
     res = await fetch(apiUrl('/api/photos'), {
       method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-import-passcode': passcode },
+      headers: { 'content-type': 'application/json', ...(await aiHeaders(passcode)) },
       body: JSON.stringify(more ? { query, page: more.page, exact: true } : { query }),
     })
   } catch {
@@ -57,7 +58,7 @@ export async function downloadPhoto(url: string, passcode: string): Promise<File
     try {
       res = await fetch(apiUrl('/api/photos'), {
         method: 'POST',
-        headers: { 'content-type': 'application/json', 'x-import-passcode': passcode },
+        headers: { 'content-type': 'application/json', ...(await aiHeaders(passcode)) },
         body: JSON.stringify({ download: url }),
       })
     } catch {
